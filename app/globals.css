@@ -1,0 +1,159 @@
+@import "tailwindcss";
+
+@theme {
+  --color-space: #0b1020;
+  --color-panel: #111a33;
+  --color-line: rgba(160, 156, 196, 0.2);
+  --color-accent: #f0435a;
+  --color-violet: #a78bfa;
+  --color-pink: #f472b6;
+  --color-ok: #34d399;
+  --color-warn: #fbbf24;
+  --color-crit: #f87171;
+  --color-muted: #8ea0c4;
+  --color-fg: #e6edff;
+  --color-soft: #c9d4f0;
+  --color-ink: #ffffff;
+  --color-onaccent: #ffffff;
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+:root, [data-theme="dark"] {
+  --color-space: #0b1020;
+  --color-panel: #111a33;
+  --color-line: rgba(160, 156, 196, 0.2);
+  --color-accent: #f0435a;
+  --color-violet: #a78bfa;
+  --color-pink: #f472b6;
+  --color-ok: #34d399;
+  --color-warn: #fbbf24;
+  --color-crit: #f87171;
+  --color-muted: #8ea0c4;
+  --color-fg: #e6edff;
+  --color-soft: #c9d4f0;
+  --color-ink: #ffffff;
+  --color-onaccent: #ffffff;
+  --card-bg: linear-gradient(180deg, rgba(23, 34, 66, 0.75), rgba(14, 21, 42, 0.75));
+  --card-shadow: none;
+  --page-bg:
+    radial-gradient(1200px 600px at 85% -10%, rgba(167, 139, 250, 0.12), transparent 60%),
+    radial-gradient(900px 500px at 10% 110%, rgba(200, 16, 46, 0.07), transparent 60%),
+    #0b1020;
+  --logo-claro: none;
+  --logo-oscuro: block;
+  color-scheme: dark;
+  color: var(--color-fg);
+}
+
+[data-theme="light"] {
+  --color-space: #f5f3ff;
+  --color-panel: #ffffff;
+  --color-line: rgba(30, 27, 75, 0.12);
+  --color-accent: #c8102e;
+  --color-violet: #7c3aed;
+  --color-pink: #db2777;
+  --color-ok: #059669;
+  --color-warn: #d97706;
+  --color-crit: #dc2626;
+  --color-muted: #6b6889;
+  --color-fg: #1e1b3a;
+  --color-soft: #3f3c5e;
+  --color-ink: #312e81;
+  --color-onaccent: #ffffff;
+  --card-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.7));
+  --card-shadow: 0 8px 28px rgba(76, 29, 149, 0.08), 0 1px 3px rgba(76, 29, 149, 0.06);
+  --page-bg:
+    radial-gradient(1200px 600px at 85% -10%, rgba(167, 139, 250, 0.22), transparent 60%),
+    radial-gradient(900px 500px at 10% 110%, rgba(200, 16, 46, 0.07), transparent 60%),
+    #f5f3ff;
+  --logo-claro: block;
+  --logo-oscuro: none;
+  color-scheme: light;
+  color: var(--color-fg);
+}
+
+html, body { background: var(--color-space); color: var(--color-fg); }
+.logo-claro { display: var(--logo-claro, none); }
+.logo-oscuro { display: var(--logo-oscuro, block); }
+body { background: var(--page-bg); min-height: 100vh; }
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--color-line);
+  border-radius: 16px;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(8px);
+}
+.glow-warn { box-shadow: 0 0 0 1px color-mix(in oklab, var(--color-warn) 60%, transparent), 0 0 30px color-mix(in oklab, var(--color-warn) 14%, transparent); }
+.glow-crit { box-shadow: 0 0 0 1px color-mix(in oklab, var(--color-crit) 70%, transparent), 0 0 30px color-mix(in oklab, var(--color-crit) 18%, transparent); }
+.glow-accent { box-shadow: 0 0 0 1px color-mix(in oklab, var(--color-accent) 50%, transparent), 0 0 24px color-mix(in oklab, var(--color-accent) 15%, transparent); }
+
+input[type="range"] { accent-color: var(--color-accent); }
+input, textarea, select { color: var(--color-fg); }
+.campo {
+  width: 100%; border-radius: 10px; border: 1px solid var(--color-line);
+  background: color-mix(in oklab, var(--color-ink) 4%, transparent); padding: 8px 10px; font-size: 14px; outline: none;
+}
+.campo:focus { border-color: var(--color-accent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 18%, transparent); }
+.campo-error { border-color: var(--color-crit); }
+
+@keyframes pulse-ring { 0% { transform: scale(0.95); opacity: .9 } 70% { transform: scale(1.25); opacity: 0 } 100% { opacity: 0 } }
+.pulse-ring::after {
+  content: ""; position: absolute; inset: 0; border-radius: 9999px;
+  border: 2px solid currentColor; animation: pulse-ring 1.6s ease-out infinite;
+}
+@keyframes shake { 0%,100% { transform: translateX(0) } 20%,60% { transform: translateX(-4px) } 40%,80% { transform: translateX(4px) } }
+.vibrate { animation: shake .4s ease-in-out 3; }
+
+.glow-effect {
+  position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; z-index: 1;
+  padding: var(--glow-width, 1.5px);
+  background: conic-gradient(
+    from calc(var(--glow-angle, 0deg) - var(--glow-spread, 48deg)),
+    transparent 0deg,
+    var(--color-accent) calc(var(--glow-spread, 48deg) * 0.55),
+    var(--color-violet) var(--glow-spread, 48deg),
+    var(--color-accent) calc(var(--glow-spread, 48deg) * 1.45),
+    transparent calc(var(--glow-spread, 48deg) * 2),
+    transparent 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: var(--glow-on, 0);
+  transition: opacity 0.35s ease;
+}
+
+.card-spotlight {
+  position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1;
+  opacity: 0; transition: opacity 0.3s ease;
+  background: radial-gradient(
+    var(--spot-r, 340px) circle at var(--sx, 50%) var(--sy, 50%),
+    color-mix(in oklab, var(--color-accent) 14%, transparent),
+    color-mix(in oklab, var(--color-violet) 8%, transparent) 40%,
+    transparent 70%
+  );
+}
+
+.card3d { position: relative; perspective: 900px; }
+.card3d-inner { position: relative; height: 100%; transform-style: preserve-3d; will-change: transform; }
+.card3d-inner > * { transform-style: preserve-3d; }
+
+@keyframes astro-float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
+.astro-float { animation: astro-float 4s ease-in-out infinite; }
+
+@keyframes giro { to { transform: rotate(360deg) } }
+.giro-lento { animation: giro 80s linear infinite; transform-origin: center; transform-box: fill-box; }
+
+.beam { stroke-dasharray: 0.14 1; stroke-dashoffset: 0.14; animation: beam-run 9s linear infinite; }
+@keyframes beam-run { from { stroke-dashoffset: 0.14 } to { stroke-dashoffset: -1 } }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .beam { animation: none; opacity: 0; }
+  .astro-float, .vibrate, .pulse-ring::after, .giro-lento { animation: none; }
+  .glow-effect, .card-spotlight { transition: none; }
+}
