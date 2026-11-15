@@ -1,169 +1,66 @@
 "use client";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChipGeneral, ESTADO, ESTADO_GENERAL, Shell, Sparkline } from "@/components/Shell";
-import { Icon } from "@/components/Icons";
-import Personaje, { estadoPersonaje, GRUPOS, ORDEN_ESPACIO, ORDEN_MENTAL, ORDEN_VITALES } from "@/components/Personaje";
-import { fmtNum } from "@/components/Widgets";
-import { NOMBRE_SINTOMA } from "@/lib/analysis";
+import { ChipGeneral, ESTADO, ESTADO_GENERAL, Shell } from "@/components/Shell";
+import Cuerpo from "@/components/Cuerpo";
+import { GRUPOS, ORDEN_ESPACIO, ORDEN_MENTAL } from "@/components/Personaje";
+import { Metrica, Mini, motivoGeneral, ORDEN_VISUAL, Seccion, Urgencia } from "@/components/PanelTripulante";
+import { PRIORIDAD_NIVEL } from "@/lib/cuerpo";
 import { useAstronautId, useQuickFix } from "@/lib/useQuickFix";
 
-const TIP_URGENCIA = "Calculada con NEWS2, la escala que usan los hospitales para detectar deterioro.";
-const ORDEN_VISUAL = [...ORDEN_VITALES, ...ORDEN_ESPACIO, ...ORDEN_MENTAL];
+const IZQ = ["fc", "pa", "fr"];
+const DER = ["spo2", "temp", "conciencia"];
+const FILA = ["min-[1100px]:row-start-1", "min-[1100px]:row-start-2", "min-[1100px]:row-start-3"];
 
-function motivoGeneral(analisis, porK) {
-  const eg = analisis.general;
-  if (eg === "normal") return "";
-  let cand = ORDEN_VISUAL.map((k) => porK[k]).filter((t) => t?.estado === eg);
-  if (!cand.length) {
-    const vars = new Set(analisis.activas.filter((a) => a.estado === eg).flatMap((a) => a.vars || [a.var]).filter(Boolean));
-    cand = ORDEN_VISUAL.filter((k) => vars.has(k)).map((k) => porK[k]);
+function useMedia(q) {
+  const [ok, setOk] = useState(true);
+  useEffect(() => {
+    const m = window.matchMedia(q);
+    const f = () => setOk(m.matches);
+    f();
+    m.addEventListener("change", f);
+    return () => m.removeEventListener("change", f);
+  }, [q]);
+  return ok;
+}
+
+function resumen(analisis) {
+  const porK = Object.fromEntries(analisis.tarjetas.map((t) => [t.k, t]));
+  const niv = (k) => analisis.interpretaciones?.[k]?.nivel || "ok";
+  const alertas = ORDEN_VISUAL.filter((k) => niv(k) === "bad" || niv(k) === "warn").sort((a, b) => PRIORIDAD_NIVEL[niv(a)] - PRIORIDAD_NIVEL[niv(b)]);
+  const infos = ORDEN_VISUAL.filter((k) => niv(k) === "info");
+  if (alertas.length) {
+    const mal = alertas.some((k) => niv(k) === "bad") || analisis.general === "critico";
+    const principal = ORDEN_VISUAL.find((k) => porK[k]?.estado === analisis.general && analisis.general !== "normal") || alertas[0];
+    return { estado: mal ? "critico" : "atencion", icono: "●", texto: `${alertas.length} ${alertas.length === 1 ? "alerta" : "alertas"} · ${porK[principal].nombre}`, k: principal };
   }
-  if (!cand.length) return "";
-  return `${cand[0].nombre}${cand.length > 1 ? ` +${cand.length - 1}` : ""}`;
+  if (infos.length) return { estado: "info", icono: "⚡", texto: "Esfuerzo físico detectado", k: infos[0] };
+  return { estado: "normal", icono: "✓", texto: "Todo estable · sin alertas", k: null };
 }
 
-function secundario(t, analisis) {
-  if (t.estado === "info") return t.etiqueta || "Esfuerzo";
-  switch (t.k) {
-    case "fc":
-      return `VFC ${t.vfc ?? "—"} ms`;
-    case "spo2":
-      return t.estado === "normal" ? "En rango" : t.etiqueta;
-    case "pa":
-      return t.valor != null && t.valor2 != null ? `Media ${Math.round(t.valor2 + (t.valor - t.valor2) / 3)} mmHg` : "Sin medición";
-    case "fr":
-      return t.estado === "normal" ? "En rango" : t.etiqueta;
-    case "temp":
-      return t.sintomas?.length ? `Síntomas: ${t.sintomas.map((x) => NOMBRE_SINTOMA[x] || x).join(", ")}` : "Sin síntomas";
-    case "conciencia":
-      return analisis.checkinHoy?.mareo_de_pie ? "Con mareo" : "Sin mareo";
-    case "radiacion":
-      return `Acumulado ${fmtNum(analisis.radiacion.carrera)} mSv`;
-    case "huesos":
-      return `Fuerza ${t.fuerza ?? "—"} · cardio ${t.cardio ?? "—"} min`;
-    case "sueno":
-      return `Reacción ${t.reaccion ?? "—"} ms`;
-    case "animo":
-      return `Estrés ${t.estres ?? "—"}/5 · tripulación ${t.tripulacion ?? "—"}/5`;
-    default:
-      return t.secundario;
-  }
-}
-
-const palabraEstado = (t) => (t.estado === "normal" ? "Normal" : t.etiqueta || ESTADO[t.estado]?.txt);
-
-function Flecha({ t }) {
-  const c = t.cambio7;
-  const g = c == null || !Number.isFinite(c) ? "→" : c > 0.02 ? "↗" : c < -0.02 ? "↘" : "→";
-  return <span className="text-lg leading-none text-[#ffb888]" aria-label={g === "↗" ? "subiendo" : g === "↘" ? "bajando" : "estable"}>{g}</span>;
-}
-
-function DiasConciencia({ t }) {
-  return (
-    <span className="flex h-[35px] items-end gap-1" aria-hidden>
-      {t.serie7.map((v, i) => (
-        <span key={i} className="w-2 rounded-sm" style={{ height: v === 2 ? 30 : v === 1 ? 22 : 14, background: v === 2 ? "var(--color-crit)" : v === 1 ? "var(--color-warn)" : "color-mix(in oklab, var(--color-ok) 65%, transparent)" }} />
-      ))}
-    </span>
+function Aviso({ analisis, onVer }) {
+  const r = resumen(analisis);
+  const clave = `${r.estado}|${r.texto}`;
+  const [cerrado, setCerrado] = useState(null);
+  if (cerrado === clave) return null;
+  const E = ESTADO[r.estado];
+  const cuerpo = (
+    <>
+      <span aria-hidden className={r.icono === "●" ? "dot-estado" : "text-sm leading-none"}>{r.icono === "●" ? "" : r.icono}</span>
+      <span className="truncate">{r.texto}</span>
+    </>
   );
-}
-
-function Metrica({ t, analisis, onClick }) {
-  const E = ESTADO[t.estado] || ESTADO.normal;
   return (
-    <button onClick={onClick} aria-label={`${t.nombre}: ${t.texto} ${t.unidad}. ${palabraEstado(t)}. Ver análisis`}
-      className={`glass glass-hover flex min-h-[154px] flex-col justify-between p-[18px] text-left ${t.estado === "critico" ? "glow-crit" : t.estado === "atencion" ? "glow-warn" : ""}`}>
-      <span className="flex w-full items-center justify-between gap-2">
-        <span className="flex min-w-0 items-center gap-2 text-xs text-[#d6c9c9]">
-          <Icon name={t.icono} size={16} className="shrink-0 text-[#ffb888]" />
-          <span className="truncate">{t.nombre}</span>
-        </span>
-        <Flecha t={t} />
-      </span>
-      <span className="whitespace-nowrap">
-        <span className={`font-display text-[clamp(23px,2.5vw,31px)] font-semibold tracking-[-0.7px] ${t.estado === "normal" ? "" : E.color}`}>{t.texto}</span>
-        {t.unidad && <span className="ml-1 text-xs text-muted">{t.unidad}</span>}
-      </span>
-      <span className="flex w-full items-end justify-between gap-2">
-        <span className={`flex min-w-0 items-center gap-2 text-[11px] ${E.color}`}>
-          <span className="dot-estado" />
-          <span className="truncate">{secundario(t, analisis)}</span>
-        </span>
-        {t.k === "conciencia" ? <DiasConciencia t={t} /> : <span className="hidden shrink-0 min-[400px]:block"><Sparkline data={t.serie7} color={E.hex} w={84} h={35} /></span>}
-      </span>
-    </button>
-  );
-}
-
-function Mini({ t, analisis, onClick, ancha = false }) {
-  const E = ESTADO[t.estado] || ESTADO.normal;
-  return (
-    <button onClick={onClick} aria-label={`${t.nombre}: ${t.texto} ${t.unidad}. ${palabraEstado(t)}. Ver análisis`}
-      className={`glass glass-hover flex min-h-[143px] flex-col justify-between p-[18px] text-left ${ancha ? "min-[1100px]:col-span-2" : ""} ${t.estado === "critico" ? "glow-crit" : t.estado === "atencion" ? "glow-warn" : ""}`}>
-      <span className="flex w-full items-center justify-between gap-2">
-        <span className="flex min-w-0 items-center gap-2 text-xs text-[#d6c9c9]">
-          <Icon name={t.icono} size={16} className="shrink-0 text-[#ffb888]" />
-          <span className="truncate">{t.nombre}</span>
-        </span>
-        <Flecha t={t} />
-      </span>
-      <span className="my-2 whitespace-nowrap">
-        <span className={`font-display text-[clamp(22px,2.2vw,26px)] font-semibold tracking-[-0.7px] ${t.estado === "normal" ? "" : E.color}`}>{t.texto}</span>
-        {t.unidad && <span className="ml-1 text-xs text-muted">{t.k === "sueno" ? "horas" : t.unidad}</span>}
-      </span>
-      <span className="flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-1">
-        <small className="min-w-0 truncate text-[11px] text-[#aa9fa4]">{secundario(t, analisis)}</small>
-        <span className={`flex shrink-0 items-center gap-1.5 text-[11px] ${E.color}`}><span className="dot-estado" />{palabraEstado(t)}</span>
-      </span>
-    </button>
-  );
-}
-
-function Seccion({ glifo, titulo, n }) {
-  return (
-    <div className="mb-[13px] mt-[26px] flex items-center justify-between gap-2.5 px-0.5">
-      <h2 className="text-lg font-semibold">{glifo} {titulo}</h2>
-      <span className="text-[11px] tracking-wider text-[#b8a9ad]">{String(n).padStart(2, "0")} INDICADORES</span>
+    <div key={clave} role="status" aria-live="polite" data-aviso={r.estado}
+      className={`aviso-entra glass fixed bottom-4 right-4 z-40 flex max-w-[min(340px,calc(100vw-2rem))] items-center gap-1 rounded-full py-1 pl-1 pr-1 text-xs font-semibold ${E.color}`}
+      style={{ borderColor: `color-mix(in oklab, ${E.hex} 50%, transparent)` }}>
+      {r.k ? (
+        <button onClick={() => onVer(r.k)} className="flex min-w-0 items-center gap-2 rounded-full px-3 py-1.5 hover:bg-white/[0.06]">{cuerpo}</button>
+      ) : (
+        <span className="flex min-w-0 items-center gap-2 px-3 py-1.5">{cuerpo}</span>
+      )}
+      <button onClick={() => setCerrado(clave)} aria-label="Cerrar aviso" className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-base text-muted hover:bg-white/10 hover:text-fg">×</button>
     </div>
-  );
-}
-
-function Urgencia({ nivel }) {
-  return (
-    <span className="flex items-center gap-1.5">
-      <ChipGeneral estado={nivel.estado}>Signos vitales: urgencia {nivel.txt.toLowerCase()}</ChipGeneral>
-      <span className="group relative inline-flex">
-        <button type="button" aria-label="¿Cómo se calcula la urgencia?" aria-describedby="tip-urgencia"
-          className="flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-white/[0.06] text-xs font-semibold text-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-          ?
-        </button>
-        <span id="tip-urgencia" role="tooltip"
-          className="glass pointer-events-none absolute right-0 top-9 z-30 w-64 p-3 text-xs leading-snug text-soft opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100">
-          {TIP_URGENCIA}
-        </span>
-      </span>
-    </span>
-  );
-}
-
-function PanelAstronauta({ analisis, motivo }) {
-  const estado = estadoPersonaje(analisis);
-  const eg = analisis.general;
-  const palabra = eg === "critico" ? "Actúa ahora" : eg === "atencion" ? "Atención" : "Estable";
-  return (
-    <article className="glass relative col-span-2 min-h-[330px] overflow-hidden p-6 min-[640px]:col-span-3 min-[1100px]:col-span-1 min-[1100px]:col-start-4 min-[1100px]:row-span-2 min-[1100px]:row-start-1"
-      style={{ background: "linear-gradient(130deg, #44302e99, #1b202a99), var(--glass)" }} aria-label="Estado del astronauta">
-      <div className="absolute bottom-[5%] right-[2%] h-[85%] w-[56%]">
-        <Personaje estado={estado} />
-      </div>
-      <div className="relative z-10 flex h-full max-w-[52%] flex-col justify-end gap-2.5">
-        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#ffb67a45] bg-[#ffb67a1b] px-2.5 py-1.5 text-[11px] text-[#f4c9ac]">
-          <span className="dot-estado text-ok" /> EN VIVO
-        </span>
-        <h2 className={`text-[clamp(26px,2.6vw,34px)] font-semibold leading-tight tracking-[-0.8px] ${ESTADO[eg].color}`}>{palabra}</h2>
-        {motivo && <div className="truncate text-[13px] text-[#c9bdc0]">{motivo}</div>}
-      </div>
-    </article>
   );
 }
 
@@ -171,6 +68,11 @@ export default function Inicio() {
   const router = useRouter();
   const [aid, setAid] = useAstronautId();
   const { data, analisis, loading, error } = useQuickFix(aid);
+  const ancho = useMedia("(min-width: 640px)");
+  const [debug, setDebug] = useState(false);
+  useEffect(() => {
+    setDebug(new URLSearchParams(window.location.search).get("debug") === "cuerpo");
+  }, []);
 
   if (error)
     return <div className="p-10 text-crit">No se pudieron cargar los datos: {error}. Revisa tus variables de Supabase en .env.local (o bórralas para usar datos locales).</div>;
@@ -195,20 +97,28 @@ export default function Inicio() {
         </div>
       </div>
 
-      <section aria-label={GRUPOS.vitales} className="grid grid-cols-2 gap-[9px] min-[640px]:grid-cols-3 min-[640px]:gap-[14px] min-[1100px]:grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,1.55fr)]">
-        <PanelAstronauta analisis={analisis} motivo={motivo} />
-        {ORDEN_VITALES.map((k) => <Metrica key={k} t={porK[k]} analisis={analisis} onClick={() => ir(k)} />)}
+      <section aria-label={GRUPOS.vitales}
+        className="grid grid-cols-2 gap-[9px] min-[640px]:grid-cols-3 min-[640px]:gap-[14px] min-[1100px]:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)] min-[1100px]:grid-rows-3">
+        <article aria-label="Cuerpo del astronauta"
+          className="glass relative col-span-2 h-[380px] overflow-hidden min-[640px]:col-span-3 min-[640px]:h-[440px] min-[1100px]:col-span-1 min-[1100px]:col-start-2 min-[1100px]:row-span-3 min-[1100px]:row-start-1 min-[1100px]:h-auto min-[1100px]:min-h-[490px]"
+          style={{ background: "radial-gradient(ellipse at 50% 40%, #3a2a2a66, transparent 70%), linear-gradient(160deg, #2b232499, #1b202a99), var(--glass)" }}>
+          <Cuerpo analisis={analisis} onVer={ir} maxBurbujas={ancho ? 3 : 2} debug={debug} hrefMas={`/analisis?a=${aid}`} />
+        </article>
+        {IZQ.map((k, i) => <Metrica key={k} t={porK[k]} analisis={analisis} onClick={() => ir(k)} className={`min-[1100px]:col-start-1 ${FILA[i]}`} />)}
+        {DER.map((k, i) => <Metrica key={k} t={porK[k]} analisis={analisis} onClick={() => ir(k)} className={`min-[1100px]:col-start-3 ${FILA[i]}`} />)}
       </section>
 
       <Seccion glifo="✦" titulo={GRUPOS.espacio} n={ORDEN_ESPACIO.length} />
-      <section aria-label={GRUPOS.espacio} className="grid grid-cols-2 gap-[9px] sm:gap-[14px] min-[1100px]:grid-cols-4">
+      <section aria-label={GRUPOS.espacio} className="grid grid-cols-2 gap-[9px] min-[640px]:gap-[14px] min-[1100px]:grid-cols-4">
         {ORDEN_ESPACIO.map((k) => <Mini key={k} t={porK[k]} analisis={analisis} onClick={() => ir(k)} />)}
       </section>
 
       <Seccion glifo="◈" titulo={GRUPOS.mental} n={ORDEN_MENTAL.length} />
-      <section aria-label={GRUPOS.mental} className="grid grid-cols-2 gap-[9px] sm:gap-[14px] min-[1100px]:grid-cols-4">
+      <section aria-label={GRUPOS.mental} className="grid grid-cols-2 gap-[9px] pb-16 min-[640px]:gap-[14px] min-[1100px]:grid-cols-4">
         {ORDEN_MENTAL.map((k) => <Mini key={k} t={porK[k]} analisis={analisis} onClick={() => ir(k)} ancha />)}
       </section>
+
+      <Aviso analisis={analisis} onVer={ir} />
     </Shell>
   );
 }
