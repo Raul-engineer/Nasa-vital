@@ -2,7 +2,7 @@
 import { useRef } from "react";
 import { Marco, MON, useEscalaX } from "./Marco";
 
-const DIA = ["D", "L", "M", "M", "J", "V", "S"];
+const DIA = ["S", "M", "T", "W", "T", "F", "S"];
 
 export function ejercicioDia(v) {
   const total = Number(v.minutos_ejercicio) || 0;
@@ -23,8 +23,8 @@ export default function MonitorHuesos({ data, t }) {
   const paso = (w - 10) / dias.length;
   const bw = Math.min(34, paso * 0.55);
   return (
-    <Marco titulo="Ejercicio · 7 días" color={MON.verdeClaro} etiquetaVivo="ACTIVIDAD" valor={t.valor ?? "—"} unidad="%"
-      sub={<span className="flex gap-3"><span style={{ color: MON.verdeClaro }}>■ Fuerza</span><span style={{ color: MON.cian }}>■ Cardio</span></span>}>
+    <Marco titulo="Exercise · 7 days" color={MON.verdeClaro} etiquetaVivo="ACTIVITY" valor={t.valor ?? "—"} unidad="%"
+      sub={<span className="flex gap-3"><span style={{ color: MON.verdeClaro }}>■ Strength</span><span style={{ color: MON.cian }}>■ Cardio</span></span>}>
       <div ref={caja} className="absolute inset-0">
         <svg width={w} height={h} aria-hidden>
           {dias.map((d, i) => {
@@ -39,7 +39,7 @@ export default function MonitorHuesos({ data, t }) {
             );
           })}
           <line x1={0} x2={w} y1={Y(presc)} y2={Y(presc)} stroke={MON.ambar} strokeWidth="1.6" strokeDasharray="6 4" />
-          <text x={w - 2} y={Y(presc) - 4} fill={MON.ambar} fontSize="10" textAnchor="end">{presc} min prescritos</text>
+          <text x={w - 2} y={Y(presc) - 4} fill={MON.ambar} fontSize="10" textAnchor="end">{presc} min prescribed</text>
         </svg>
       </div>
     </Marco>

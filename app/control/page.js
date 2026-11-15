@@ -13,36 +13,36 @@ import AlarmaCritica from "@/components/AlarmaCritica";
 import PruebasControl from "@/components/PruebasControl";
 
 const GRUPOS = [
-  ["Signos vitales", [
-    { c: "fc", n: "Frecuencia cardiaca", u: "lpm", paso: 5, min: 30, max: 200, v: "fc" },
-    { c: "sistolica", n: "Presión sistólica", u: "mmHg", paso: 5, min: 70, max: 220, v: "pa" },
-    { c: "diastolica", n: "Presión diastólica", u: "mmHg", paso: 5, min: 40, max: 130, v: "pa" },
-    { c: "frec_resp", n: "Frecuencia respiratoria", u: "rpm", paso: 1, min: 6, max: 40, v: "fr" },
+  ["Vital signs", [
+    { c: "fc", n: "Heart rate", u: "bpm", paso: 5, min: 30, max: 200, v: "fc" },
+    { c: "sistolica", n: "Systolic pressure", u: "mmHg", paso: 5, min: 70, max: 220, v: "pa" },
+    { c: "diastolica", n: "Diastolic pressure", u: "mmHg", paso: 5, min: 40, max: 130, v: "pa" },
+    { c: "frec_resp", n: "Respiratory rate", u: "br/min", paso: 1, min: 6, max: 40, v: "fr" },
     { c: "spo2", n: "SpO₂", u: "%", paso: 1, min: 80, max: 100, v: "spo2" },
-    { c: "temperatura", n: "Temperatura", u: "°C", paso: 0.1, min: 34, max: 41.5, v: "temp", dec: 1 },
+    { c: "temperatura", n: "Temperature", u: "°C", paso: 0.1, min: 34, max: 41.5, v: "temp", dec: 1 },
   ]],
-  ["Salud en el espacio", [
-    { c: "tasa_radiacion", n: "Radiación (tasa)", u: "µSv/h", paso: 5, min: 0, max: 1000, v: "radiacion" },
-    { c: "co2_ppm", n: "CO₂ de la cabina · toda la tripulación", u: "ppm", paso: 250, min: 400, max: 8000, v: "cabina" },
-    { c: "temp_cabina", n: "Temperatura de la cabina", u: "°C", paso: 0.5, min: 10, max: 35, v: "cabina", dec: 1 },
-    { c: "humedad_cabina", n: "Humedad de la cabina", u: "%", paso: 5, min: 5, max: 95, v: "cabina" },
-    { c: "ejercicio_pct", n: "Ejercicio", u: "%", paso: 10, min: 0, max: 200, v: "huesos" },
+  ["Space health", [
+    { c: "tasa_radiacion", n: "Radiation (rate)", u: "µSv/h", paso: 5, min: 0, max: 1000, v: "radiacion" },
+    { c: "co2_ppm", n: "Cabin CO₂ · whole crew", u: "ppm", paso: 250, min: 400, max: 8000, v: "cabina" },
+    { c: "temp_cabina", n: "Cabin temperature", u: "°C", paso: 0.5, min: 10, max: 35, v: "cabina", dec: 1 },
+    { c: "humedad_cabina", n: "Cabin humidity", u: "%", paso: 5, min: 5, max: 95, v: "cabina" },
+    { c: "ejercicio_pct", n: "Exercise", u: "%", paso: 10, min: 0, max: 200, v: "huesos" },
   ]],
-  ["Mente y sueño", [
-    { c: "horas_sueno", n: "Sueño", u: "h", paso: 0.5, min: 0, max: 12, v: "sueno", dec: 1 },
+  ["Mind and sleep", [
+    { c: "horas_sueno", n: "Sleep", u: "h", paso: 0.5, min: 0, max: 12, v: "sueno", dec: 1 },
     { c: "who5", n: "WHO-5", u: "/100", paso: 4, min: 0, max: 100, v: "animo" },
-    { c: "estres", n: "Estrés", u: "/5", paso: 1, min: 1, max: 5, v: "animo" },
-    { c: "tripulacion", n: "Tripulación", u: "/5", paso: 1, min: 1, max: 5, v: "animo" },
+    { c: "estres", n: "Stress", u: "/5", paso: 1, min: 1, max: 5, v: "animo" },
+    { c: "tripulacion", n: "Crew", u: "/5", paso: 1, min: 1, max: 5, v: "animo" },
   ]],
 ];
 
 const SINTOMAS = ["garganta", "llagas", "ronchas", "estomago"];
-const FASES = [["orbita", "Órbita"], ["luna", "Luna"], ["marte", "Marte"], ["regreso", "Regreso"]];
-const hora = (iso) => (iso ? new Date(iso).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }) : "—");
+const FASES = [["orbita", "Orbit"], ["luna", "Moon"], ["marte", "Mars"], ["regreso", "Return"]];
+const hora = (iso) => (iso ? new Date(iso).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "—");
 
 function FichasAbiertas({ fichas, onAbrir }) {
   const abiertos = fichas.eventos.filter((e) => !e.cerrado_en);
-  if (!abiertos.length) return <p className="px-1 text-sm text-muted">Sin fichas abiertas.</p>;
+  if (!abiertos.length) return <p className="px-1 text-sm text-muted">No open cards.</p>;
   return (
     <ul className="grid gap-2">
       {abiertos.map((e) => {
@@ -57,9 +57,9 @@ function FichasAbiertas({ fichas, onAbrir }) {
               <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: c }} />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-semibold">{TITULOS[e.clave] || e.clave}</span>
-                <span className="block text-xs text-muted">{ETIQUETA_NIVEL[e.nivel]} · {n} de {pasos.length} pasos · desde {hora(e.abierto_en)}</span>
+                <span className="block text-xs text-muted">{ETIQUETA_NIVEL[e.nivel]} · {n} of {pasos.length} steps · since {hora(e.abierto_en)}</span>
               </span>
-              <span className="text-sm font-semibold text-cyan">Abrir</span>
+              <span className="text-sm font-semibold text-cyan">Open</span>
             </button>
           </li>
         );
@@ -67,7 +67,7 @@ function FichasAbiertas({ fichas, onAbrir }) {
     </ul>
   );
 }
-const ESCENARIOS = ["Normal", "Esfuerzo", "Fiebre", "Fatiga", "Oxígeno bajo", "Presión baja", "Tormenta solar", "CO₂ alto"];
+const ESCENARIOS = ["Normal", "Exertion", "Fever", "Fatigue", "Low oxygen", "Low blood pressure", "Solar storm", "High CO₂"];
 const DEBOUNCE_MS = 250;
 
 function valoresActuales(data, analisis) {
@@ -88,7 +88,7 @@ function valoresActuales(data, analisis) {
 
 function Indicador() {
   const c = useConexion();
-  const [txt, cls] = c.modo === "local" ? ["Modo local · solo esta computadora", "text-warn"] : c.caido || c.realtime === "desconectado" ? ["Sin conexión", "text-crit"] : c.realtime === "conectado" ? ["Conectado", "text-ok"] : ["Conectando…", "text-muted"];
+  const [txt, cls] = c.modo === "local" ? ["Local mode · this computer only", "text-warn"] : c.caido || c.realtime === "desconectado" ? ["Offline", "text-crit"] : c.realtime === "conectado" ? ["Connected", "text-ok"] : ["Connecting…", "text-muted"];
   return <span className={`flex items-center gap-1.5 text-xs font-semibold ${cls}`} data-conexion={c.realtime}><span className="dot-estado" />{txt}</span>;
 }
 
@@ -98,7 +98,7 @@ function Fila({ cfg, valor, estado, onCambio }) {
   const E = ESTADO[estado] || ESTADO.normal;
   const dec = cfg.dec || 0;
   const num = Number(valor);
-  const fmt = Number.isFinite(num) ? num.toLocaleString("es-MX", { minimumFractionDigits: dec, maximumFractionDigits: dec }) : "—";
+  const fmt = Number.isFinite(num) ? num.toLocaleString("en-US", { minimumFractionDigits: dec, maximumFractionDigits: dec }) : "—";
   const fijar = (x) => {
     if (!Number.isFinite(x)) return;
     const r = Math.round(Math.min(cfg.max, Math.max(cfg.min, x)) * 10 ** dec) / 10 ** dec;
@@ -118,15 +118,15 @@ function Fila({ cfg, valor, estado, onCambio }) {
             onChange={(e) => setTexto(e.target.value)} onBlur={confirmar} onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
             className="campo mt-0.5 w-32 font-display text-2xl font-semibold" />
         ) : (
-          <button onClick={() => { setTexto(Number.isFinite(num) ? String(num) : ""); setEditando(true); }} aria-label={`${cfg.n}: ${fmt} ${cfg.u}. Tocar para escribir`}
+          <button onClick={() => { setTexto(Number.isFinite(num) ? String(num) : ""); setEditando(true); }} aria-label={`${cfg.n}: ${fmt} ${cfg.u}. Tap to type`}
             className={`font-display text-[28px] font-semibold leading-tight tracking-[-0.5px] ${estado === "normal" ? "text-fg" : E.color}`}>
             {fmt}<span className="ml-1 text-xs font-normal text-muted">{cfg.u}</span>
           </button>
         )}
       </div>
-      <button onClick={() => fijar((Number.isFinite(num) ? num : cfg.min) - cfg.paso)} aria-label={`Bajar ${cfg.n}`} data-accion="menos"
+      <button onClick={() => fijar((Number.isFinite(num) ? num : cfg.min) - cfg.paso)} aria-label={`Decrease ${cfg.n}`} data-accion="menos"
         className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-white/15 bg-white/[0.07] text-2xl font-semibold text-fg active:scale-95 active:bg-white/15">−</button>
-      <button onClick={() => fijar((Number.isFinite(num) ? num : cfg.min) + cfg.paso)} aria-label={`Subir ${cfg.n}`} data-accion="mas"
+      <button onClick={() => fijar((Number.isFinite(num) ? num : cfg.min) + cfg.paso)} aria-label={`Increase ${cfg.n}`} data-accion="mas"
         className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-white/15 bg-white/[0.07] text-2xl font-semibold text-fg active:scale-95 active:bg-white/15">+</button>
     </div>
   );
@@ -173,7 +173,7 @@ export default function Control() {
         if (CLAVES_TRIPULACION.includes(clave)) await setEnVivoTripulacion(idsTrip, { [clave]: valor });
         else await setEnVivo(aid, clave, valor);
       } catch (e) {
-        avisar(`No se pudo guardar: ${e?.message || e}`);
+        avisar(`Could not save: ${e?.message || e}`);
       }
       setTimeout(() => setPendientes((p) => {
         if (p[clave] !== valor) return p;
@@ -185,7 +185,7 @@ export default function Control() {
   }, [aid, avisar, idsTrip.join(",")]);
 
   if (error) return <div className="p-8 text-crit">No se pudieron cargar los datos: {error}</div>;
-  if (loading || !analisis) return <div className="grid min-h-screen place-items-center text-muted">Conectando…</div>;
+  if (loading || !analisis) return <div className="grid min-h-screen place-items-center text-muted">Connecting…</div>;
 
   const { astronauts } = data;
   const base = valoresActuales(data, analisis);
@@ -202,7 +202,7 @@ export default function Control() {
       await fn();
       avisar(txt);
     } catch (e) {
-      avisar(`No se pudo aplicar: ${e?.message || e}`);
+      avisar(`Could not apply: ${e?.message || e}`);
     }
   };
   const escenario = (nombre) => {
@@ -219,22 +219,22 @@ export default function Control() {
         await borrarEnVivo(idsTrip, CLAVES_TRIPULACION);
         await terminarTormenta();
       },
-      Esfuerzo: async () => {
+      Exertion: async () => {
         await setActividad(aid, "ejercicio");
         await setEnVivoVarios(aid, { fc: Math.round((Number(base.fc) || 70) + 40), frec_resp: Math.round((Number(base.frec_resp) || 14) + 8), temperatura: r1((Number(base.temperatura) || 36.7) + 0.4) });
       },
-      Fiebre: () => setEnVivoVarios(aid, { fiebre: true, temperatura: 38.4, fc: Math.round((Number(base.fc) || 70) + Math.max(0, 38.4 - (Number(base.temperatura) || 36.8)) * 10) }),
-      Fatiga: () => setEnVivoVarios(aid, { horas_sueno: 4.8, reaccion: 385, vfc: 46, fatiga: 4, estres: 4 }),
-      "Oxígeno bajo": () => setEnVivoVarios(aid, { spo2: 89, frec_resp: 23 }),
-      "Presión baja": () => setEnVivoVarios(aid, { sistolica: 88, diastolica: 56, mareo_de_pie: true }),
-      "Tormenta solar": () => iniciarTormenta("S3"),
-      "CO₂ alto": async () => {
+      Fever: () => setEnVivoVarios(aid, { fiebre: true, temperatura: 38.4, fc: Math.round((Number(base.fc) || 70) + Math.max(0, 38.4 - (Number(base.temperatura) || 36.8)) * 10) }),
+      Fatigue: () => setEnVivoVarios(aid, { horas_sueno: 4.8, reaccion: 385, vfc: 46, fatiga: 4, estres: 4 }),
+      "Low oxygen": () => setEnVivoVarios(aid, { spo2: 89, frec_resp: 23 }),
+      "Low blood pressure": () => setEnVivoVarios(aid, { sistolica: 88, diastolica: 56, mareo_de_pie: true }),
+      "Solar storm": () => iniciarTormenta("S3"),
+      "High CO₂": async () => {
         await setEnVivoTripulacion(idsTrip, { co2_ppm: 4300 });
         await setEnVivoVarios(aid, { dolor_cabeza: true });
       },
     };
     setPendientes({});
-    ejecutar(mapa[nombre], `Escenario: ${nombre}`);
+    ejecutar(mapa[nombre], `Scenario: ${nombre}`);
   };
   const alternarSintoma = (s) => {
     const actual = val("sintomas");
@@ -249,13 +249,13 @@ export default function Control() {
         </span>
         <div className="min-w-0 flex-1">
           <div className="font-display text-lg font-bold leading-tight">Quick<span className="text-accent">Fix</span></div>
-          <div className="text-xs text-muted">Control en vivo</div>
+          <div className="text-xs text-muted">Live control</div>
         </div>
         <Indicador />
       </header>
 
-      <section className="mt-5" aria-label="Astronauta">
-        <h2 className="etiqueta mb-2 px-1">Astronauta</h2>
+      <section className="mt-5" aria-label="Astronaut">
+        <h2 className="etiqueta mb-2 px-1">Astronaut</h2>
         <div className="grid grid-cols-3 gap-2">
           {astronauts.map((a) => (
             <button key={a.id} onClick={() => setAid(a.id)} aria-pressed={a.id === aid}
@@ -273,13 +273,13 @@ export default function Control() {
         </div>
       )}
 
-      <section className="mt-5" aria-label="Fichas abiertas">
-        <h2 className="etiqueta mb-2 px-1">Fichas abiertas</h2>
+      <section className="mt-5" aria-label="Open cards">
+        <h2 className="etiqueta mb-2 px-1">Open cards</h2>
         <FichasAbiertas fichas={fichas} onAbrir={setFicha} />
       </section>
 
-      <section className="mt-5" aria-label="Escenarios rápidos">
-        <h2 className="etiqueta mb-2 px-1">Escenarios rápidos</h2>
+      <section className="mt-5" aria-label="Quick scenarios">
+        <h2 className="etiqueta mb-2 px-1">Quick scenarios</h2>
         <div className="grid grid-cols-2 gap-2">
           {ESCENARIOS.map((e) => (
             <button key={e} onClick={() => escenario(e)} data-escenario={e}
@@ -299,15 +299,15 @@ export default function Control() {
         </section>
       ))}
 
-      <section className="mt-5" aria-label="Interruptores">
-        <h2 className="etiqueta mb-2 px-1">Síntomas y eventos</h2>
+      <section className="mt-5" aria-label="Switches">
+        <h2 className="etiqueta mb-2 px-1">Symptoms and events</h2>
         <div className="grid gap-2">
-          <Interruptor etiqueta="Confusión" activo={val("confusion")} onClick={() => guardar("confusion", !val("confusion"))} />
-          <Interruptor etiqueta="Mareo" activo={val("mareo_de_pie")} onClick={() => guardar("mareo_de_pie", !val("mareo_de_pie"))} />
-          <Interruptor etiqueta="Visión borrosa" activo={val("vision_borrosa")} onClick={() => guardar("vision_borrosa", !val("vision_borrosa"))} />
-          <Interruptor etiqueta="Dolor de cabeza" activo={val("dolor_cabeza")} onClick={() => guardar("dolor_cabeza", !val("dolor_cabeza"))} />
+          <Interruptor etiqueta="Confusion" activo={val("confusion")} onClick={() => guardar("confusion", !val("confusion"))} />
+          <Interruptor etiqueta="Dizziness" activo={val("mareo_de_pie")} onClick={() => guardar("mareo_de_pie", !val("mareo_de_pie"))} />
+          <Interruptor etiqueta="Blurred vision" activo={val("vision_borrosa")} onClick={() => guardar("vision_borrosa", !val("vision_borrosa"))} />
+          <Interruptor etiqueta="Headache" activo={val("dolor_cabeza")} onClick={() => guardar("dolor_cabeza", !val("dolor_cabeza"))} />
           <div className="rounded-2xl border border-white/12 bg-white/[0.05] p-3">
-            <div className="mb-2 text-sm font-medium text-soft">Síntomas</div>
+            <div className="mb-2 text-sm font-medium text-soft">Symptoms</div>
             <div className="grid grid-cols-2 gap-2">
               {SINTOMAS.map((s) => {
                 const on = val("sintomas").includes(s);
@@ -320,15 +320,15 @@ export default function Control() {
               })}
             </div>
           </div>
-          <Interruptor etiqueta={estadoAct === "recuperacion" ? "Ejercicio en curso · recuperación" : "Ejercicio en curso"} activo={enEjercicio} onClick={() => ejecutar(() => setActividad(aid, enEjercicio ? "reposo" : "ejercicio"), enEjercicio ? "Ejercicio apagado" : "Ejercicio iniciado")} />
-          <Interruptor etiqueta="Fiebre activa" activo={conFiebre} onClick={() => ejecutar(() => setEnVivoVarios(aid, { fiebre: !conFiebre }), conFiebre ? "Fiebre apagada" : "Fiebre activa")} />
-          <Interruptor etiqueta="Tormenta solar activa" activo={!!r.activo} onClick={() => ejecutar(() => (r.activo ? terminarTormenta() : iniciarTormenta("S3")), r.activo ? "Tormenta terminada" : "Tormenta solar S3")} />
-          <Interruptor etiqueta="Ya en refugio" activo={!!r.refugio} disabled={!r.activo || r.refugio} onClick={() => ejecutar(() => confirmarRefugio(aid), "Refugio confirmado")} />
-          <Interruptor etiqueta="Pulso irregular" activo={val("pulso_irregular")} onClick={() => guardar("pulso_irregular", !val("pulso_irregular"))} />
-          <Interruptor etiqueta="Tarea crítica (caminata o maniobra)" activo={val("tarea_critica")} onClick={() => guardar("tarea_critica", !val("tarea_critica"))} />
-          <Interruptor etiqueta="Alarma de la nave · toda la tripulación" activo={!!val("alarma_nave")} onClick={() => guardar("alarma_nave", val("alarma_nave") ? null : { tipo: "incendio", desde: new Date().toISOString() })} />
+          <Interruptor etiqueta={estadoAct === "recuperacion" ? "Exercise in progress · recovery" : "Exercise in progress"} activo={enEjercicio} onClick={() => ejecutar(() => setActividad(aid, enEjercicio ? "reposo" : "ejercicio"), enEjercicio ? "Exercise off" : "Exercise started")} />
+          <Interruptor etiqueta="Fever active" activo={conFiebre} onClick={() => ejecutar(() => setEnVivoVarios(aid, { fiebre: !conFiebre }), conFiebre ? "Fever off" : "Fever active")} />
+          <Interruptor etiqueta="Solar storm active" activo={!!r.activo} onClick={() => ejecutar(() => (r.activo ? terminarTormenta() : iniciarTormenta("S3")), r.activo ? "Storm ended" : "Solar storm S3")} />
+          <Interruptor etiqueta="Already in shelter" activo={!!r.refugio} disabled={!r.activo || r.refugio} onClick={() => ejecutar(() => confirmarRefugio(aid), "Shelter confirmed")} />
+          <Interruptor etiqueta="Irregular pulse" activo={val("pulso_irregular")} onClick={() => guardar("pulso_irregular", !val("pulso_irregular"))} />
+          <Interruptor etiqueta="Critical task (spacewalk or maneuver)" activo={val("tarea_critica")} onClick={() => guardar("tarea_critica", !val("tarea_critica"))} />
+          <Interruptor etiqueta="Ship alarm · whole crew" activo={!!val("alarma_nave")} onClick={() => guardar("alarma_nave", val("alarma_nave") ? null : { tipo: "incendio", desde: new Date().toISOString() })} />
           <div className="rounded-2xl border border-white/12 bg-white/[0.05] p-3">
-            <div className="mb-2 text-sm font-medium text-soft">Fase de la misión · toda la tripulación</div>
+            <div className="mb-2 text-sm font-medium text-soft">Mission phase · whole crew</div>
             <div className="grid grid-cols-4 gap-2">
               {FASES.map(([k, n]) => (
                 <button key={k} onClick={() => guardar("fase_mision", k)} aria-pressed={val("fase_mision") === k}
@@ -341,13 +341,13 @@ export default function Control() {
 
       <PruebasControl key={data.astronaut.id} data={data} analisis={analisis} />
 
-      <button onClick={() => { setPendientes({}); ejecutar(async () => { await resetEnVivo(aid); await borrarEnVivo(idsTrip, CLAVES_TRIPULACION); await terminarTormenta(); }, "Cambios en vivo borrados"); }}
+      <button onClick={() => { setPendientes({}); ejecutar(async () => { await resetEnVivo(aid); await borrarEnVivo(idsTrip, CLAVES_TRIPULACION); await terminarTormenta(); }, "Live changes cleared"); }}
         className="mt-6 min-h-12 w-full rounded-2xl border border-crit/60 bg-crit/10 px-4 py-3 font-semibold text-crit active:scale-[0.99]" data-accion="restablecer">
-        Restablecer
+        Reset
       </button>
 
       <VigiaFichas astronautId={data.astronaut.id} ejecutar={false} fichas={fichas} onAbrir={setFicha} />
-      <AlarmaCritica astronautId={data.astronaut.id} quien="Celular de control" esOficial control />
+      <AlarmaCritica astronautId={data.astronaut.id} quien="Control phone" esOficial control />
       {ficha && <Ficha clave={ficha} astronautId={data.astronaut.id} data={data} analisis={analisis} onClose={() => setFicha(null)} onAbrir={setFicha} quien="control" />}
 
       {aviso && (

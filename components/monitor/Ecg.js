@@ -35,8 +35,8 @@ export default function MonitorEcg({ fc, vfc }) {
     return mejor;
   }, []);
   return (
-    <Marco titulo="ECG · derivación II" color={MON.verde} valor={fc ?? "—"} unidad="lpm"
-      sub={vfc != null ? `VFC ${vfc} ms` : null}
+    <Marco titulo="ECG · lead II" color={MON.verde} valor={fc ?? "—"} unidad="bpm"
+      sub={vfc != null ? `HRV ${vfc} ms` : null}
       extra={<span ref={latido} aria-hidden className="mt-1 text-xl transition-all duration-150" style={{ color: MON.verde, opacity: 0.55 }}>♥</span>}>
       <OndaCanvas generar={generar} color={MON.verde} pxPorSeg={120} rango={[-0.4, 1.15]} />
     </Marco>

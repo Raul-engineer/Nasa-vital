@@ -60,7 +60,7 @@ function Aviso({ items, aid, onVer }) {
       <div key={`c-${critica}`} role="alert" data-aviso="critico" className={base} style={{ color: COLOR_GRAVEDAD.critico, borderColor: `color-mix(in oklab, ${COLOR_GRAVEDAD.critico} 55%, transparent)` }}>
         <button onClick={() => onVer(critica)} className="flex min-w-0 items-center gap-2 rounded-full px-3 py-1.5 hover:bg-white/[0.06]">
           <span className="dot-estado" />
-          <span className="truncate">Nueva alerta crítica · {valorCorto(a.t)}</span>
+          <span className="truncate">New critical alert · {valorCorto(a.t)}</span>
         </button>
       </div>
     );
@@ -68,8 +68,8 @@ function Aviso({ items, aid, onVer }) {
   if (items.length || cerrado) return null;
   return (
     <div key="estable" role="status" aria-live="polite" data-aviso="normal" className={`${base} text-ok`} style={{ borderColor: "color-mix(in oklab, var(--color-ok) 50%, transparent)" }}>
-      <span className="flex min-w-0 items-center gap-2 px-3 py-1.5"><span aria-hidden>✓</span><span className="truncate">Todo estable</span></span>
-      <button onClick={() => setCerrado(true)} aria-label="Cerrar aviso" className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-base text-muted hover:bg-white/10 hover:text-fg">×</button>
+      <span className="flex min-w-0 items-center gap-2 px-3 py-1.5"><span aria-hidden>✓</span><span className="truncate">All stable</span></span>
+      <button onClick={() => setCerrado(true)} aria-label="Close notice" className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-base text-muted hover:bg-white/10 hover:text-fg">×</button>
     </div>
   );
 }
@@ -117,20 +117,20 @@ export default function Inicio() {
   }, [filtro, ficha, router]);
 
   if (error)
-    return <div className="p-10 text-crit">No se pudieron cargar los datos: {error}. Revisa tus variables de Supabase en .env.local (o bórralas para usar datos locales).</div>;
-  if (loading || !analisis) return <div className="flex min-h-screen items-center justify-center text-muted">Cargando QuickFix…</div>;
+    return <div className="p-10 text-crit">Could not load the data: {error}. Check your Supabase variables in .env.local (or delete them to use local data).</div>;
+  if (loading || !analisis) return <div className="flex min-h-screen items-center justify-center text-muted">Loading QuickFix…</div>;
 
   const { astronaut, astronauts } = data;
   const salud = vista.salud;
   const ir = (k) => setFicha(k);
   const porK = Object.fromEntries(analisis.tarjetas.map((t) => [t.k, t]));
-  const medic = (k) => porK[k] && <CyberMedic ref={(r) => { modales.current[k] = r; }} t={porK[k]} it={analisis.interpretaciones?.[k]} dia={astronaut.dia_mision} onProceder={() => ir(k)} textoProceder="Abrir ficha" pregunta="¿Quieres abrir su ficha?" />;
+  const medic = (k) => porK[k] && <CyberMedic ref={(r) => { modales.current[k] = r; }} t={porK[k]} it={analisis.interpretaciones?.[k]} dia={astronaut.dia_mision} onProceder={() => ir(k)} textoProceder="Open card" pregunta="Do you want to open its card?" />;
   const abrir = (k) => (modales.current[k] ? modales.current[k].abrir() : ir(k));
   const filtrados = filtro ? items.filter((a) => a.nivel === filtro) : items;
 
   return (
     <Shell active="/" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis} onAbrirFicha={setFicha}>
-      <h1 className="sr-only">Inicio · {astronaut.nombre}</h1>
+      <h1 className="sr-only">Home · {astronaut.nombre}</h1>
 
       <BotonesGravedad items={items} filtro={filtro} onFiltro={setFiltro} />
       {data.sensor?.length > 0 && (
@@ -139,7 +139,7 @@ export default function Inicio() {
         </div>
       )}
 
-      <section aria-label="Cuerpo del astronauta" className="glass relative mt-[14px] flex h-[480px] flex-col overflow-hidden min-[1100px]:h-[clamp(600px,calc(100vh-288px),980px)] min-[1100px]:py-5"
+      <section aria-label="Astronaut body" className="glass relative mt-[14px] flex h-[480px] flex-col overflow-hidden min-[1100px]:h-[clamp(600px,calc(100vh-288px),980px)] min-[1100px]:py-5"
         style={{ background: "linear-gradient(180deg, rgba(8,10,28,.18), rgba(8,10,28,.42))", backdropFilter: "none", WebkitBackdropFilter: "none", "--tono": salud.color }}>
         <FondoCuerpo />
         <div className="relative z-20 px-4 pt-4 min-[1100px]:pt-0">
@@ -152,7 +152,7 @@ export default function Inicio() {
       </section>
 
       {!ancho && filtrados.length > 0 && (
-        <section aria-label="Alertas" className="mt-[14px] grid grid-cols-2 gap-[9px] min-[640px]:gap-[14px]">
+        <section aria-label="Alerts" className="mt-[14px] grid grid-cols-2 gap-[9px] min-[640px]:gap-[14px]">
           {filtrados.slice(0, MAX_TARJETAS).map((a) => (
             <div key={`${a.k}-${a.nivel}`} className="burbuja-entra" data-tarjeta-movil={a.k} data-nivel={a.nivel}>
               <Metrica t={a.t} analisis={analisis} onClick={() => abrir(a.k)} extra={medic(a.k)} className="h-full w-full" acento={COLOR_GRAVEDAD[a.nivel]} cyber />
@@ -167,7 +167,7 @@ export default function Inicio() {
       )}
 
       <div className="mb-8 mt-6 flex justify-center px-2">
-        <BotonDatos href={`/analisis?a=${aid}&tab=completo`} detalle={`${analisis.tarjetas.length} signos · tabla completa`} />
+        <BotonDatos href={`/analisis?a=${aid}&tab=completo`} detalle={`${analisis.tarjetas.length} signs · full table`} />
       </div>
 
       <Aviso items={items} aid={idDatos} onVer={ir} />

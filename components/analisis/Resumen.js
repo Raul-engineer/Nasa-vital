@@ -14,12 +14,12 @@ export function TablaResumen({ analisis, onVer }) {
   }, []);
   const porK = Object.fromEntries(analisis.tarjetas.map((t) => [t.k, t]));
   return (
-    <section className="card overflow-hidden" aria-label="Resumen de tus 12 signos">
+    <section className="card overflow-hidden" aria-label="Summary of your 12 signs">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] border-collapse">
           <thead>
             <tr className="border-b border-line text-left">
-              {["Signo", "Resultado", "Estado", "Tu normal", "Hora"].map((h, i) => (
+              {["Sign", "Result", "Status", "Your normal", "Time"].map((h, i) => (
                 <th key={h} scope="col" className={`etiqueta px-4 py-3 font-semibold ${i === 2 ? "text-center" : ""} ${i === 4 ? "text-right" : ""}`}>{h}</th>
               ))}
             </tr>
@@ -35,7 +35,7 @@ export function TablaResumen({ analisis, onVer }) {
                 const E = ESTADO[t.estado] || ESTADO.normal;
                 const s = simboloEstado(t);
                 return (
-                  <tr key={k} tabIndex={0} role="link" aria-label={`${t.nombre}: ${t.texto} ${t.unidad}. ${s.palabra}. Ver análisis`}
+                  <tr key={k} tabIndex={0} role="link" aria-label={`${t.nombre}: ${t.texto} ${t.unidad}. ${s.palabra}. View analysis`}
                     onClick={() => onVer(k)} onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onVer(k))}
                     className="cursor-pointer border-b border-line/70 transition last:border-0 hover:bg-cyan/[0.06] focus:outline-none focus-visible:bg-cyan/[0.08]">
                     <td className="px-4 py-2.5">

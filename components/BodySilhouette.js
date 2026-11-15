@@ -77,7 +77,7 @@ export default function BodySilhouette({ puntos = [], seleccionado, onSelect, co
     }
   }
   return (
-    <svg ref={ref} viewBox={`0 0 ${W} ${H}`} className="h-full w-full overflow-visible" role="img" aria-label="Silueta del cuerpo con tus signos vitales">
+    <svg ref={ref} viewBox={`0 0 ${W} ${H}`} className="h-full w-full overflow-visible" role="img" aria-label="Body silhouette with your vital signs">
       <defs>
         <radialGradient id="bs-aura" cx="50%" cy="45%" r="55%">
           <stop offset="0%" style={{ stopColor: colAura, stopOpacity: aura === "critico" ? 0.45 : 0.22 }} />

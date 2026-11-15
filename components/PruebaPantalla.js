@@ -13,11 +13,11 @@ import { useFichas, useHistorialPruebas } from "@/lib/useFichas";
 import { useQuickFix } from "@/lib/useQuickFix";
 
 const SIGUIENTES = {
-  critico: "Avisa ahora al oficial médico. No te quedes solo.",
-  urgente: "Abre tu ficha y avisa al oficial médico.",
-  moderado: "Sigue el plan de tu ficha y repite la prueba como toca.",
-  info: "Tómalo en cuenta al planear tus tareas de hoy.",
-  ok: "Sin cambios: sigue tu rutina.",
+  critico: "Tell the medical officer now. Do not stay alone.",
+  urgente: "Open your card and tell the medical officer.",
+  moderado: "Follow your card's plan and repeat the test when it is due.",
+  info: "Keep it in mind when planning today's tasks.",
+  ok: "No changes: keep your routine.",
 };
 const BTN = "min-h-14 rounded-2xl border px-4 text-lg font-semibold transition active:scale-[0.98] disabled:opacity-40";
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.max(0, s) % 60).padStart(2, "0")}`;
@@ -39,7 +39,7 @@ function Temporizador({ segundos, onFin }) {
     <div className="flex flex-col items-center gap-4" data-temporizador>
       <div className={`font-display text-7xl font-semibold tabular-nums ${resta <= 0 ? "text-ok" : ""}`} aria-live="polite">{fmt(resta)}</div>
       <div className="h-2 w-full max-w-md overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-cyan transition-[width] duration-1000" style={{ width: `${(1 - resta / segundos) * 100}%` }} /></div>
-      {resta > 0 && <button type="button" onClick={() => setCorre((x) => !x)} className={`${BTN} border-cyan/60 bg-cyan/15 text-fg`}>{corre ? "Pausar" : resta === segundos ? "Iniciar" : "Seguir"}</button>}
+      {resta > 0 && <button type="button" onClick={() => setCorre((x) => !x)} className={`${BTN} border-cyan/60 bg-cyan/15 text-fg`}>{corre ? "Pause" : resta === segundos ? "Start" : "Resume"}</button>}
     </div>
   );
 }
@@ -51,17 +51,17 @@ export function Amsler({ valor, onChange }) {
   return (
     <div className="flex flex-col items-center gap-4" data-amsler>
       <div className="flex gap-2">
-        {[["od", "Ojo derecho"], ["oi", "Ojo izquierdo"]].map(([k, t]) => (
+        {[["od", "Right eye"], ["oi", "Left eye"]].map(([k, t]) => (
           <button key={k} type="button" onClick={() => setOjo(k)} className={`${BTN} ${ojo === k ? "border-cyan bg-cyan/20 text-fg" : "border-white/15 text-soft"}`}>{t}{v[k].length ? ` · ${v[k].length}` : ""}</button>
         ))}
       </div>
-      <p className="text-center text-base text-soft">Tapa el otro ojo y mira el punto central a 30–40 cm. Toca los cuadros donde las líneas se ven onduladas o faltan.</p>
-      <div className="grid w-full max-w-[360px] grid-cols-10 overflow-hidden rounded-xl bg-white p-0" role="grid" aria-label={`Rejilla de Amsler, ${ojo === "od" ? "ojo derecho" : "ojo izquierdo"}`}>
+      <p className="text-center text-base text-soft">Cover the other eye and look at the center dot from 30–40 cm. Tap the squares where the lines look wavy or are missing.</p>
+      <div className="grid w-full max-w-[360px] grid-cols-10 overflow-hidden rounded-xl bg-white p-0" role="grid" aria-label={`Amsler grid, ${ojo === "od" ? "right eye" : "left eye"}`}>
         {Array.from({ length: 100 }, (_, i) => {
           const c = `${Math.floor(i / 10)}-${i % 10}`;
           const on = v[ojo].includes(c);
           return (
-            <button key={c} type="button" onClick={() => marcar(c)} aria-pressed={on} aria-label={`Fila ${Math.floor(i / 10) + 1}, columna ${(i % 10) + 1}`} data-celda={c}
+            <button key={c} type="button" onClick={() => marcar(c)} aria-pressed={on} aria-label={`Row ${Math.floor(i / 10) + 1}, column ${(i % 10) + 1}`} data-celda={c}
               className="relative aspect-square border-[0.5px] border-[#111]" style={{ background: on ? "rgba(255,114,120,0.55)" : "#fff" }}>
               {(i === 44 || i === 45 || i === 54 || i === 55) && <span className={`absolute h-2 w-2 rounded-full bg-[#111] ${i === 44 ? "bottom-[-4px] right-[-4px]" : i === 45 ? "bottom-[-4px] left-[-4px]" : i === 54 ? "right-[-4px] top-[-4px]" : "left-[-4px] top-[-4px]"}`} />}
             </button>
@@ -80,7 +80,7 @@ export function Agudeza({ valor, onChange }) {
   const dist = fase === "cerca" ? 400 : v.distancia * 1000;
   const px = (logmar) => Math.max(7, Math.round(dist * 0.001454 * 10 ** logmar * 3.78));
   const letras = (i) => Array.from({ length: Math.min(5, 2 + Math.floor(i / 2)) }, (_, j) => LETRAS[(i * 3 + j * 7) % LETRAS.length]).join(" ");
-  const nombres = { od: "Ojo derecho de lejos", oi: "Ojo izquierdo de lejos", cerca: "Los dos ojos de cerca (40 cm)" };
+  const nombres = { od: "Right eye, distance", oi: "Left eye, distance", cerca: "Both eyes, near (40 cm)" };
   return (
     <div className="flex flex-col items-center gap-4" data-agudeza>
       <div className="flex flex-wrap justify-center gap-2">
@@ -89,7 +89,7 @@ export function Agudeza({ valor, onChange }) {
       <div className="flex flex-wrap justify-center gap-2">
         {Object.entries(nombres).map(([k, t]) => <button key={k} type="button" onClick={() => setFase(k)} className={`${BTN} text-base ${fase === k ? "border-cyan bg-cyan/20 text-fg" : "border-white/15 text-soft"}`}>{t}{v[k] != null ? ` · ${v[k]}` : ""}</button>)}
       </div>
-      <p className="text-center text-base text-soft">{fase === "cerca" ? "Sostén la pantalla a 40 cm." : `Colócate a ${v.distancia} m de la pantalla y tapa el otro ojo.`} Toca la fila más chica que puedas leer completa.</p>
+      <p className="text-center text-base text-soft">{fase === "cerca" ? "Hold the screen at 40 cm." : `Stand ${v.distancia} m from the screen and cover the other eye.`} Tap the smallest row you can read completely.</p>
       <div className="w-full max-w-xl space-y-1 rounded-2xl bg-white px-3 py-4 text-center text-[#111]">
         {filas.map((lm, i) => (
           <button key={i} type="button" onClick={() => onChange({ ...v, [fase]: i + 1 })} data-fila={i + 1}
@@ -119,12 +119,12 @@ export function CabinaTripulacion({ valor, onChange, tripulacion = [], cabina = 
   const set = (id, k) => onChange({ ...v, [id]: { ...(v[id] || {}), [k]: !v[id]?.[k] } });
   return (
     <div className="w-full max-w-2xl space-y-3" data-cabina-tripulacion>
-      <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3 text-base text-soft">CO₂ {cabina.co2_ppm != null ? Number(cabina.co2_ppm).toLocaleString("es-MX") : "—"} ppm · {cabina.temp_c ?? "—"} °C · {cabina.humedad ?? "—"} % de humedad</div>
+      <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3 text-base text-soft">CO₂ {cabina.co2_ppm != null ? Number(cabina.co2_ppm).toLocaleString("en-US") : "—"} ppm · {cabina.temp_c ?? "—"} °C · {cabina.humedad ?? "—"} % humidity</div>
       {tripulacion.map((a) => (
         <div key={a.id} className="rounded-2xl border border-white/12 px-4 py-3">
           <div className="mb-2 text-lg font-semibold">{a.nombre}</div>
           <div className="grid grid-cols-3 gap-2">
-            {[["dolor", "Dolor de cabeza"], ["cansancio", "Cansancio"], ["sueno", "Mal sueño"]].map(([k, t]) => (
+            {[["dolor", "Headache"], ["cansancio", "Tiredness"], ["sueno", "Poor sleep"]].map(([k, t]) => (
               <button key={k} type="button" aria-pressed={!!v[a.id]?.[k]} onClick={() => set(a.id, k)} className={`${BTN} text-sm ${v[a.id]?.[k] ? "border-warn bg-warn/20 text-fg" : "border-white/15 text-soft"}`}>{t}</button>
             ))}
           </div>
@@ -156,8 +156,8 @@ export default function PruebaPantalla({ id, astronautId, desde = null }) {
     principal.current?.focus?.();
   }, [i, fase]);
 
-  if (!prueba) return <div className="grid min-h-screen place-items-center p-8 text-center text-muted">No encontramos esa prueba. <Link href="/pruebas" className="ml-1 text-cyan underline">Volver a Pruebas</Link></div>;
-  if (!data || !analisis) return <div className="grid min-h-screen place-items-center text-muted">Cargando prueba…</div>;
+  if (!prueba) return <div className="grid min-h-screen place-items-center p-8 text-center text-muted">We could not find that test. <Link href="/pruebas" className="ml-1 text-cyan underline">Back to Tests</Link></div>;
+  if (!data || !analisis) return <div className="grid min-h-screen place-items-center text-muted">Loading test…</div>;
 
   const aid = data.astronaut.id;
   const pasos = pasosVisibles(prueba, r);
@@ -210,7 +210,7 @@ export default function PruebaPantalla({ id, astronautId, desde = null }) {
       const { fila } = await guardarPrueba({ prueba, respuestas: r, horas, base, analisis, astronautId: aid, desde, origen: "laptop", editar });
       setGuardado(fila);
     } catch (e) {
-      setError(`No se pudo guardar: ${e?.message || e}`);
+      setError(`Could not save: ${e?.message || e}`);
     }
     setGuardando(false);
   };
@@ -228,10 +228,10 @@ export default function PruebaPantalla({ id, astronautId, desde = null }) {
             <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">{CATEGORIAS_PRUEBA[prueba.categoria].nombre} · {prueba.duracion}</div>
             <h1 className="truncate font-display text-xl font-semibold">{prueba.nombre}</h1>
           </div>
-          <button type="button" onClick={() => (fase === "intro" || guardado ? (window.location.href = volverA) : setSalir(true))} className="min-h-12 shrink-0 rounded-xl border border-white/15 px-4 text-base font-semibold text-soft hover:bg-white/10" data-accion="salir-prueba">Salir</button>
+          <button type="button" onClick={() => (fase === "intro" || guardado ? (window.location.href = volverA) : setSalir(true))} className="min-h-12 shrink-0 rounded-xl border border-white/15 px-4 text-base font-semibold text-soft hover:bg-white/10" data-accion="salir-prueba">Exit</button>
         </div>
         <div className="mx-auto mt-3 h-2 max-w-4xl overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-cyan transition-[width] duration-300" style={{ width: `${pct}%` }} /></div>
-        {prueba.companero && <div className="mx-auto mt-2 max-w-4xl text-sm font-semibold text-warn" data-companero>Hazla con un compañero</div>}
+        {prueba.companero && <div className="mx-auto mt-2 max-w-4xl text-sm font-semibold text-warn" data-companero>Do it with a partner</div>}
       </header>
 
       <main ref={principal} tabIndex={-1} className="mx-auto flex w-full max-w-4xl flex-1 flex-col items-center justify-center gap-6 px-4 py-8 outline-none sm:px-8">
@@ -239,15 +239,15 @@ export default function PruebaPantalla({ id, astronautId, desde = null }) {
           <div className="flex w-full max-w-2xl flex-col items-center gap-5 text-center">
             <p className="font-display text-3xl font-semibold leading-tight">{prueba.resumen}</p>
             <p className="text-lg text-soft">{prueba.paraQue}</p>
-            {desde && <p className="text-base text-cyan">La pidió tu ficha. El resultado regresa a la ficha.</p>}
-            <p className="text-sm text-muted">{comparar(id, base.mediana, base) === "Primera vez: esta será tu base." ? "Primera vez: esta será tu base." : `Última vez: ${base.ultimo ? new Date(base.ultimo.hecho_en).toLocaleDateString("es-MX", { day: "numeric", month: "short" }) : "—"} · ${ETIQUETA_NIVEL[base.ultimo?.nivel] || "—"}`}</p>
+            {desde && <p className="text-base text-cyan">Your card asked for it. The result goes back to the card.</p>}
+            <p className="text-sm text-muted">{comparar(id, base.mediana, base) === "First time: this will be your baseline." ? "First time: this will be your baseline." : `Last time: ${base.ultimo ? new Date(base.ultimo.hecho_en).toLocaleDateString("en-US", { day: "numeric", month: "short" }) : "—"} · ${ETIQUETA_NIVEL[base.ultimo?.nivel] || "—"}`}</p>
             {disp.motivo && <p className="text-base font-semibold text-cyan" data-motivo-disponible>{disp.motivo}</p>}
             {disp.permitido ? (
-              <button type="button" onClick={comenzar} className={`${BTN} w-full max-w-sm border-cyan bg-cyan/20 text-fg`} data-accion="comenzar">{disp.editar ? "Editar el de hoy" : "Comenzar"}</button>
+              <button type="button" onClick={comenzar} className={`${BTN} w-full max-w-sm border-cyan bg-cyan/20 text-fg`} data-accion="comenzar">{disp.editar ? "Edit today's" : "Start"}</button>
             ) : (
               <>
                 <p className="text-lg font-semibold text-warn" data-bloqueada>{disp.texto}</p>
-                <a href={volverA} className={`${BTN} flex w-full max-w-sm items-center justify-center border-white/15 text-soft`}>Volver</a>
+                <a href={volverA} className={`${BTN} flex w-full max-w-sm items-center justify-center border-white/15 text-soft`}>Back</a>
               </>
             )}
           </div>
@@ -255,7 +255,7 @@ export default function PruebaPantalla({ id, astronautId, desde = null }) {
 
         {fase === "pasos" && paso && (
           <div className="flex w-full flex-col items-center gap-6" data-paso-prueba={paso.id}>
-            <div className="text-sm text-muted">Paso {Math.min(i + 1, pasos.length)} de {pasos.length}</div>
+            <div className="text-sm text-muted">Step {Math.min(i + 1, pasos.length)} of {pasos.length}</div>
             {paso.intro && <p className="text-center text-base text-muted">{paso.intro}</p>}
             {paso.texto && <p className="max-w-3xl text-center font-display text-3xl font-semibold leading-tight">{paso.texto}</p>}
 
@@ -293,7 +293,7 @@ export default function PruebaPantalla({ id, astronautId, desde = null }) {
             )}
             {(paso.tipo === "opciones" || paso.tipo === "sino") && (
               <div className="grid w-full max-w-2xl gap-2">
-                {(paso.tipo === "sino" ? [["si", "Sí"], ["no", "No"]] : paso.opciones).map(([v, t]) => (
+                {(paso.tipo === "sino" ? [["si", "Yes"], ["no", "No"]] : paso.opciones).map(([v, t]) => (
                   <button key={String(v)} type="button" onClick={() => set(paso.id, v)} aria-pressed={r[paso.id] === v} data-opcion={String(v)}
                     className={`${BTN} text-left ${r[paso.id] === v ? "border-cyan bg-cyan/20 text-fg" : "border-white/15 text-soft hover:bg-white/[0.06]"}`}>{t}</button>
                 ))}
@@ -317,15 +317,15 @@ export default function PruebaPantalla({ id, astronautId, desde = null }) {
             {paso.tipo === "especial" && paso.componente === "pvt" && <div className="w-full max-w-2xl"><PvtbTest base={base.mediana || analisis.baselines?.reaccion?.media} onFinish={(x) => terminarEspecial("pvt", x)} /></div>}
             {paso.tipo === "especial" && paso.componente === "amsler" && <Amsler valor={r.amsler} onChange={(v) => set("amsler", v)} />}
             {paso.tipo === "especial" && paso.componente === "agudeza" && <Agudeza valor={r.agudeza} onChange={(v) => set("agudeza", v)} />}
-            {paso.tipo === "especial" && paso.componente === "mapaDolor" && <><p className="text-center font-display text-3xl font-semibold">¿Dónde te duele?</p><MapaDolor valor={r.zonas} onChange={(v) => set("zonas", v)} /></>}
+            {paso.tipo === "especial" && paso.componente === "mapaDolor" && <><p className="text-center font-display text-3xl font-semibold">Where does it hurt?</p><MapaDolor valor={r.zonas} onChange={(v) => set("zonas", v)} /></>}
             {paso.tipo === "especial" && paso.componente === "cabinaTripulacion" && <CabinaTripulacion valor={r.tripulacion} onChange={(v) => set("tripulacion", v)} tripulacion={data.astronauts} cabina={cabinaHoy} />}
 
             {error && <p className="text-center text-lg font-semibold text-warn" role="alert" data-error-prueba>{error}</p>}
 
             {!(paso.tipo === "especial" && ["checkin", "remedicion", "pvt"].includes(paso.componente)) && (
               <div className="flex w-full max-w-2xl gap-3">
-                <button type="button" onClick={atras} className={`${BTN} flex-1 border-white/15 text-soft`}>Atrás</button>
-                <button type="button" onClick={siguiente} className={`${BTN} flex-[2] border-cyan bg-cyan/20 text-fg`} data-accion="siguiente">{i + 1 >= pasos.length ? "Ver resultado" : "Siguiente"}</button>
+                <button type="button" onClick={atras} className={`${BTN} flex-1 border-white/15 text-soft`}>Back</button>
+                <button type="button" onClick={siguiente} className={`${BTN} flex-[2] border-cyan bg-cyan/20 text-fg`} data-accion="siguiente">{i + 1 >= pasos.length ? "See result" : "Next"}</button>
               </div>
             )}
           </div>
@@ -338,18 +338,18 @@ export default function PruebaPantalla({ id, astronautId, desde = null }) {
             <p className="font-display text-2xl leading-snug">{res.texto}</p>
             <p className="text-base text-soft" data-comparacion>{comparar(id, res.valor, base)}</p>
             <p className="text-base text-muted">{SIGUIENTES[res.nivel]}</p>
-            {res.detalles?.peligro && <p className="text-base font-semibold text-crit">Revisa las señales de peligro de tu ficha.</p>}
-            <p className="text-xs text-muted">Basado en: {partesFuente(prueba.fuente).map((p) => p.texto).join(" · ")}</p>
+            {res.detalles?.peligro && <p className="text-base font-semibold text-crit">Check the danger signs on your card.</p>}
+            <p className="text-xs text-muted">Based on: {partesFuente(prueba.fuente).map((p) => p.texto).join(" · ")}</p>
             {error && <p className="text-lg font-semibold text-warn">{error}</p>}
             {!guardado ? (
               <div className="flex w-full gap-3">
-                <button type="button" onClick={() => { setFase("pasos"); setI(Math.max(0, pasos.length - 1)); }} className={`${BTN} flex-1 border-white/15 text-soft`}>Atrás</button>
-                <button type="button" disabled={guardando} onClick={guardar} className={`${BTN} flex-[2] border-cyan bg-cyan/20 text-fg`} data-accion="guardar-prueba">{guardando ? "Guardando…" : "Guardar"}</button>
+                <button type="button" onClick={() => { setFase("pasos"); setI(Math.max(0, pasos.length - 1)); }} className={`${BTN} flex-1 border-white/15 text-soft`}>Back</button>
+                <button type="button" disabled={guardando} onClick={guardar} className={`${BTN} flex-[2] border-cyan bg-cyan/20 text-fg`} data-accion="guardar-prueba">{guardando ? "Saving…" : "Save"}</button>
               </div>
             ) : (
               <div className="flex w-full flex-col gap-3" data-guardado>
-                <p className="text-lg font-semibold text-ok">✓ Guardado</p>
-                {desde ? <CyberButton href={volverA} texto="Volver a la ficha" data-accion="volver-ficha">Volver a la ficha</CyberButton> : <CyberButton href={volverA} texto="Volver a Pruebas">Volver a Pruebas</CyberButton>}
+                <p className="text-lg font-semibold text-ok">✓ Saved</p>
+                {desde ? <CyberButton href={volverA} texto="Back to the card" data-accion="volver-ficha">Back to the card</CyberButton> : <CyberButton href={volverA} texto="Back to Tests">Back to Tests</CyberButton>}
               </div>
             )}
           </div>
@@ -357,13 +357,13 @@ export default function PruebaPantalla({ id, astronautId, desde = null }) {
       </main>
 
       {salir && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-label="Salir de la prueba">
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-label="Exit the test">
           <div className="glass w-full max-w-md p-6 text-center">
-            <p className="font-display text-2xl font-semibold">¿Salir de la prueba?</p>
-            <p className="mt-2 text-base text-soft">No se guardan las respuestas.</p>
+            <p className="font-display text-2xl font-semibold">Exit the test?</p>
+            <p className="mt-2 text-base text-soft">Your answers will not be saved.</p>
             <div className="mt-5 flex gap-3">
-              <button type="button" onClick={() => setSalir(false)} className={`${BTN} flex-1 border-white/15 text-soft`}>Seguir</button>
-              <a href={volverA} className={`${BTN} flex flex-1 items-center justify-center border-crit/60 bg-crit/15 text-fg`} data-accion="confirmar-salir">Salir</a>
+              <button type="button" onClick={() => setSalir(false)} className={`${BTN} flex-1 border-white/15 text-soft`}>Continue</button>
+              <a href={volverA} className={`${BTN} flex flex-1 items-center justify-center border-crit/60 bg-crit/15 text-fg`} data-accion="confirmar-salir">Exit</a>
             </div>
           </div>
         </div>

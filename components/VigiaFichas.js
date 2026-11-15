@@ -27,7 +27,7 @@ export default function VigiaFichas({ astronautId, ejecutar = true, onAbrir, fic
           if (r) await actualizarEventoFicha(e.id, { nivel: r.nivel, respuestas: r.respuestas });
         }
       } catch (e) {
-        console.warn("QuickFix: escalamiento", e?.message || e);
+        console.warn("QuickFix: escalation", e?.message || e);
       }
       ocupado.current = false;
     };
@@ -56,7 +56,7 @@ export default function VigiaFichas({ astronautId, ejecutar = true, onAbrir, fic
         <span className="mr-1.5 uppercase tracking-wide">{ETIQUETA_NIVEL[aviso.nivel]}</span>
         <span className="text-fg">{aviso.texto}</span>
       </button>
-      <button type="button" onClick={() => setVisto(id)} aria-label="Cerrar aviso" className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-lg text-muted hover:bg-white/10 hover:text-fg">×</button>
+      <button type="button" onClick={() => setVisto(id)} aria-label="Close notice" className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-lg text-muted hover:bg-white/10 hover:text-fg">×</button>
     </div>
   );
 }

@@ -10,7 +10,7 @@ import { FASES, hipnograma, horasSobreLimite } from "@/lib/simulado";
 import { tooltipEstilo, useTheme } from "@/lib/theme";
 import { DEC, IconoEstado, hhmm, promedio, validos } from "./comun";
 
-const DIAS_SEM = ["L", "M", "M", "J", "V", "S", "D"];
+const DIAS_SEM = ["M", "T", "W", "T", "F", "S", "S"];
 const CARAS = ["😣", "🙁", "😐", "🙂", "😄"];
 
 export function Tarjeta({ titulo, children, derecha, className = "" }) {
@@ -25,7 +25,7 @@ export function Tarjeta({ titulo, children, derecha, className = "" }) {
   );
 }
 
-function PorDiaSemana({ t, data, dias, color, titulo = "Promedio por día de la semana", serie, unidad }) {
+function PorDiaSemana({ t, data, dias, color, titulo = "Average by day of the week", serie, unidad }) {
   const { c } = useTheme();
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const s = serie || t.serie;
@@ -56,7 +56,7 @@ function PorDiaSemana({ t, data, dias, color, titulo = "Promedio por día de la 
             <CartesianGrid stroke={c.grid} vertical={false} />
             <XAxis dataKey="dia" stroke={c.muted} fontSize={12} tickLine={false} />
             <YAxis stroke={c.muted} fontSize={11} tickLine={false} domain={[Math.floor((lo - pad) * 10 ** dec) / 10 ** dec, Math.ceil((hi + pad / 2) * 10 ** dec) / 10 ** dec]} allowDecimals={dec > 0} width={44} />
-            <Tooltip {...tooltipEstilo(c)} cursor={{ fill: c.grid }} formatter={(v) => [`${fmtNum(v, dec)} ${unidad ?? t.unidad}`, "Promedio"]} />
+            <Tooltip {...tooltipEstilo(c)} cursor={{ fill: c.grid }} formatter={(v) => [`${fmtNum(v, dec)} ${unidad ?? t.unidad}`, "Average"]} />
             <Bar dataKey="v" fill={`url(#g-${uid})`} radius={[6, 6, 0, 0]} maxBarSize={44} isAnimationActive={false}>
               <LabelList dataKey="v" position="top" fill={c.soft} fontSize={11} formatter={(v) => fmtNum(v, dec)} />
             </Bar>
@@ -71,13 +71,13 @@ function TablaPresion({ data }) {
   const T = UMBRALES.tarjetas.pa;
   const filas = medicionesPresion(data).slice(-10).reverse();
   return (
-    <Tarjeta titulo="Últimas 10 mediciones">
+    <Tarjeta titulo="Last 10 readings">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-line text-left">
-            <th className="etiqueta py-2 font-semibold">Fecha y hora</th>
-            <th className="etiqueta py-2 font-semibold">Resultado</th>
-            <th className="etiqueta py-2 text-right font-semibold">Estado</th>
+            <th className="etiqueta py-2 font-semibold">Date and time</th>
+            <th className="etiqueta py-2 font-semibold">Result</th>
+            <th className="etiqueta py-2 text-right font-semibold">Status</th>
           </tr>
         </thead>
         <tbody>
@@ -88,7 +88,7 @@ function TablaPresion({ data }) {
             const e = roja ? "critico" : alta || baja ? "atencion" : "normal";
             return (
               <tr key={i} className="border-b border-line/60 last:border-0">
-                <td className="num py-2 text-soft">{m.fecha.toLocaleDateString("es-MX", { day: "numeric", month: "short" })} · {hhmm(m.fecha)}</td>
+                <td className="num py-2 text-soft">{m.fecha.toLocaleDateString("en-US", { day: "numeric", month: "short" })} · {hhmm(m.fecha)}</td>
                 <td className="py-2"><span className="num text-lg font-semibold">{m.sis}/{m.dia}</span> <span className="text-xs text-muted">mmHg</span></td>
                 <td className="py-2"><span className="flex justify-end"><IconoEstado estado={e} icono={alta ? "↑" : baja ? "↓" : "✓"} size={24} /></span></td>
               </tr>
@@ -113,7 +113,7 @@ function Sueno({ data, aid, dias }) {
   });
   return (
     <div className="grid gap-5 lg:grid-cols-[400px_minmax(0,1fr)]">
-      <Tarjeta titulo="Fases de anoche">
+      <Tarjeta titulo="Last night's stages">
         <div className="flex items-center gap-4">
           <div className="relative h-36 w-36 shrink-0">
             <ResponsiveContainer width="100%" height="100%">
@@ -125,7 +125,7 @@ function Sueno({ data, aid, dias }) {
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="num text-2xl font-semibold">{fmtNum(anoche.horas, 1)}</span>
-              <span className="text-[10px] text-muted">horas</span>
+              <span className="text-[10px] text-muted">hours</span>
             </div>
           </div>
           <ul className="flex-1 space-y-1.5 whitespace-nowrap text-sm">
@@ -140,7 +140,7 @@ function Sueno({ data, aid, dias }) {
           </ul>
         </div>
       </Tarjeta>
-      <Tarjeta titulo={`Fases por noche · ${n} noches`}>
+      <Tarjeta titulo={`Stages per night · ${n} nights`}>
         <div style={{ height: 180 }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={noches} margin={{ top: 4, right: 4, left: -18, bottom: 0 }}>
@@ -178,7 +178,7 @@ function DosisMision({ data, analisis }) {
   }).filter(Boolean);
   const col = r.activo ? c.crit : "#a78bfa";
   return (
-    <Tarjeta titulo="Dosis acumulada de carrera">
+    <Tarjeta titulo="Cumulative career dose">
       <div style={{ height: 230 }}>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={datos} margin={{ top: 20, right: 8, left: -10, bottom: 0 }}>
@@ -191,12 +191,12 @@ function DosisMision({ data, analisis }) {
             <CartesianGrid stroke={c.grid} vertical={false} />
             <XAxis dataKey="dia" stroke={c.muted} fontSize={11} tickLine={false} minTickGap={24} />
             <YAxis stroke={c.muted} fontSize={11} tickLine={false} width={44} domain={[0, L + 50]} />
-            <Tooltip {...tooltipEstilo(c)} formatter={(v) => [`${fmtNum(v, 1)} mSv`, "Acumulado"]} />
+            <Tooltip {...tooltipEstilo(c)} formatter={(v) => [`${fmtNum(v, 1)} mSv`, "Cumulative"]} />
             {tormentas.map((x, i) => (
               <ReferenceArea key={i} x1={x.x1} x2={x.x2} fill={c.crit} fillOpacity={0.18} stroke={c.crit} strokeOpacity={0.5}
-                label={{ value: `Tormenta ${x.nivel}`, position: "insideTopLeft", fill: c.crit, fontSize: 11 }} />
+                label={{ value: `Storm ${x.nivel}`, position: "insideTopLeft", fill: c.crit, fontSize: 11 }} />
             ))}
-            <ReferenceLine y={L} stroke={c.crit} strokeDasharray="6 4" label={{ value: `Límite ${L} mSv`, position: "insideTopRight", fill: c.crit, fontSize: 11 }} />
+            <ReferenceLine y={L} stroke={c.crit} strokeDasharray="6 4" label={{ value: `Limit ${L} mSv`, position: "insideTopRight", fill: c.crit, fontSize: 11 }} />
             <Area type="monotone" dataKey="acum" stroke={col} strokeWidth={2.4} fill={`url(#r-${uid})`} dot={false} isAnimationActive={false} />
           </ComposedChart>
         </ResponsiveContainer>
@@ -209,7 +209,7 @@ function Animo({ data, analisis }) {
   const { c } = useTheme();
   const T = UMBRALES.tarjetas.animo;
   const who5 = (data.pruebas || []).filter((p) => p.tipo === "who5").sort((a, b) => String(a.creada_en || a.fecha).localeCompare(String(b.creada_en || b.fecha))).slice(-12)
-    .map((p) => ({ sem: new Date(p.fecha + "T12:00:00").toLocaleDateString("es-MX", { day: "numeric", month: "short" }), v: Number(p.resultado?.puntaje) }));
+    .map((p) => ({ sem: new Date(p.fecha + "T12:00:00").toLocaleDateString("en-US", { day: "numeric", month: "short" }), v: Number(p.resultado?.puntaje) }));
   const porFecha = new Map(data.checkins.map((x) => [x.fecha, x]));
   const semana = data.vitals.slice(-7).map((v) => {
     const ci = v.fecha === analisis.fecha ? analisis.checkinHoy : porFecha.get(v.fecha) || {};
@@ -218,7 +218,7 @@ function Animo({ data, analisis }) {
   const colDe = (v) => (v <= T.who5Rojo ? c.crit : v <= T.who5Atencion ? c.warn : "#c4b5fd");
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-      <Tarjeta titulo="WHO-5 por semana">
+      <Tarjeta titulo="WHO-5 by week">
         <div style={{ height: 190 }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={who5} margin={{ top: 18, right: 6, left: -16, bottom: 0 }}>
@@ -235,11 +235,11 @@ function Animo({ data, analisis }) {
           </ResponsiveContainer>
         </div>
       </Tarjeta>
-      <Tarjeta titulo="Ánimo de la semana">
+      <Tarjeta titulo="Mood this week">
         <div className="grid grid-cols-7 gap-1 text-center">
           {semana.map((d) => (
             <div key={d.fecha} className="flex flex-col items-center gap-1">
-              <span className="text-3xl leading-none" aria-label={d.animo ? `Ánimo ${d.animo} de 5` : "Sin registro"}>{d.animo ? CARAS[d.animo - 1] : "·"}</span>
+              <span className="text-3xl leading-none" aria-label={d.animo ? `Mood ${d.animo} of 5` : "No record"}>{d.animo ? CARAS[d.animo - 1] : "·"}</span>
               <span className="num text-xs text-soft">{d.animo ?? "—"}</span>
               <span className="text-[11px] font-semibold text-muted">{d.dia}</span>
             </div>
@@ -268,7 +268,7 @@ function Calendario({ data, analisis, colorDe, leyenda, titulo }) {
               if (!f) return <span key={j} className="h-4 w-4" />;
               const ci = f === analisis.fecha ? analisis.checkinHoy : porFecha.get(f) || {};
               const [col, txt] = colorDe(ci);
-              return <span key={j} title={`${new Date(f + "T12:00:00").toLocaleDateString("es-MX", { day: "numeric", month: "short" })}: ${txt}`} className={`h-4 w-4 rounded-[4px] ${f === analisis.fecha ? "ring-2 ring-cyan" : ""}`} style={{ background: col }} />;
+              return <span key={j} title={`${new Date(f + "T12:00:00").toLocaleDateString("en-US", { day: "numeric", month: "short" })}: ${txt}`} className={`h-4 w-4 rounded-[4px] ${f === analisis.fecha ? "ring-2 ring-cyan" : ""}`} style={{ background: col }} />;
             })}
           </div>
         ))}
@@ -283,10 +283,10 @@ function Huesos({ t, data, dias }) {
   const fza = promedio(ult7.map((d) => d.fuerza)) || 0;
   const car = promedio(ult7.map((d) => d.cardio)) || 0;
   const cumplidos = ult7.filter((d) => d.total >= presc).length;
-  const anillos = [["Fuerza", fza / (presc * 0.55), "#86efac"], ["Cardio", car / (presc * 0.45), "#22d3ee"], ["Días cumplidos", cumplidos / 7, "#fbbf24"]];
+  const anillos = [["Strength", fza / (presc * 0.55), "#86efac"], ["Cardio", car / (presc * 0.45), "#22d3ee"], ["Days met", cumplidos / 7, "#fbbf24"]];
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
-      <Tarjeta titulo="Metas de la semana">
+      <Tarjeta titulo="Goals this week">
         <div className="flex flex-wrap items-center justify-around gap-4">
           {anillos.map(([nom, p, col]) => (
             <div key={nom} className="flex flex-col items-center gap-1">
@@ -298,7 +298,7 @@ function Huesos({ t, data, dias }) {
           ))}
         </div>
       </Tarjeta>
-      <PorDiaSemana t={t} data={data} dias={dias} color="#86efac" titulo="% de lo prescrito por día de la semana" unidad="%" />
+      <PorDiaSemana t={t} data={data} dias={dias} color="#86efac" titulo="% of prescribed by day of the week" unidad="%" />
     </div>
   );
 }
@@ -310,14 +310,14 @@ function CabinaHoras({ data, aid, dias }) {
   const n = Math.min(dias, data.vitals.length);
   const datos = data.vitals.slice(-n).map((v) => ({ dia: `D${diaMision(data.astronaut, v.fecha)}`, h: horasSobreLimite(v.fecha, aid, porFecha.get(v.fecha)?.co2_ppm, lim) }));
   return (
-    <Tarjeta titulo="Horas por día sobre 3,500 ppm">
+    <Tarjeta titulo="Hours per day above 3,500 ppm">
       <div style={{ height: 190 }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={datos} margin={{ top: 14, right: 6, left: -18, bottom: 0 }}>
             <CartesianGrid stroke={c.grid} vertical={false} />
             <XAxis dataKey="dia" stroke={c.muted} fontSize={11} tickLine={false} minTickGap={14} />
             <YAxis stroke={c.muted} fontSize={11} tickLine={false} width={40} domain={[0, 24]} ticks={[0, 6, 12, 18, 24]} />
-            <Tooltip {...tooltipEstilo(c)} cursor={{ fill: c.grid }} formatter={(v) => [`${v} h`, "Sobre el límite"]} />
+            <Tooltip {...tooltipEstilo(c)} cursor={{ fill: c.grid }} formatter={(v) => [`${v} h`, "Above the limit"]} />
             <Bar dataKey="h" radius={[4, 4, 0, 0]} maxBarSize={18} isAnimationActive={false}>
               {datos.map((x, i) => <Cell key={i} fill={x.h > 12 ? c.crit : x.h > 0 ? c.warn : "#94a3b8"} />)}
             </Bar>
@@ -340,12 +340,12 @@ export function GraficaExtra({ k, t, analisis, data, aid, dias }) {
   if (k === "huesos") return <Huesos t={t} data={data} dias={dias} />;
   if (k === "cabina") return <CabinaHoras data={data} aid={aid} dias={dias} />;
   if (k === "vision")
-    return <Calendario data={data} analisis={analisis} titulo="Síntomas de visión en la misión"
-      leyenda={[["rgba(148,163,184,0.28)", "Sin síntomas"], ["var(--color-warn)", "Con síntomas"]]}
-      colorDe={(ci) => (ci.vision_borrosa || ci.dolor_cabeza || ci.vision_cefalea ? ["var(--color-warn)", "con síntomas"] : ["rgba(148,163,184,0.28)", "sin síntomas"])} />;
+    return <Calendario data={data} analisis={analisis} titulo="Vision symptoms during the mission"
+      leyenda={[["rgba(148,163,184,0.28)", "No symptoms"], ["var(--color-warn)", "With symptoms"]]}
+      colorDe={(ci) => (ci.vision_borrosa || ci.dolor_cabeza || ci.vision_cefalea ? ["var(--color-warn)", "with symptoms"] : ["rgba(148,163,184,0.28)", "no symptoms"])} />;
   if (k === "conciencia")
-    return <Calendario data={data} analisis={analisis} titulo="Conciencia en la misión"
-      leyenda={[[ESTADO.normal.hex, "Alerta"], [ESTADO.atencion.hex, "Mareo"], [ESTADO.critico.hex, "Confusión"]]}
-      colorDe={(ci) => (ci.confusion ? [ESTADO.critico.hex, "confusión"] : ci.mareo_de_pie ? [ESTADO.atencion.hex, "mareo"] : [`color-mix(in oklab, ${ESTADO.normal.hex} 70%, transparent)`, "alerta"])} />;
+    return <Calendario data={data} analisis={analisis} titulo="Consciousness during the mission"
+      leyenda={[[ESTADO.normal.hex, "Alert"], [ESTADO.atencion.hex, "Dizziness"], [ESTADO.critico.hex, "Confusion"]]}
+      colorDe={(ci) => (ci.confusion ? [ESTADO.critico.hex, "confusion"] : ci.mareo_de_pie ? [ESTADO.atencion.hex, "dizziness"] : [`color-mix(in oklab, ${ESTADO.normal.hex} 70%, transparent)`, "alert"])} />;
   return null;
 }

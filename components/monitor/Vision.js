@@ -23,7 +23,7 @@ export function semanasVision(data, analisis, n = 8) {
 export default function MonitorVision({ data, analisis, t }) {
   const semanas = semanasVision(data, analisis);
   return (
-    <Marco titulo="Visión · 8 semanas" color={MON.blanco} etiquetaVivo="CHECK-IN" valor={t.texto} sub={t.estado === "normal" ? "Sin síntomas hoy" : t.etiqueta}>
+    <Marco titulo="Vision · 8 weeks" color={MON.blanco} etiquetaVivo="CHECK-IN" valor={t.texto} sub={t.estado === "normal" ? "No symptoms today" : t.etiqueta}>
       <div className="grid h-full grid-cols-4 gap-1.5 sm:grid-cols-8 sm:gap-2">
         {semanas.map((s, i) => (
           <div key={s.desde} className="flex flex-col items-center justify-center gap-0.5 rounded-xl border"
@@ -31,7 +31,7 @@ export default function MonitorVision({ data, analisis, t }) {
             <span className="text-lg leading-none" style={{ color: s.amsler === "distorsion" ? MON.rojo : s.amsler ? MON.verde : MON.tenue }}>{s.amsler === "distorsion" ? "✕" : s.amsler ? "✓" : "—"}</span>
             <span className="text-[9px] tracking-wider" style={{ color: MON.tenue }}>AMSLER</span>
             <span className="num text-sm font-semibold" style={{ color: s.sintomas ? MON.ambar : MON.blanco }}>{s.sintomas} d</span>
-            <span className="text-[9px]" style={{ color: MON.tenue }}>{i === semanas.length - 1 ? "Esta sem." : `−${semanas.length - 1 - i} sem.`}</span>
+            <span className="text-[9px]" style={{ color: MON.tenue }}>{i === semanas.length - 1 ? "This wk" : `−${semanas.length - 1 - i} wk`}</span>
           </div>
         ))}
       </div>

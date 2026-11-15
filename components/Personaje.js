@@ -4,7 +4,7 @@ import { useId } from "react";
 export const ORDEN_VITALES = ["fc", "spo2", "pa", "fr", "temp", "conciencia"];
 export const ORDEN_ESPACIO = ["radiacion", "vision", "huesos", "cabina"];
 export const ORDEN_MENTAL = ["sueno", "animo"];
-export const GRUPOS = { vitales: "Signos vitales", espacio: "Salud en el espacio", mental: "Salud mental y bienestar" };
+export const GRUPOS = { vitales: "Vital signs", espacio: "Space health", mental: "Mental health and well-being" };
 export const CATEGORIAS = [["vitales", ORDEN_VITALES], ["espacio", ORDEN_ESPACIO], ["mental", ORDEN_MENTAL]];
 
 export const ESTADOS_PERSONAJE = {
@@ -22,7 +22,7 @@ export function estadoPersonaje(analisis) {
   const porK = Object.fromEntries(analisis.tarjetas.map((t) => [t.k, t]));
   const act = analisis.actividad || {};
   if (analisis.radiacion?.activo) return "radiacion";
-  if (act.fiebre || porK.temp?.etiqueta === "Fiebre") return "fiebre";
+  if (act.fiebre || porK.temp?.etiqueta === "Fever") return "fiebre";
   if (act.estado === "ejercicio" || act.estado === "recuperacion") return "esfuerzo";
   if (analisis.general !== "normal" && porK.sueno && porK.sueno.estado === analisis.general) return "fatiga";
   if (analisis.general === "critico") return "critico";
@@ -38,7 +38,7 @@ export default function Personaje({ estado = "estable", className = "" }) {
       <div aria-hidden className="halo-pulso pointer-events-none absolute left-1/2 top-[46%] aspect-square w-[78%] max-w-[350px] -translate-x-1/2 -translate-y-1/2 rounded-full border transition-all duration-700"
         style={{ borderColor: `${E.color}66`, boxShadow: `0 0 0 26px rgba(255,255,255,0.025), 0 0 0 65px rgba(255,255,255,0.02), 0 0 60px ${E.color}55, inset 0 0 40px ${E.color}22` }} />
       <div className="absolute inset-0 grid place-items-center">
-        <svg viewBox="0 0 260 350" className="astro-float h-full max-h-full max-w-full transition-[filter] duration-700" style={{ filter: `drop-shadow(0 0 25px ${E.color}66)` }} role="img" aria-label={`Astronauta: ${estado}`}>
+        <svg viewBox="0 0 260 350" className="astro-float h-full max-h-full max-w-full transition-[filter] duration-700" style={{ filter: `drop-shadow(0 0 25px ${E.color}66)` }} role="img" aria-label={`Astronaut: ${estado}`}>
           <defs>
             <linearGradient id={`suit-${uid}`} x1="0" y1="0" x2="1" y2="1">
               <stop stopColor="#fff4e8" />

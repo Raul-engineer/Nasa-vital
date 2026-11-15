@@ -11,9 +11,9 @@ export default function AstronautCard({ astronaut, profile, duracion = 500 }) {
   const dia = astronaut?.dia_mision ?? 0;
   const avance = Math.max(0, Math.min(1, dia / duracion));
   const datos = [
-    ["Edad", profile?.edad ? `${profile.edad} años` : "—"],
-    ["Sexo", profile?.sexo || "—"],
-    ["Sangre", profile?.tipo_sangre || "—"],
+    ["Age", profile?.edad ? `${profile.edad} years` : "—"],
+    ["Sex", profile?.sexo || "—"],
+    ["Blood", profile?.tipo_sangre || "—"],
   ];
   return (
     <div data-theme="dark" className="mx-auto w-full max-w-[460px] text-fg">
@@ -25,9 +25,9 @@ export default function AstronautCard({ astronaut, profile, duracion = 500 }) {
         </Layer>
 
         <Layer z={28} className="absolute left-5 right-24 top-5">
-          <div className="text-[11px] uppercase tracking-widest text-accent">Identificación de tripulación</div>
+          <div className="text-[11px] uppercase tracking-widest text-accent">Crew identification</div>
           <div className="mt-1 truncate text-xl font-semibold leading-tight">{astronaut?.nombre ?? "…"}</div>
-          <div className="truncate text-sm text-muted">{astronaut?.rol ?? ""} · Misión Marte</div>
+          <div className="truncate text-sm text-muted">{astronaut?.rol ?? ""} · Mars mission</div>
         </Layer>
 
         <Layer z={60} className="absolute right-5 top-5">
@@ -47,9 +47,9 @@ export default function AstronautCard({ astronaut, profile, duracion = 500 }) {
           </div>
           <div className="flex items-end justify-between gap-3">
             <div className="text-xl font-semibold leading-tight">
-              Día {dia} <span className="text-sm font-normal text-muted">/ {duracion}</span>
+              Day {dia} <span className="text-sm font-normal text-muted">/ {duracion}</span>
             </div>
-            <div className="text-xs text-muted">{Math.round(avance * 100)} % de la misión</div>
+            <div className="text-xs text-muted">{Math.round(avance * 100)} % of the mission</div>
           </div>
           <div className="mt-1.5 h-1.5 rounded-full bg-ink/15">
             <div className="h-full rounded-full bg-gradient-to-r from-accent to-violet" style={{ width: `${avance * 100}%` }} />

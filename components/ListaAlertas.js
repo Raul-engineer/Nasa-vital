@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import CyberButton from "./CyberButton";
 import { COLOR_GRAVEDAD, ORDEN_GRAVEDAD } from "@/lib/analysis";
 
-const CORTO = { fc: "FC", pa: "Presión", fr: "FR", temp: "Temperatura", spo2: "SpO₂", conciencia: "Conciencia", radiacion: "Radiación", vision: "Visión", huesos: "Huesos", cabina: "CO₂", sueno: "Sueño", animo: "Ánimo" };
-const UNIDAD = { fc: "lpm", pa: "", fr: "rpm", temp: "°C", spo2: "%", conciencia: "", radiacion: "µSv/h", vision: "", huesos: "%", cabina: "ppm", sueno: "h", animo: "/100" };
-const TOOLTIP_VIDA = "Indicador orientativo calculado con tus alertas activas. No es un diagnóstico.";
+const CORTO = { fc: "HR", pa: "Pressure", fr: "RR", temp: "Temperature", spo2: "SpO₂", conciencia: "Consciousness", radiacion: "Radiation", vision: "Vision", huesos: "Bones", cabina: "CO₂", sueno: "Sleep", animo: "Mood" };
+const UNIDAD = { fc: "bpm", pa: "", fr: "br/min", temp: "°C", spo2: "%", conciencia: "", radiacion: "µSv/h", vision: "", huesos: "%", cabina: "ppm", sueno: "h", animo: "/100" };
+const TOOLTIP_VIDA = "Guidance indicator calculated from your active alerts. It is not a diagnosis.";
 const memoria = {};
 
 const llave = (aid) => `quickfix_alertas_${aid}`;
@@ -20,7 +20,7 @@ function registro(aid) {
 }
 
 export function valorCorto(t) {
-  if (t.k === "conciencia") return `Conciencia: ${t.estado === "normal" ? t.texto : t.etiqueta}`;
+  if (t.k === "conciencia") return `Consciousness: ${t.estado === "normal" ? t.texto : t.etiqueta}`;
   return `${CORTO[t.k] || t.nombre} ${t.texto}${UNIDAD[t.k] ? ` ${UNIDAD[t.k]}` : ""}`;
 }
 
@@ -67,19 +67,19 @@ export function useAlertasActivas(analisis, aid) {
 }
 
 export const FILTROS = ["critico", "urgente", "moderado", "info"];
-const NOMBRE_BOTON = { critico: "Críticas", urgente: "Urgentes", moderado: "Moderadas", info: "Esfuerzo" };
+const NOMBRE_BOTON = { critico: "Critical", urgente: "Urgent", moderado: "Moderate", info: "Exertion" };
 
 export function BotonesGravedad({ items, filtro, onFiltro }) {
   if (!items.length)
     return (
       <div className="flex justify-end" data-botones-gravedad data-sin-alertas>
         <span className="inline-flex items-center gap-2 rounded-full border border-ok/50 bg-ok/10 px-4 py-2 text-sm font-semibold text-ok">
-          <span aria-hidden>✓</span> Sin alertas · todo estable
+          <span aria-hidden>✓</span> No alerts · all stable
         </span>
       </div>
     );
   return (
-    <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1 min-[900px]:justify-end" role="group" aria-label="Filtrar alertas por gravedad" data-botones-gravedad>
+    <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1 min-[900px]:justify-end" role="group" aria-label="Filter alerts by severity" data-botones-gravedad>
       {FILTROS.map((f) => {
         const n = items.filter((a) => a.nivel === f).length;
         const activo = filtro === f;
@@ -87,7 +87,7 @@ export function BotonesGravedad({ items, filtro, onFiltro }) {
         return (
           <CyberButton key={f} onClick={() => onFiltro(activo ? null : f)} disabled={!n} activo={activo} atajo={n} texto={NOMBRE_BOTON[f]}
             className={`cyber-color shrink-0 ${atenuado ? "cyber-atenuado" : ""}`} style={{ "--c": COLOR_GRAVEDAD[f] }}
-            aria-pressed={activo} aria-label={`${NOMBRE_BOTON[f]}: ${n} ${n === 1 ? "alerta" : "alertas"}`} data-filtro={f} data-cuenta={n}>
+            aria-pressed={activo} aria-label={`${NOMBRE_BOTON[f]}: ${n} ${n === 1 ? "alert" : "alerts"}`} data-filtro={f} data-cuenta={n}>
             {NOMBRE_BOTON[f]}
           </CyberButton>
         );
@@ -101,9 +101,9 @@ export function BarraVida({ salud }) {
   const critico = salud.clave === "critico";
   return (
     <div className="mx-auto flex w-[50%] min-w-[280px] items-center gap-3 rounded-full border border-white/12 bg-black/25 px-4 py-2 text-[15px] backdrop-blur-sm" title={TOOLTIP_VIDA}
-      role="meter" aria-label="Salud" aria-valuemin={0} aria-valuemax={100} aria-valuenow={salud.valor} aria-valuetext={salud.palabra} data-salud={salud.clave}>
+      role="meter" aria-label="Health" aria-valuemin={0} aria-valuemax={100} aria-valuenow={salud.valor} aria-valuetext={salud.palabra} data-salud={salud.clave}>
       <span className="flex shrink-0 items-center gap-1.5 font-semibold text-soft">
-        <span aria-hidden style={{ color: salud.color }}>♥</span> Salud
+        <span aria-hidden style={{ color: salud.color }}>♥</span> Health
       </span>
       <span className="relative h-[14px] flex-1 overflow-hidden rounded-full bg-white/10">
         <span className={`vida-relleno absolute inset-y-0 left-0 rounded-full ${critico ? "vida-pulsa" : ""}`}

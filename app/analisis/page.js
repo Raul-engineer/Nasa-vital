@@ -15,16 +15,16 @@ import { useAstronautId, useQuickFix } from "@/lib/useQuickFix";
 import { VARIABLES } from "@/lib/analysis";
 import { ESTADO_DE_NIVEL, nivelAlerta, PRIORIDAD_NIVEL } from "@/lib/cuerpo";
 
-const ESTADO_TXT = { normal: "Bien", atencion: "Precaución", critico: "Actúa ahora" };
+const ESTADO_TXT = { normal: "Good", atencion: "Caution", critico: "Act now" };
 const CATEGORIAS = {
-  vitales: { nombre: "Signos vitales", claves: ["fc", "pa", "fr", "temp", "spo2", "conciencia"] },
-  espacio: { nombre: "Salud en el espacio", claves: ["radiacion", "vision", "huesos", "cabina"] },
-  mente: { nombre: "Mente y bienestar", claves: ["sueno", "animo"] },
+  vitales: { nombre: "Vital signs", claves: ["fc", "pa", "fr", "temp", "spo2", "conciencia"] },
+  espacio: { nombre: "Space health", claves: ["radiacion", "vision", "huesos", "cabina"] },
+  mente: { nombre: "Mind and well-being", claves: ["sueno", "animo"] },
 };
 const PESTANAS = ["alertas", "vitales", "espacio", "mente", "completo", "registro"];
 const ORDEN = [...CATEGORIAS.vitales.claves, ...CATEGORIAS.espacio.claves, ...CATEGORIAS.mente.claves];
-const CORTO = { fc: "FC", pa: "Presión", fr: "FR", temp: "Temperatura", spo2: "SpO₂", conciencia: "Conciencia", radiacion: "Radiación", vision: "Visión", huesos: "Huesos", cabina: "Cabina", sueno: "Sueño", animo: "Ánimo" };
-const UNIDAD = { fc: "lpm", pa: "", fr: "rpm", temp: "°C", spo2: "%", conciencia: "", radiacion: "µSv/h", vision: "", huesos: "%", cabina: "ppm", sueno: "h", animo: "/100" };
+const CORTO = { fc: "HR", pa: "Pressure", fr: "RR", temp: "Temperature", spo2: "SpO₂", conciencia: "Consciousness", radiacion: "Radiation", vision: "Vision", huesos: "Bones", cabina: "Cabin", sueno: "Sleep", animo: "Mood" };
+const UNIDAD = { fc: "bpm", pa: "", fr: "br/min", temp: "°C", spo2: "%", conciencia: "", radiacion: "µSv/h", vision: "", huesos: "%", cabina: "ppm", sueno: "h", animo: "/100" };
 
 const categoriaDe = (k) => Object.keys(CATEGORIAS).find((c) => CATEGORIAS[c].claves.includes(k)) || "vitales";
 
@@ -96,8 +96,8 @@ export default function Analisis() {
     if (nueva !== `${window.location.pathname}${window.location.search}`) router.replace(nueva, { scroll: false });
   }, [tab, seleccion, ficha, router]);
 
-  if (error) return <div className="p-10 text-crit">No se pudieron cargar los datos: {error}</div>;
-  if (loading || !analisis || !tab) return <div className="flex min-h-screen items-center justify-center text-muted">Cargando análisis…</div>;
+  if (error) return <div className="p-10 text-crit">Could not load the data: {error}</div>;
+  if (loading || !analisis || !tab) return <div className="flex min-h-screen items-center justify-center text-muted">Loading analysis…</div>;
 
   const { astronaut, astronauts } = data;
   const { porK, niveles, lista } = info;
@@ -119,11 +119,11 @@ export default function Analisis() {
 
   return (
     <Shell active="/analisis" astronaut={astronaut} astronauts={astronauts} onAstronaut={(id) => { setAid(id); setVari(null); }} astronautId={aid} analisis={analisis} onAbrirFicha={setFicha}>
-      <EncabezadoPagina titulo="Análisis" sub={`${12 - fuera} de 12 signos en rango`} derecha={<ChipEstado estado={analisis.general}>{ESTADO_TXT[analisis.general]}</ChipEstado>} />
+      <EncabezadoPagina titulo="Analysis" sub={`${12 - fuera} of 12 signs in range`} derecha={<ChipEstado estado={analisis.general}>{ESTADO_TXT[analisis.general]}</ChipEstado>} />
 
-      <nav aria-label="Pestañas de análisis" className="no-scrollbar -mx-1 mb-4 flex gap-1.5 overflow-x-auto px-1 pb-1 min-[900px]:flex-wrap" role="tablist">
+      <nav aria-label="Analysis tabs" className="no-scrollbar -mx-1 mb-4 flex gap-1.5 overflow-x-auto px-1 pb-1 min-[900px]:flex-wrap" role="tablist">
         {PESTANAS.map((p) => {
-          const nombre = p === "alertas" ? "⚠ Alertas" : p === "completo" ? "Completo" : p === "registro" ? "Registro" : CATEGORIAS[p].nombre;
+          const nombre = p === "alertas" ? "⚠ Alerts" : p === "completo" ? "Complete" : p === "registro" ? "Log" : CATEGORIAS[p].nombre;
           const nCat = p in CATEGORIAS ? CATEGORIAS[p].claves.filter((k) => lista.includes(k)) : [];
           return (
             <BotonPestana key={p} onClick={() => cambiarTab(p)} activo={tab === p} role="tab" aria-selected={tab === p} data-tab={p} className="shrink-0">
@@ -143,18 +143,18 @@ export default function Analisis() {
       ) : tab === "alertas" && lista.length === 0 ? (
         <section className="glass flex flex-col items-center gap-4 px-6 py-10 text-center" data-todo-estable style={{ borderColor: "color-mix(in oklab, var(--color-ok) 45%, transparent)" }}>
           <span className="grid h-14 w-14 place-items-center rounded-full border-2 border-ok/60 bg-ok/10 text-2xl text-ok">✓</span>
-          <div className="font-display text-xl font-semibold text-ok">Todo estable · tus 12 signos están en rango</div>
-          <CyberButton onClick={() => cambiarTab("completo")} texto="Ver análisis completo">Ver análisis completo</CyberButton>
+          <div className="font-display text-xl font-semibold text-ok">All stable · your 12 signs are in range</div>
+          <CyberButton onClick={() => cambiarTab("completo")} texto="View full analysis">View full analysis</CyberButton>
         </section>
       ) : (
         <>
-          <div className="mb-5 flex flex-wrap gap-2" role="tablist" aria-label="Signos">
+          <div className="mb-5 flex flex-wrap gap-2" role="tablist" aria-label="Signs">
             {visibles.map((k) => porK[k] && <Chip key={k} t={porK[k]} nivel={niveles[k]} activo={k === seleccion} onClick={() => elegir(k)} />)}
           </div>
           {seleccion && (
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
-              <span className="text-sm text-soft">¿Por qué pasó y qué hago?</span>
-              <CyberButton onClick={() => setFicha(seleccion)} tam="sm" texto="Abrir ficha" data-abrir-ficha={seleccion}>Abrir ficha</CyberButton>
+              <span className="text-sm text-soft">Why did it happen and what do I do?</span>
+              <CyberButton onClick={() => setFicha(seleccion)} tam="sm" texto="Open card" data-abrir-ficha={seleccion}>Open card</CyberButton>
             </div>
           )}
           {seleccion && <VistaVariable key={`${aid}-${seleccion}`} k={seleccion} analisis={analisis} data={data} aid={aid} />}

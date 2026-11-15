@@ -9,7 +9,7 @@ import { fmtNum } from "@/components/Widgets";
 import { NOMBRE_SINTOMA } from "@/lib/analysis";
 import { useQuickFix } from "@/lib/useQuickFix";
 
-const TIP_URGENCIA = "Calculada con NEWS2, la escala que usan los hospitales para detectar deterioro.";
+const TIP_URGENCIA = "Calculated with NEWS2, the scale hospitals use to detect deterioration.";
 export const ORDEN_VISUAL = [...ORDEN_VITALES, ...ORDEN_ESPACIO, ...ORDEN_MENTAL];
 
 export function motivoGeneral(analisis, porK) {
@@ -25,28 +25,28 @@ export function motivoGeneral(analisis, porK) {
 }
 
 export function secundario(t, analisis) {
-  if (t.estado === "info") return t.etiqueta || "Esfuerzo";
+  if (t.estado === "info") return t.etiqueta || "Exertion";
   switch (t.k) {
     case "fc":
-      return `VFC ${t.vfc ?? "—"} ms`;
+      return `HRV ${t.vfc ?? "—"} ms`;
     case "spo2":
-      return t.estado === "normal" ? "En rango" : t.etiqueta;
+      return t.estado === "normal" ? "In range" : t.etiqueta;
     case "pa":
-      return t.valor != null && t.valor2 != null ? `Media ${Math.round(t.valor2 + (t.valor - t.valor2) / 3)} mmHg` : "Sin medición";
+      return t.valor != null && t.valor2 != null ? `Mean ${Math.round(t.valor2 + (t.valor - t.valor2) / 3)} mmHg` : "No reading";
     case "fr":
-      return t.estado === "normal" ? "En rango" : t.etiqueta;
+      return t.estado === "normal" ? "In range" : t.etiqueta;
     case "temp":
-      return t.sintomas?.length ? `Síntomas: ${t.sintomas.map((x) => NOMBRE_SINTOMA[x] || x).join(", ")}` : "Sin síntomas";
+      return t.sintomas?.length ? `Symptoms: ${t.sintomas.map((x) => NOMBRE_SINTOMA[x] || x).join(", ")}` : "No symptoms";
     case "conciencia":
-      return analisis.checkinHoy?.mareo_de_pie ? "Con mareo" : "Sin mareo";
+      return analisis.checkinHoy?.mareo_de_pie ? "Dizzy" : "No dizziness";
     case "radiacion":
-      return `Acumulado ${fmtNum(analisis.radiacion.carrera)} mSv`;
+      return `Cumulative ${fmtNum(analisis.radiacion.carrera)} mSv`;
     case "huesos":
-      return `Fuerza ${t.fuerza ?? "—"} · cardio ${t.cardio ?? "—"} min`;
+      return `Strength ${t.fuerza ?? "—"} · cardio ${t.cardio ?? "—"} min`;
     case "sueno":
-      return `Reacción ${t.reaccion ?? "—"} ms`;
+      return `Reaction ${t.reaccion ?? "—"} ms`;
     case "animo":
-      return `Estrés ${t.estres ?? "—"}/5 · tripulación ${t.tripulacion ?? "—"}/5`;
+      return `Stress ${t.estres ?? "—"}/5 · crew ${t.tripulacion ?? "—"}/5`;
     default:
       return t.secundario;
   }
@@ -57,7 +57,7 @@ export const palabraEstado = (t) => (t.estado === "normal" ? "Normal" : t.etique
 export function Flecha({ t }) {
   const c = t.cambio7;
   const g = c == null || !Number.isFinite(c) ? "→" : c > 0.02 ? "↗" : c < -0.02 ? "↘" : "→";
-  return <span className="text-lg leading-none text-[#a5b4ff]" aria-label={g === "↗" ? "subiendo" : g === "↘" ? "bajando" : "estable"}>{g}</span>;
+  return <span className="text-lg leading-none text-[#a5b4ff]" aria-label={g === "↗" ? "rising" : g === "↘" ? "falling" : "stable"}>{g}</span>;
 }
 
 export function DiasConciencia({ t }) {
@@ -82,7 +82,7 @@ function Encabezado({ t }) {
   );
 }
 
-function Tarjeta({ t, onClick, className, accion = "Ver análisis", extra, children, base = "flex flex-col justify-between p-[18px]", estilo, sinBrillo = false, cyber = false }) {
+function Tarjeta({ t, onClick, className, accion = "View analysis", extra, children, base = "flex flex-col justify-between p-[18px]", estilo, sinBrillo = false, cyber = false }) {
   const clase = cyber
     ? `tarjeta-cyber ${base} text-left ${className}`
     : `glass glass-hover ${base} text-left ${sinBrillo ? "" : t.estado === "critico" ? "glow-crit" : t.estado === "atencion" ? "glow-warn" : t.estado === "info" ? "glow-info" : ""} ${className}`;
@@ -135,7 +135,7 @@ export function Mini({ t, analisis, onClick, ancha = false, extra, accion }) {
       <Encabezado t={t} />
       <span className="pointer-events-none relative my-2 whitespace-nowrap">
         <span className={`font-display text-[clamp(22px,2.2vw,26px)] font-semibold tracking-[-0.7px] ${t.estado === "normal" ? "" : E.color}`}>{t.texto}</span>
-        {t.unidad && <span className="ml-1 text-xs text-muted">{t.k === "sueno" ? "horas" : t.unidad}</span>}
+        {t.unidad && <span className="ml-1 text-xs text-muted">{t.k === "sueno" ? "hours" : t.unidad}</span>}
       </span>
       <span className="pointer-events-none relative flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <small className="min-w-0 truncate text-[11px] text-[#9ea4c4]">{secundario(t, analisis)}</small>
@@ -149,7 +149,7 @@ export function Seccion({ glifo, titulo, n }) {
   return (
     <div className="mb-[13px] mt-[26px] flex items-center justify-between gap-2.5 px-0.5">
       <h2 className="text-lg font-semibold">{glifo} {titulo}</h2>
-      <span className="text-[11px] tracking-wider text-[#a9aed0]">{String(n).padStart(2, "0")} INDICADORES</span>
+      <span className="text-[11px] tracking-wider text-[#a9aed0]">{String(n).padStart(2, "0")} INDICATORS</span>
     </div>
   );
 }
@@ -157,9 +157,9 @@ export function Seccion({ glifo, titulo, n }) {
 export function Urgencia({ nivel }) {
   return (
     <span className="flex items-center gap-1.5">
-      <ChipGeneral estado={nivel.estado}>Signos vitales: urgencia {nivel.txt.toLowerCase()}</ChipGeneral>
+      <ChipGeneral estado={nivel.estado}>Vital signs: {nivel.txt.toLowerCase()} urgency</ChipGeneral>
       <span className="group relative inline-flex">
-        <button type="button" aria-label="¿Cómo se calcula la urgencia?" aria-describedby="tip-urgencia"
+        <button type="button" aria-label="How is urgency calculated?" aria-describedby="tip-urgencia"
           className="flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-white/[0.06] text-xs font-semibold text-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">
           ?
         </button>
@@ -175,16 +175,16 @@ export function Urgencia({ nivel }) {
 export function PanelAstronauta({ analisis, motivo }) {
   const estado = estadoPersonaje(analisis);
   const eg = analisis.general;
-  const palabra = eg === "critico" ? "Actúa ahora" : eg === "atencion" ? "Atención" : "Estable";
+  const palabra = eg === "critico" ? "Act now" : eg === "atencion" ? "Attention" : "Stable";
   return (
     <article className="glass relative col-span-2 min-h-[330px] overflow-hidden p-6 min-[640px]:col-span-3 min-[1100px]:col-span-1 min-[1100px]:col-start-4 min-[1100px]:row-span-2 min-[1100px]:row-start-1"
-      style={{ background: "linear-gradient(130deg, #1d2350aa, #1b202a99), var(--glass)" }} aria-label="Estado del astronauta">
+      style={{ background: "linear-gradient(130deg, #1d2350aa, #1b202a99), var(--glass)" }} aria-label="Astronaut status">
       <div className="absolute bottom-[5%] right-[2%] h-[85%] w-[56%]">
         <Personaje estado={estado} />
       </div>
       <div className="relative z-10 flex h-full max-w-[52%] flex-col justify-end gap-2.5">
         <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#8f86ff45] bg-[#8f86ff1b] px-2.5 py-1.5 text-[11px] text-[#c9d2ff]">
-          <span className="dot-estado text-ok" /> EN VIVO
+          <span className="dot-estado text-ok" /> LIVE
         </span>
         <h2 className={`text-[clamp(26px,2.6vw,34px)] font-semibold leading-tight tracking-[-0.8px] ${ESTADO[eg].color}`}>{palabra}</h2>
         {motivo && <div className="truncate text-[13px] text-[#c3c8e4]">{motivo}</div>}
@@ -196,8 +196,8 @@ export function PanelAstronauta({ analisis, motivo }) {
 export default function PanelTripulante({ astronautId, onVer }) {
   const router = useRouter();
   const { analisis, loading, error } = useQuickFix(astronautId);
-  if (error) return <div className="glass p-6 text-crit">No se pudieron cargar los datos: {error}</div>;
-  if (loading || !analisis) return <div className="glass grid min-h-[330px] place-items-center text-muted">Cargando…</div>;
+  if (error) return <div className="glass p-6 text-crit">Could not load the data: {error}</div>;
+  if (loading || !analisis) return <div className="glass grid min-h-[330px] place-items-center text-muted">Loading…</div>;
   const porK = Object.fromEntries(analisis.tarjetas.map((t) => [t.k, t]));
   const motivo = motivoGeneral(analisis, porK);
   const ir = onVer || ((k) => router.push(`/analisis?var=${k}&a=${astronautId}`));
@@ -244,7 +244,7 @@ export function Detalle({ t, analisis }) {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <span className="whitespace-nowrap">
           <span className="font-display text-[34px] font-semibold leading-none tracking-[-0.8px]" style={t.estado === "normal" ? { color: "#eef0ff" } : { color: E.hex }}>{t.texto}</span>
-          {t.unidad && <span className="ml-1.5 text-xs text-muted">{t.k === "sueno" ? "horas" : t.unidad}</span>}
+          {t.unidad && <span className="ml-1.5 text-xs text-muted">{t.k === "sueno" ? "hours" : t.unidad}</span>}
         </span>
         <span className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: E.hex }}><span className="dot-estado" />{palabraEstado(t)}</span>
       </div>

@@ -71,17 +71,17 @@ export default function MonitorRadiacion({ analisis }) {
   const R = UMBRALES.radiacion;
   const colPct = (p) => (tormenta || p >= R.criticoPct ? MON.rojo : p >= R.atencionPct ? MON.ambar : color);
   return (
-    <Marco titulo={tormenta ? `Dosímetro · tormenta ${r.activo.nivel}` : "Dosímetro personal"} color={color}
+    <Marco titulo={tormenta ? `Dosimeter · storm ${r.activo.nivel}` : "Personal dosimeter"} color={color}
       valor={<span key={lectura.n} className="parpadeo inline-block">{Math.round(r.tasa)}</span>} unidad="µSv/h"
-      sub={`Hoy ${r.hoy.toFixed(2)} mSv · base ${Math.round(r.tasaBase)} µSv/h`}>
+      sub={`Today ${r.hoy.toFixed(2)} mSv · baseline ${Math.round(r.tasaBase)} µSv/h`}>
       <div className="grid h-full grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
         <div className="relative min-h-[60px] rounded-xl border p-2" style={{ borderColor: `${color}44`, background: tormenta ? `${MON.rojo}14` : "transparent" }}>
-          <div className="absolute left-2 top-1 text-[9px] tracking-[0.16em]" style={{ color: MON.tenue }}>CONTADOR</div>
+          <div className="absolute left-2 top-1 text-[9px] tracking-[0.16em]" style={{ color: MON.tenue }}>COUNTER</div>
           <div className="absolute inset-x-2 bottom-2 top-5"><Geiger tasa={lectura.v} color={color} /></div>
         </div>
         <div className="flex items-center justify-center gap-2">
-          <Semicirculo pct={r.pct} color={colPct(r.pct)} etiqueta="CARRERA" valor={`${Math.round(r.carrera)} / ${R.limiteCarrera} mSv`} />
-          <Semicirculo pct={r.pct30} color={colPct(r.pct30)} etiqueta="30 DÍAS" valor={`${Math.round(r.ventana30)} / ${R.limite30d} mSv`} />
+          <Semicirculo pct={r.pct} color={colPct(r.pct)} etiqueta="CAREER" valor={`${Math.round(r.carrera)} / ${R.limiteCarrera} mSv`} />
+          <Semicirculo pct={r.pct30} color={colPct(r.pct30)} etiqueta="30 DAYS" valor={`${Math.round(r.ventana30)} / ${R.limite30d} mSv`} />
         </div>
       </div>
     </Marco>

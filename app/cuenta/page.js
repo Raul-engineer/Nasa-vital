@@ -69,17 +69,17 @@ export default function Cuenta() {
     if (r.error) return setErrores({ nombre: r.error });
     setErrores({});
     setCuenta({ ...cuenta, ...r.cuenta });
-    setMsg("Datos de la cuenta guardados");
+    setMsg("Account details saved");
   };
 
   const guardarClave = (e) => {
     e.preventDefault();
-    if (claves.nueva !== claves.repetir) return setErrores({ repetir: "Las contraseñas no coinciden" });
+    if (claves.nueva !== claves.repetir) return setErrores({ repetir: "The passwords do not match" });
     const r = cambiarClave(cuenta.correo, claves.actual, claves.nueva);
     if (r.error) return setErrores({ [r.error.includes("actual") ? "actual" : "nueva"]: r.error });
     setErrores({});
     setClaves({ actual: "", nueva: "", repetir: "" });
-    setMsg("Contraseña actualizada");
+    setMsg("Password updated");
   };
 
   const cambiarPref = (k) => (v) => setPrefs(guardarPrefs({ [k]: v }));
@@ -89,18 +89,18 @@ export default function Cuenta() {
     router.replace("/acceso");
   };
 
-  const desde = cuenta?.desde ? new Date(cuenta.desde).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" }) : "—";
+  const desde = cuenta?.desde ? new Date(cuenta.desde).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) : "—";
   const sucio = cuenta && (nombre.trim() !== cuenta.nombre || (cuenta.rol !== "medico" && Number(puesto) !== Number(cuenta.astronautId)));
 
   return (
     <Shell astronaut={data?.astronaut} astronauts={data?.astronauts || []} onAstronaut={setAid} astronautId={aid} analisis={analisis}>
-      <EncabezadoPagina titulo="Configuración de la cuenta" sub="Tus datos de acceso y preferencias" />
+      <EncabezadoPagina titulo="Account settings" sub="Your sign-in details and preferences" />
       {!cuenta ? (
-        <div className="glass p-6 text-muted">Cargando cuenta…</div>
+        <div className="glass p-6 text-muted">Loading account…</div>
       ) : (
         <div className="grid gap-4 min-[1100px]:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
           <div className="grid content-start gap-4">
-            <Bloque titulo="Datos de la cuenta">
+            <Bloque titulo="Account details">
               <div className="mb-5 flex items-center gap-4">
                 <Iniciales nombre={nombre || cuenta.nombre} tam={60} />
                 <div className="min-w-0">
@@ -110,64 +110,64 @@ export default function Cuenta() {
                 </div>
               </div>
               <form onSubmit={guardarDatos} className="grid gap-4">
-                <Fila etiqueta="Nombre completo" ayuda={errores.nombre}>
+                <Fila etiqueta="Full name" ayuda={errores.nombre}>
                   <input className={`campo ${errores.nombre ? "campo-error" : ""}`} value={nombre} onChange={(e) => setNombre(e.target.value)} autoComplete="name" />
                 </Fila>
-                <Fila etiqueta="Correo electrónico">
+                <Fila etiqueta="Email">
                   <input className="campo opacity-70" value={cuenta.correo} readOnly aria-readonly="true" />
                 </Fila>
                 {cuenta.rol === "medico" ? (
-                  <Fila etiqueta="Acceso">
-                    <input className="campo opacity-70" value={`Toda la tripulación${cuenta.cedula ? ` · cédula ${cuenta.cedula}` : ""}`} readOnly />
+                  <Fila etiqueta="Access">
+                    <input className="campo opacity-70" value={`Whole crew${cuenta.cedula ? ` · license ${cuenta.cedula}` : ""}`} readOnly />
                   </Fila>
                 ) : (
-                  <Fila etiqueta="Puesto en la tripulación">
+                  <Fila etiqueta="Crew position">
                     <select className="campo" value={puesto} onChange={(e) => setPuesto(Number(e.target.value))}>
                       {PERFILES.map((p) => <option key={p.id} value={p.id}>{p.puesto}</option>)}
                     </select>
                   </Fila>
                 )}
                 <div className="flex justify-end">
-                  <CyberButton type="submit" disabled={!sucio} texto="Guardar cambios">Guardar cambios</CyberButton>
+                  <CyberButton type="submit" disabled={!sucio} texto="Save changes">Save changes</CyberButton>
                 </div>
               </form>
             </Bloque>
 
-            <Bloque titulo="Contraseña">
+            <Bloque titulo="Password">
               <form onSubmit={guardarClave} className="grid gap-4 min-[640px]:grid-cols-3">
-                <Fila etiqueta="Contraseña actual" ayuda={errores.actual}>
+                <Fila etiqueta="Current password" ayuda={errores.actual}>
                   <input type="password" className={`campo ${errores.actual ? "campo-error" : ""}`} value={claves.actual} onChange={(e) => setClaves({ ...claves, actual: e.target.value })} autoComplete="current-password" />
                 </Fila>
-                <Fila etiqueta="Nueva (mínimo 8)" ayuda={errores.nueva}>
+                <Fila etiqueta="New (at least 8)" ayuda={errores.nueva}>
                   <input type="password" className={`campo ${errores.nueva ? "campo-error" : ""}`} value={claves.nueva} onChange={(e) => setClaves({ ...claves, nueva: e.target.value })} autoComplete="new-password" />
                 </Fila>
-                <Fila etiqueta="Repetir nueva" ayuda={errores.repetir}>
+                <Fila etiqueta="Repeat new" ayuda={errores.repetir}>
                   <input type="password" className={`campo ${errores.repetir ? "campo-error" : ""}`} value={claves.repetir} onChange={(e) => setClaves({ ...claves, repetir: e.target.value })} autoComplete="new-password" />
                 </Fila>
                 <div className="flex justify-end min-[640px]:col-span-3">
-                  <CyberButton type="submit" disabled={!claves.actual || !claves.nueva} texto="Cambiar contraseña">Cambiar contraseña</CyberButton>
+                  <CyberButton type="submit" disabled={!claves.actual || !claves.nueva} texto="Change password">Change password</CyberButton>
                 </div>
               </form>
             </Bloque>
           </div>
 
           <div className="grid content-start gap-4">
-            <Bloque titulo="Preferencias">
+            <Bloque titulo="Preferences">
               <div className="grid gap-2.5">
-                <Interruptor activo={prefs.sonido} onCambio={cambiarPref("sonido")} etiqueta="Sonidos de Medic" detalle="Al abrir y cerrar la información de un signo" />
+                <Interruptor activo={prefs.sonido} onCambio={cambiarPref("sonido")} etiqueta="Medic sounds" detalle="When opening and closing a sign's information" />
               </div>
             </Bloque>
 
-            <Bloque titulo="Sesión">
+            <Bloque titulo="Session">
               <dl className="mb-5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-                <dt className="text-muted">Iniciada</dt>
+                <dt className="text-muted">Started</dt>
                 <dd>{desde}</dd>
-                <dt className="text-muted">Dispositivo</dt>
-                <dd>Este navegador</dd>
+                <dt className="text-muted">Device</dt>
+                <dd>This browser</dd>
               </dl>
               <button type="button" onClick={salir}
                 className="flex w-full items-center justify-center gap-2 rounded-2xl border border-[#ff727866] bg-[#ff727814] px-4 py-3 text-sm font-semibold text-crit transition hover:bg-[#ff727826]">
-                <span aria-hidden>⏻</span> Cerrar sesión
+                <span aria-hidden>⏻</span> Sign out
               </button>
             </Bloque>
           </div>

@@ -17,11 +17,11 @@ import {
 import { COLOR_NIVEL, ETIQUETA_NIVEL, TITULOS } from "@/lib/fichas";
 
 const DIA = 864e5;
-const NOMBRE_PESTANA = { alertas: "⚠ Alertas", completo: "Completo" };
+const NOMBRE_PESTANA = { alertas: "⚠ Alerts", completo: "Complete" };
 
 function hace(iso) {
   const d = Math.floor((Date.now() - Date.parse(iso)) / DIA);
-  return d <= 0 ? "hoy" : d === 1 ? "ayer" : `hace ${d} días`;
+  return d <= 0 ? "today" : d === 1 ? "yesterday" : `${d} days ago`;
 }
 
 function Tarjeta({ p, ultima, disp, aid }) {
@@ -32,14 +32,14 @@ function Tarjeta({ p, ultima, disp, aid }) {
       <div className="flex items-center justify-between gap-2">
         <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/15 text-accent"><Icon name={p.icono} size={24} /></span>
         <span className="flex items-center gap-1.5">
-          {p.companero && <span className="rounded-full border border-white/15 px-2.5 py-0.5 text-xs text-muted">Con compañero</span>}
+          {p.companero && <span className="rounded-full border border-white/15 px-2.5 py-0.5 text-xs text-muted">With a partner</span>}
           <span className="flex items-center gap-1 rounded-full border border-line px-2.5 py-0.5 text-xs text-muted"><Icon name="clock" size={14} /> {p.duracion}</span>
         </span>
       </div>
       <h2 className="mt-3 text-lg font-semibold">{p.nombre}</h2>
       <p className="mt-1 text-sm text-soft">{p.resumen}</p>
       <div className="mt-3 rounded-xl border border-line bg-ink/[0.03] p-3 text-sm">
-        <div className="text-xs font-semibold uppercase tracking-widest text-muted">Para qué sirve</div>
+        <div className="text-xs font-semibold uppercase tracking-widest text-muted">What it is for</div>
         <div className="mt-0.5">{p.paraQue}</div>
       </div>
       <Fuente className="mt-2" ids={p.fuente} />
@@ -47,15 +47,15 @@ function Tarjeta({ p, ultima, disp, aid }) {
         {ultima ? (
           <>
             <span className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />
-            <span className="text-soft">Última vez: {hace(ultima.hecho_en)} · <span style={{ color }}>{ETIQUETA_NIVEL[ultima.nivel]}</span></span>
+            <span className="text-soft">Last time: {hace(ultima.hecho_en)} · <span style={{ color }}>{ETIQUETA_NIVEL[ultima.nivel]}</span></span>
           </>
-        ) : <span className="text-muted">Primera vez: será tu base</span>}
+        ) : <span className="text-muted">First time: it will be your baseline</span>}
       </div>
       <div className="mt-auto pt-4">
         {disp.permitido ? (
           <>
             {disp.motivo && <p className="mb-2 text-xs font-semibold text-cyan" data-motivo-disponible>{disp.motivo}</p>}
-            <CyberButton href={`/pruebas/${p.id}?a=${aid}`} atajo="↵" className="w-full" texto={disp.editar ? "Editar el de hoy" : "Hacer la prueba"} data-hacer-prueba={p.id}>{disp.editar ? "Editar el de hoy" : "Hacer la prueba"}</CyberButton>
+            <CyberButton href={`/pruebas/${p.id}?a=${aid}`} atajo="↵" className="w-full" texto={disp.editar ? "Edit today's" : "Take the test"} data-hacer-prueba={p.id}>{disp.editar ? "Edit today's" : "Take the test"}</CyberButton>
           </>
         ) : (
           <p className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-sm text-muted" data-bloqueada>{disp.texto}</p>
@@ -68,26 +68,26 @@ function Tarjeta({ p, ultima, disp, aid }) {
 function Detalle({ p, filas, disp, aid, fichas }) {
   const ult = filas.at(-1) || null;
   const v = ult ? Number(ult.valor?.resultado?.valor) : null;
-  const comp = ult ? comparar(p.id, Number.isFinite(v) ? v : null, baseDe(p.id, filas.slice(0, -1))) : "Primera vez: esta será tu base.";
+  const comp = ult ? comparar(p.id, Number.isFinite(v) ? v : null, baseDe(p.id, filas.slice(0, -1))) : "First time: this will be your baseline.";
   const serie = filas.map((r) => Number(r.valor?.resultado?.valor)).filter(Number.isFinite).slice(-12);
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]" data-detalle-prueba={p.id}>
       <Tarjeta p={p} ultima={ult} disp={disp} aid={aid} />
       <section className="card flex flex-col gap-4 p-5">
-        {fichas.length > 0 && <p className="text-sm font-semibold text-cyan" data-recomendada>Recomendada por tu ficha de {fichas.map((f) => TITULOS[f.clave]).join(" y ")}</p>}
+        {fichas.length > 0 && <p className="text-sm font-semibold text-cyan" data-recomendada>Recommended by your {fichas.map((f) => TITULOS[f.clave]).join(" and ")} card</p>}
         <div>
-          <h2 className="etiqueta mb-1.5">Última vez</h2>
+          <h2 className="etiqueta mb-1.5">Last time</h2>
           {ult ? (
             <>
               <p className="text-sm"><span className="text-soft">{hace(ult.hecho_en)}</span> · <span style={{ color: COLOR_NIVEL[ult.nivel] }}>{ETIQUETA_NIVEL[ult.nivel]}</span></p>
               {ult.valor?.resultado?.texto && <p className="mt-1 text-sm text-soft">{ult.valor.resultado.texto}</p>}
             </>
-          ) : <p className="text-sm text-muted">Nunca</p>}
+          ) : <p className="text-sm text-muted">Never</p>}
           <p className="mt-1 text-sm text-muted" data-comparacion>{comp}</p>
         </div>
         <div>
-          <h2 className="etiqueta mb-1.5">Últimos resultados</h2>
-          {serie.length > 1 ? <div className="max-w-full overflow-hidden" data-mini-grafica><Sparkline data={serie} w={320} h={80} /></div> : <p className="text-sm text-muted">Primera vez: esta será tu base.</p>}
+          <h2 className="etiqueta mb-1.5">Latest results</h2>
+          {serie.length > 1 ? <div className="max-w-full overflow-hidden" data-mini-grafica><Sparkline data={serie} w={320} h={80} /></div> : <p className="text-sm text-muted">First time: this will be your baseline.</p>}
         </div>
       </section>
     </div>
@@ -141,8 +141,8 @@ export default function Pruebas() {
     return m;
   }, [historial]);
 
-  if (error) return <div className="p-10 text-crit">No se pudieron cargar los datos: {error}</div>;
-  if (loading || !analisis || !tab) return <div className="flex min-h-screen items-center justify-center text-muted">Cargando pruebas…</div>;
+  if (error) return <div className="p-10 text-crit">Could not load the data: {error}</div>;
+  if (loading || !analisis || !tab) return <div className="flex min-h-screen items-center justify-center text-muted">Loading tests…</div>;
 
   const { astronaut, astronauts } = data;
   const ctx = contextoDisponibilidad({ data, analisis, eventosFicha: fichas.eventos, historial });
@@ -169,9 +169,9 @@ export default function Pruebas() {
 
   return (
     <Shell active="/pruebas" astronaut={astronaut} astronauts={astronauts} onAstronaut={(id) => { setAid(id); setSel(null); }} astronautId={aid} analisis={analisis}>
-      <EncabezadoPagina titulo="Pruebas" sub={`${PRUEBAS_CATALOGO.length} pruebas · ${recomendadas.size} recomendadas por tus alertas`} />
+      <EncabezadoPagina titulo="Tests" sub={`${PRUEBAS_CATALOGO.length} tests · ${recomendadas.size} recommended by your alerts`} />
 
-      <nav aria-label="Pestañas de pruebas" className="no-scrollbar -mx-1 mb-4 flex gap-1.5 overflow-x-auto px-1 pb-1 min-[900px]:flex-wrap" role="tablist">
+      <nav aria-label="Test tabs" className="no-scrollbar -mx-1 mb-4 flex gap-1.5 overflow-x-auto px-1 pb-1 min-[900px]:flex-wrap" role="tablist">
         {PESTANAS_PRUEBAS.map((t) => {
           const nombre = NOMBRE_PESTANA[t] || CATEGORIAS_PRUEBA[t].nombre;
           return (
@@ -188,8 +188,8 @@ export default function Pruebas() {
       {tab === "alertas" && ids.length === 0 ? (
         <section className="glass flex flex-col items-center gap-4 px-6 py-10 text-center" data-sin-recomendadas style={{ borderColor: "color-mix(in oklab, var(--color-ok) 45%, transparent)" }}>
           <span className="grid h-14 w-14 place-items-center rounded-full border-2 border-ok/60 bg-ok/10 text-2xl text-ok">✓</span>
-          <div className="font-display text-xl font-semibold text-ok">0 recomendadas por tus alertas</div>
-          <CyberButton onClick={() => cambiarTab("diario")} texto="Diario">Diario</CyberButton>
+          <div className="font-display text-xl font-semibold text-ok">0 recommended by your alerts</div>
+          <CyberButton onClick={() => cambiarTab("diario")} texto="Daily">Daily</CyberButton>
         </section>
       ) : (
         <>
@@ -203,7 +203,7 @@ export default function Pruebas() {
               ))}
             </div>
           ) : (
-            <div className="mb-5 flex flex-wrap gap-2" role="tablist" aria-label="Pruebas" data-chips>{ids.map(chip)}</div>
+            <div className="mb-5 flex flex-wrap gap-2" role="tablist" aria-label="Tests" data-chips>{ids.map(chip)}</div>
           )}
           {pElegida && <Detalle key={`${aid}-${pElegida.id}`} p={pElegida} filas={ultimas[pElegida.id] || []} disp={disponibilidad(pElegida, ctx)} aid={aid} fichas={recomendadas.get(pElegida.id) || []} />}
         </>

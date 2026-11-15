@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function BotonDatos({ href, texto = "Ver todos mis datos", detalle, tecla = "d" }) {
+export default function BotonDatos({ href, texto = "View all my data", detalle, tecla = "d" }) {
   const router = useRouter();
 
   useEffect(() => {
