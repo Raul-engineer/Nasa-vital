@@ -29,7 +29,9 @@ function crearMetrica(metrica) {
 
   const valor = elemento("div", "metric-value");
   valor.append(document.createTextNode(formato(metrica.valor)));
-  if (metrica.valor != null && metrica.unidad) valor.append(elemento("span", "metric-unit", metrica.unidad));
+  if (metrica.valor != null && metrica.unidad) {
+    valor.append(document.createTextNode(" "), elemento("span", "metric-unit", metrica.unidad));
+  }
   caja.append(valor);
   if (metrica.fuente) caja.append(elemento("p", "metric-source", metrica.fuente));
   return caja;
@@ -64,7 +66,8 @@ function crearSegmento(seccion, evaluacion) {
   estado.append(elemento("span", "segment-symbol", info.simbolo), document.createTextNode(info.texto));
   item.append(enlace);
   enlace.append(estado);
-  enlace.append(elemento("p", "segment-detail", `${evaluacion.conDatos} de ${evaluacion.total} métricas con registro`));
+  const etiquetaMetrica = evaluacion.total === 1 ? "métrica" : "métricas";
+  enlace.append(elemento("p", "segment-detail", `${evaluacion.conDatos} de ${evaluacion.total} ${etiquetaMetrica} con registro`));
   return item;
 }
 
