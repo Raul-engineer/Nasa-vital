@@ -6,6 +6,7 @@ import CyberButton from "@/components/CyberButton";
 import { TablaResumen } from "@/components/analisis/Resumen";
 import { VistaVariable } from "@/components/analisis/Variable";
 import { ChipEstado } from "@/components/analisis/comun";
+import { ChipMetrica, Contador } from "@/components/analisis/Pestanas";
 import { Registro } from "@/components/analisis/Registro";
 import Ficha from "@/components/Ficha";
 import { CLAVES_FICHA } from "@/lib/fichas";
@@ -36,29 +37,9 @@ function alertasDe(analisis) {
 
 const peorNivel = (ks, niveles) => ks.map((k) => niveles[k]).filter((n) => n in PRIORIDAD_NIVEL).sort((a, b) => PRIORIDAD_NIVEL[a] - PRIORIDAD_NIVEL[b])[0] || null;
 
-function Contador({ n, nivel, pulso, grande = false }) {
-  if (!n || !nivel) return null;
-  const E = ESTADO[ESTADO_DE_NIVEL[nivel]];
-  return (
-    <span key={pulso} className={`inline-flex items-center gap-1 font-bold normal-case ${grande ? "" : "text-[10px]"} ${pulso ? "pulso-contador" : ""}`} style={{ color: E.hex }} data-contador={nivel}>
-      {!grande && <span className="dot-estado" style={{ width: 6, height: 6 }} />}
-      {n}
-    </span>
-  );
-}
-
 function Chip({ t, nivel, activo, onClick }) {
   const E = ESTADO[ESTADO_DE_NIVEL[nivel] || "normal"];
-  const alerta = nivel !== "ok";
-  return (
-    <button onClick={onClick} role="tab" aria-selected={activo} data-chip={t.k} data-nivel={nivel}
-      className={`glass flex items-center gap-2 rounded-full px-3.5 py-2 text-sm transition ${activo ? "bg-white/[0.14] font-semibold" : "hover:bg-white/[0.08]"}`}
-      style={{ borderRadius: 9999, borderColor: alerta ? `color-mix(in oklab, ${E.hex} ${activo ? 85 : 55}%, transparent)` : activo ? "rgba(168,255,240,0.7)" : undefined, boxShadow: activo ? `0 0 0 1px ${alerta ? E.hex : "rgba(168,255,240,0.6)"}, 0 0 18px color-mix(in oklab, ${alerta ? E.hex : "#a8fff0"} 25%, transparent)` : undefined }}>
-      <span className="dot-estado" style={{ color: E.hex }} />
-      <span>{CORTO[t.k]}</span>
-      <span className="font-display font-semibold">{t.texto}{UNIDAD[t.k] && <span className="ml-0.5 text-xs font-normal text-muted">{UNIDAD[t.k]}</span>}</span>
-    </button>
-  );
+  return <ChipMetrica id={t.k} nivel={nivel} etiqueta={CORTO[t.k]} valor={t.texto} unidad={UNIDAD[t.k]} colorPunto={E.hex} colorBorde={nivel !== "ok" ? E.hex : null} activo={activo} onClick={onClick} />;
 }
 
 export default function Analisis() {
