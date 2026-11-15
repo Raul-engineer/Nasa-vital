@@ -1,14 +1,13 @@
 "use client";
 import { useState } from "react";
 import { Icon } from "@/components/Icons";
-import CyberButton from "@/components/CyberButton";
-import { Dot, ESTADO } from "@/components/Shell";
+import { ESTADO } from "@/components/Shell";
 import { Fuente, fmtNum } from "@/components/Widgets";
 import { TrendChart } from "@/components/Charts";
 import { Monitor } from "@/components/monitor";
 import { semanasVision } from "@/components/monitor/Vision";
 import { ejercicioDia } from "@/components/monitor/Huesos";
-import { diaMision, PRUEBAS, UMBRALES } from "@/lib/analysis";
+import { diaMision, UMBRALES } from "@/lib/analysis";
 import { planDeAlerta } from "@/lib/medic";
 import { BarraRango } from "./Rango";
 import { GraficaExtra } from "./Extras";
@@ -168,32 +167,6 @@ function PorQue({ it }) {
   );
 }
 
-function Prueba({ t, aid }) {
-  const p = t.prueba ? PRUEBAS[t.prueba] : null;
-  return (
-    <section className="card flex h-full flex-col gap-3 p-5">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="etiqueta">Prueba recomendada</h2>
-        <Icon name="flask" size={18} className="text-cyan" />
-      </div>
-      {p ? (
-        <>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[18px] font-bold">{p.nombre}</span>
-            <span className="num inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-0.5 text-xs text-soft"><Icon name="clock" size={13} />{p.duracion}</span>
-          </div>
-          <CyberButton href={`/pruebas?a=${aid}&t=${t.prueba}`} tam="lg" atajo="↵" className="mt-auto self-start" texto="Hacer la prueba">Hacer la prueba</CyberButton>
-        </>
-      ) : (
-        <>
-          <span className="text-[18px] font-bold text-soft">Sin prueba para este signo</span>
-          <CyberButton href={`/pruebas?a=${aid}`} className="mt-auto self-start" texto="Ver todas las pruebas">Ver todas las pruebas</CyberButton>
-        </>
-      )}
-    </section>
-  );
-}
-
 function QueHacer({ plan, it, clave }) {
   const [hechos, setHechos] = useState({});
   const [todo, setTodo] = useState(false);
@@ -233,7 +206,7 @@ function QueHacer({ plan, it, clave }) {
   );
 }
 
-export function VistaVariable({ k, analisis, data, aid, onCambiar, onTodas }) {
+export function VistaVariable({ k, analisis, data, aid }) {
   const [periodo, setPeriodo] = useState("30");
   const [agrupar, setAgrupar] = useState("dia");
   const t = analisis.tarjetas.find((x) => x.k === k);
@@ -246,23 +219,12 @@ export function VistaVariable({ k, analisis, data, aid, onCambiar, onTodas }) {
   const s = simboloEstado(t);
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <div className="mb-4 mt-2 flex flex-wrap items-end gap-3">
-          <div className="min-w-0">
-            <h1 className="titulo-pagina">{t.nombre}</h1>
-            <div className="mt-1.5 text-[13px] text-muted">{it.conclusion}</div>
-          </div>
-          <ChipEstado estado={t.estado} className="mb-1">{s.palabra}</ChipEstado>
-          <CyberButton onClick={onTodas} tam="sm" className="ml-auto" texto="Ver los 12 signos">Ver los 12 signos</CyberButton>
+      <div className="flex flex-wrap items-end gap-3 px-0.5" data-detalle={k}>
+        <div className="min-w-0">
+          <h2 className="font-display text-[clamp(22px,2.2vw,28px)] font-semibold leading-tight tracking-[-0.6px]">{t.nombre}</h2>
+          <div className="mt-1 text-[13px] text-muted">{it.conclusion}</div>
         </div>
-        <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Variables">
-          {analisis.tarjetas.map((x) => (
-            <button key={x.k} role="tab" aria-selected={x.k === k} onClick={() => onCambiar(x.k)}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition ${x.k === k ? `bg-ink/10 font-semibold ${ESTADO[x.estado].border}` : "border-line hover:bg-ink/5"}`}>
-              <Dot estado={x.estado} /> {x.nombre}
-            </button>
-          ))}
-        </div>
+        <ChipEstado estado={t.estado} className="mb-1">{s.palabra}</ChipEstado>
       </div>
 
       <div className="glass p-2"><Monitor key={`${k}-${aid}`} k={k} t={t} analisis={analisis} data={data} aid={aid} /></div>
@@ -271,10 +233,7 @@ export function VistaVariable({ k, analisis, data, aid, onCambiar, onTodas }) {
       <Tendencia k={k} t={t} data={data} n={n} periodo={periodo} setPeriodo={setPeriodo} agrupar={agrupar} setAgrupar={setAgrupar} />
       <GraficaExtra k={k} t={t} analisis={analisis} data={data} aid={aid} dias={n} />
       {k === "radiacion" && <RadiacionExtra analisis={analisis} data={data} aid={aid} />}
-      <div className="grid gap-5 md:grid-cols-2">
-        <PorQue it={it} />
-        <Prueba t={t} aid={aid} />
-      </div>
+      <PorQue it={it} />
       <QueHacer key={`${aid}-${k}`} plan={plan} it={it} clave={`${aid}-${k}`} />
       <Fuente corto className="px-1" ids={[t.fuente, principal?.fuente, plan?.fuente].filter(Boolean).join(",")} extra={k === "cabina" ? "umbrales de demo" : null} />
     </div>

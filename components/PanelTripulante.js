@@ -80,9 +80,9 @@ function Encabezado({ t }) {
   );
 }
 
-function Tarjeta({ t, onClick, className, accion = "Ver análisis", extra, children, base = "flex flex-col justify-between p-[18px]" }) {
+function Tarjeta({ t, onClick, className, accion = "Ver análisis", extra, children, base = "flex flex-col justify-between p-[18px]", estilo, sinBrillo = false }) {
   return (
-    <div data-tarjeta className={`glass glass-hover ${base} text-left ${t.estado === "critico" ? "glow-crit" : t.estado === "atencion" ? "glow-warn" : ""} ${className}`}>
+    <div data-tarjeta style={estilo} className={`glass glass-hover ${base} text-left ${sinBrillo ? "" : t.estado === "critico" ? "glow-crit" : t.estado === "atencion" ? "glow-warn" : t.estado === "info" ? "glow-info" : ""} ${className}`}>
       <button type="button" onClick={onClick} aria-label={`${t.nombre}: ${t.texto} ${t.unidad}. ${palabraEstado(t)}. ${accion}`}
         aria-haspopup={extra ? "dialog" : undefined}
         className="absolute inset-0 rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-accent" />
@@ -92,21 +92,29 @@ function Tarjeta({ t, onClick, className, accion = "Ver análisis", extra, child
   );
 }
 
-export function Metrica({ t, analisis, onClick, className = "", extra, accion }) {
+export function Metrica({ t, analisis, onClick, className = "", extra, accion, acento = null, grande = false }) {
   const E = ESTADO[t.estado] || ESTADO.normal;
+  const color = acento || E.hex;
+  const estilo = acento ? { borderColor: `color-mix(in oklab, ${acento} 62%, transparent)`, boxShadow: `inset 0 1px 0 rgba(255,255,255,0.2), 0 0 0 1px color-mix(in oklab, ${acento} 60%, transparent), 0 0 28px color-mix(in oklab, ${acento} 20%, transparent)`, transition: "border-color .4s, box-shadow .4s" } : undefined;
   return (
-    <Tarjeta t={t} onClick={onClick} accion={accion} extra={extra} className={`min-h-[154px] ${className}`}>
-      <Encabezado t={t} />
+    <Tarjeta t={t} onClick={onClick} accion={accion} extra={extra} estilo={estilo} sinBrillo={!!acento} base={`flex flex-col justify-between ${grande ? "p-6" : "p-[18px]"}`} className={`min-h-[154px] ${className}`}>
+      <span className="pointer-events-none relative flex w-full items-center justify-between gap-2">
+        <span className={`flex min-w-0 items-center gap-2 text-[#c9cde8] ${grande ? "text-base" : "text-xs"}`}>
+          <Icon name={t.icono} size={grande ? 20 : 16} className="shrink-0 text-[#a5b4ff]" />
+          <span className="truncate">{t.nombre}</span>
+        </span>
+        <Flecha t={t} />
+      </span>
       <span className="pointer-events-none relative whitespace-nowrap">
-        <span className={`font-display text-[clamp(23px,2.5vw,31px)] font-semibold tracking-[-0.7px] ${t.estado === "normal" ? "" : E.color}`}>{t.texto}</span>
-        {t.unidad && <span className="ml-1 text-xs text-muted">{t.unidad}</span>}
+        <span className={`font-display font-semibold ${grande ? "text-[52px] leading-none tracking-[-1.5px]" : "text-[clamp(23px,2.5vw,31px)] tracking-[-0.7px]"} ${t.estado === "normal" || acento ? "" : E.color}`} style={acento ? { color: acento } : undefined}>{t.texto}</span>
+        {t.unidad && <span className={`ml-1.5 text-muted ${grande ? "text-base" : "text-xs"}`}>{t.unidad}</span>}
       </span>
       <span className="pointer-events-none relative flex w-full items-end justify-between gap-2">
-        <span className={`flex min-w-0 items-center gap-2 text-[11px] ${E.color}`}>
+        <span className={`flex min-w-0 items-center gap-2 ${grande ? "text-sm" : "text-[11px]"} ${acento ? "" : E.color}`} style={acento ? { color: acento } : undefined}>
           <span className="dot-estado" />
           <span className="truncate">{secundario(t, analisis)}</span>
         </span>
-        {t.k === "conciencia" ? <DiasConciencia t={t} /> : <span className="hidden shrink-0 min-[400px]:block"><Sparkline data={t.serie7} color={E.hex} w={84} h={35} /></span>}
+        {t.k === "conciencia" ? <DiasConciencia t={t} /> : <span className="hidden shrink-0 min-[400px]:block"><Sparkline data={t.serie7} color={color} w={grande ? 140 : 84} h={grande ? 48 : 35} /></span>}
       </span>
     </Tarjeta>
   );

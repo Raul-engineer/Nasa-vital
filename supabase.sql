@@ -1,3 +1,4 @@
+drop table if exists en_vivo cascade;
 drop table if exists actividad cascade;
 drop table if exists cabina cascade;
 drop table if exists eventos_radiacion cascade;
@@ -16,7 +17,8 @@ create table astronauts (
   id          int generated always as identity primary key,
   nombre      text not null,
   rol         text not null,
-  dia_mision  int  not null default 142
+  dia_mision  int  not null default 142,
+  dia_regreso int  not null default 180
 );
 
 create table vitals (
@@ -145,6 +147,15 @@ create table actividad (
   estado        text not null default 'reposo' check (estado in ('reposo','ejercicio','recuperacion')),
   desde         timestamptz default now(),
   fiebre        boolean not null default false
+);
+
+create table en_vivo (
+  id            bigint generated always as identity primary key,
+  astronaut_id  int  not null references astronauts(id) on delete cascade,
+  clave         text not null,
+  valor         jsonb,
+  updated_at    timestamptz not null default now(),
+  unique (astronaut_id, clave)
 );
 
 create table eventos_radiacion (
@@ -612,6 +623,7 @@ alter table pruebas enable row level security;
 alter table eventos_radiacion enable row level security;
 alter table cabina enable row level security;
 alter table actividad enable row level security;
+alter table en_vivo enable row level security;
 
 create policy "hackathon_all" on astronauts for all to anon, authenticated using (true) with check (true);
 create policy "hackathon_all" on vitals for all to anon, authenticated using (true) with check (true);
@@ -624,12 +636,35 @@ create policy "hackathon_all" on pruebas for all to anon, authenticated using (t
 create policy "hackathon_all" on eventos_radiacion for all to anon, authenticated using (true) with check (true);
 create policy "hackathon_all" on cabina for all to anon, authenticated using (true) with check (true);
 create policy "hackathon_all" on actividad for all to anon, authenticated using (true) with check (true);
+create policy "hackathon_all" on en_vivo for all to anon, authenticated using (true) with check (true);
 
 grant select, insert, update, delete on all tables in schema public to anon, authenticated;
 grant usage, select on all sequences in schema public to anon, authenticated;
 
-alter publication supabase_realtime add table checkins, alerts, vitals, profiles, historia_clinica, pruebas, eventos_radiacion, cabina, actividad;
+alter publication supabase_realtime add table checkins, alerts, vitals, profiles, historia_clinica, pruebas, eventos_radiacion, cabina, actividad, en_vivo;
 
 select a.nombre, count(v.*) as dias_de_datos
 from astronauts a join vitals v on v.astronaut_id = a.id
 group by a.nombre;
+
+create table if not exists en_vivo (
+  id            bigint generated always as identity primary key,
+  astronaut_id  int  not null references astronauts(id) on delete cascade,
+  clave         text not null,
+  valor         jsonb,
+  updated_at    timestamptz not null default now(),
+  unique (astronaut_id, clave)
+);
+
+alter table en_vivo enable row level security;
+drop policy if exists "hackathon_all" on en_vivo;
+create policy "hackathon_all" on en_vivo for all to anon, authenticated using (true) with check (true);
+grant select, insert, update, delete on en_vivo to anon, authenticated;
+grant usage, select on all sequences in schema public to anon, authenticated;
+
+do $$
+begin
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'en_vivo') then
+    alter publication supabase_realtime add table en_vivo;
+  end if;
+end $$;

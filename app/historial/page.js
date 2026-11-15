@@ -9,6 +9,7 @@ import { useAstronautId, useQuickFix } from "@/lib/useQuickFix";
 import { analizarDia, diaMision, fechaLocal, NOMBRE_SINTOMA, PRUEBAS, SISTEMAS, UMBRALES } from "@/lib/analysis";
 import { mensajeMedic } from "@/lib/medic";
 import { saveHistoria } from "@/lib/data";
+import Estadisticas from "@/components/historial/Estadisticas";
 
 const DIAS_SEM = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
@@ -176,9 +177,11 @@ export default function Historial() {
   const dosisDe = (f) => Number(vitals.find((x) => x.fecha === f)?.dosis_dia_msv) || 0;
 
   return (
-    <Shell active="/historial" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis}>
-      <EncabezadoPagina titulo="Historial" sub={`${vitals.length} días de misión · calendario e historia clínica`} />
+    <Shell active="/historial" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis} pie="Medic no diagnostica; lo grave se escala al médico de tripulación.">
+      <EncabezadoPagina titulo="Historial" sub={`${vitals.length} días de misión · por categoría, prueba e historia clínica`} />
 
+      <Estadisticas data={data} porDia={porDia} aid={aid} astronauts={astronauts} onAstronaut={setAid}>
+      <>
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
         <section className="card p-5">
           <div className="mb-4 grid gap-3 sm:grid-cols-3">
@@ -256,7 +259,7 @@ export default function Historial() {
             const ref = ev.refugio?.[aid];
             return (
               <div className="mt-4 rounded-xl border border-crit/50 bg-crit/10 p-3 text-sm">
-                <div className="font-semibold text-crit">☢ Evento de radiación · tormenta solar {ev.nivel} ({ev.origen === "noaa" ? "dato real NOAA" : "simulado"})</div>
+                <div className="font-semibold text-crit">☢ Evento de radiación · tormenta solar {ev.nivel} {ev.origen === "noaa" ? "(dato real NOAA)" : ""}</div>
                 <div className="text-soft">
                   Dosis del día: {dosisDe(sel).toFixed(2)} mSv{ev.fin ? ` · dosis del evento: ${analisis.radiacion.dosisEvento(ev).toFixed(ev.fin && analisis.radiacion.dosisEvento(ev) < 1 ? 3 : 1)} mSv` : " · evento en curso"}
                   {ref ? ` · refugio confirmado a las ${new Date(ref).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", hour12: false })}` : " · sin confirmación de refugio"}
@@ -341,6 +344,8 @@ export default function Historial() {
       <div className="mt-5">
         <HistoriaClinica astronautId={aid} historia={data.historia} onToast={setToast} />
       </div>
+      </>
+      </Estadisticas>
       <Toast msg={toast} onClose={closeToast} />
     </Shell>
   );
