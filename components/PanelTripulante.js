@@ -55,7 +55,7 @@ export const palabraEstado = (t) => (t.estado === "normal" ? "Normal" : t.etique
 export function Flecha({ t }) {
   const c = t.cambio7;
   const g = c == null || !Number.isFinite(c) ? "→" : c > 0.02 ? "↗" : c < -0.02 ? "↘" : "→";
-  return <span className="text-lg leading-none text-[#ffb888]" aria-label={g === "↗" ? "subiendo" : g === "↘" ? "bajando" : "estable"}>{g}</span>;
+  return <span className="text-lg leading-none text-[#a5b4ff]" aria-label={g === "↗" ? "subiendo" : g === "↘" ? "bajando" : "estable"}>{g}</span>;
 }
 
 export function DiasConciencia({ t }) {
@@ -68,54 +68,64 @@ export function DiasConciencia({ t }) {
   );
 }
 
-export function Metrica({ t, analisis, onClick, className = "" }) {
+function Encabezado({ t }) {
+  return (
+    <span className="pointer-events-none relative flex w-full items-center justify-between gap-2">
+      <span className="flex min-w-0 items-center gap-2 text-xs text-[#c9cde8]">
+        <Icon name={t.icono} size={16} className="shrink-0 text-[#a5b4ff]" />
+        <span className="truncate">{t.nombre}</span>
+      </span>
+      <Flecha t={t} />
+    </span>
+  );
+}
+
+function Tarjeta({ t, onClick, className, accion = "Ver análisis", extra, children, base = "flex flex-col justify-between p-[18px]" }) {
+  return (
+    <div data-tarjeta className={`glass glass-hover ${base} text-left ${t.estado === "critico" ? "glow-crit" : t.estado === "atencion" ? "glow-warn" : ""} ${className}`}>
+      <button type="button" onClick={onClick} aria-label={`${t.nombre}: ${t.texto} ${t.unidad}. ${palabraEstado(t)}. ${accion}`}
+        aria-haspopup={extra ? "dialog" : undefined}
+        className="absolute inset-0 rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-accent" />
+      {children}
+      {extra}
+    </div>
+  );
+}
+
+export function Metrica({ t, analisis, onClick, className = "", extra, accion }) {
   const E = ESTADO[t.estado] || ESTADO.normal;
   return (
-    <button onClick={onClick} aria-label={`${t.nombre}: ${t.texto} ${t.unidad}. ${palabraEstado(t)}. Ver análisis`}
-      className={`glass glass-hover flex min-h-[154px] flex-col justify-between p-[18px] text-left ${t.estado === "critico" ? "glow-crit" : t.estado === "atencion" ? "glow-warn" : ""} ${className}`}>
-      <span className="flex w-full items-center justify-between gap-2">
-        <span className="flex min-w-0 items-center gap-2 text-xs text-[#d6c9c9]">
-          <Icon name={t.icono} size={16} className="shrink-0 text-[#ffb888]" />
-          <span className="truncate">{t.nombre}</span>
-        </span>
-        <Flecha t={t} />
-      </span>
-      <span className="whitespace-nowrap">
+    <Tarjeta t={t} onClick={onClick} accion={accion} extra={extra} className={`min-h-[154px] ${className}`}>
+      <Encabezado t={t} />
+      <span className="pointer-events-none relative whitespace-nowrap">
         <span className={`font-display text-[clamp(23px,2.5vw,31px)] font-semibold tracking-[-0.7px] ${t.estado === "normal" ? "" : E.color}`}>{t.texto}</span>
         {t.unidad && <span className="ml-1 text-xs text-muted">{t.unidad}</span>}
       </span>
-      <span className="flex w-full items-end justify-between gap-2">
+      <span className="pointer-events-none relative flex w-full items-end justify-between gap-2">
         <span className={`flex min-w-0 items-center gap-2 text-[11px] ${E.color}`}>
           <span className="dot-estado" />
           <span className="truncate">{secundario(t, analisis)}</span>
         </span>
         {t.k === "conciencia" ? <DiasConciencia t={t} /> : <span className="hidden shrink-0 min-[400px]:block"><Sparkline data={t.serie7} color={E.hex} w={84} h={35} /></span>}
       </span>
-    </button>
+    </Tarjeta>
   );
 }
 
-export function Mini({ t, analisis, onClick, ancha = false }) {
+export function Mini({ t, analisis, onClick, ancha = false, extra, accion }) {
   const E = ESTADO[t.estado] || ESTADO.normal;
   return (
-    <button onClick={onClick} aria-label={`${t.nombre}: ${t.texto} ${t.unidad}. ${palabraEstado(t)}. Ver análisis`}
-      className={`glass glass-hover flex min-h-[143px] flex-col justify-between p-[18px] text-left ${ancha ? "min-[1100px]:col-span-2" : ""} ${t.estado === "critico" ? "glow-crit" : t.estado === "atencion" ? "glow-warn" : ""}`}>
-      <span className="flex w-full items-center justify-between gap-2">
-        <span className="flex min-w-0 items-center gap-2 text-xs text-[#d6c9c9]">
-          <Icon name={t.icono} size={16} className="shrink-0 text-[#ffb888]" />
-          <span className="truncate">{t.nombre}</span>
-        </span>
-        <Flecha t={t} />
-      </span>
-      <span className="my-2 whitespace-nowrap">
+    <Tarjeta t={t} onClick={onClick} accion={accion} extra={extra} className={`min-h-[143px] ${ancha ? "min-[1100px]:col-span-2" : ""}`}>
+      <Encabezado t={t} />
+      <span className="pointer-events-none relative my-2 whitespace-nowrap">
         <span className={`font-display text-[clamp(22px,2.2vw,26px)] font-semibold tracking-[-0.7px] ${t.estado === "normal" ? "" : E.color}`}>{t.texto}</span>
         {t.unidad && <span className="ml-1 text-xs text-muted">{t.k === "sueno" ? "horas" : t.unidad}</span>}
       </span>
-      <span className="flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-1">
-        <small className="min-w-0 truncate text-[11px] text-[#aa9fa4]">{secundario(t, analisis)}</small>
+      <span className="pointer-events-none relative flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <small className="min-w-0 truncate text-[11px] text-[#9ea4c4]">{secundario(t, analisis)}</small>
         <span className={`flex shrink-0 items-center gap-1.5 text-[11px] ${E.color}`}><span className="dot-estado" />{palabraEstado(t)}</span>
       </span>
-    </button>
+    </Tarjeta>
   );
 }
 
@@ -123,7 +133,7 @@ export function Seccion({ glifo, titulo, n }) {
   return (
     <div className="mb-[13px] mt-[26px] flex items-center justify-between gap-2.5 px-0.5">
       <h2 className="text-lg font-semibold">{glifo} {titulo}</h2>
-      <span className="text-[11px] tracking-wider text-[#b8a9ad]">{String(n).padStart(2, "0")} INDICADORES</span>
+      <span className="text-[11px] tracking-wider text-[#a9aed0]">{String(n).padStart(2, "0")} INDICADORES</span>
     </div>
   );
 }
@@ -152,16 +162,16 @@ export function PanelAstronauta({ analisis, motivo }) {
   const palabra = eg === "critico" ? "Actúa ahora" : eg === "atencion" ? "Atención" : "Estable";
   return (
     <article className="glass relative col-span-2 min-h-[330px] overflow-hidden p-6 min-[640px]:col-span-3 min-[1100px]:col-span-1 min-[1100px]:col-start-4 min-[1100px]:row-span-2 min-[1100px]:row-start-1"
-      style={{ background: "linear-gradient(130deg, #44302e99, #1b202a99), var(--glass)" }} aria-label="Estado del astronauta">
+      style={{ background: "linear-gradient(130deg, #1d2350aa, #1b202a99), var(--glass)" }} aria-label="Estado del astronauta">
       <div className="absolute bottom-[5%] right-[2%] h-[85%] w-[56%]">
         <Personaje estado={estado} />
       </div>
       <div className="relative z-10 flex h-full max-w-[52%] flex-col justify-end gap-2.5">
-        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#ffb67a45] bg-[#ffb67a1b] px-2.5 py-1.5 text-[11px] text-[#f4c9ac]">
+        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#8f86ff45] bg-[#8f86ff1b] px-2.5 py-1.5 text-[11px] text-[#c9d2ff]">
           <span className="dot-estado text-ok" /> EN VIVO
         </span>
         <h2 className={`text-[clamp(26px,2.6vw,34px)] font-semibold leading-tight tracking-[-0.8px] ${ESTADO[eg].color}`}>{palabra}</h2>
-        {motivo && <div className="truncate text-[13px] text-[#c9bdc0]">{motivo}</div>}
+        {motivo && <div className="truncate text-[13px] text-[#c3c8e4]">{motivo}</div>}
       </div>
     </article>
   );
@@ -189,6 +199,43 @@ export default function PanelTripulante({ astronautId, onVer }) {
       <section aria-label={GRUPOS.mental} className="grid grid-cols-2 gap-[9px] min-[640px]:gap-[14px] min-[1100px]:grid-cols-4">
         {ORDEN_MENTAL.map((k) => <Mini key={k} t={porK[k]} analisis={analisis} onClick={() => ir(k)} ancha />)}
       </section>
+    </div>
+  );
+}
+
+export function Compacta({ t, onClick, extra, accion, className = "" }) {
+  const E = ESTADO[t.estado] || ESTADO.normal;
+  const alerta = t.estado !== "normal";
+  return (
+    <Tarjeta t={t} onClick={onClick} accion={accion} extra={extra} base="flex items-center gap-3 px-4 py-3" className={`compacta min-h-[68px] ${className}`}>
+      <span className="pointer-events-none relative grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.05] text-[#a5b4ff]">
+        <Icon name={t.icono} size={17} />
+      </span>
+      <span className="pointer-events-none relative min-w-0 flex-1 truncate font-display text-[15px] font-medium tracking-[-0.2px] text-fg">{t.nombre}</span>
+      <span className={`pointer-events-none relative flex shrink-0 items-center gap-1.5 text-[11px] font-semibold ${E.color}`}>
+        {alerta && <span className="hidden min-[400px]:inline">{palabraEstado(t)}</span>}
+        <span className="dot-estado" />
+      </span>
+      <span className="compacta-flecha pointer-events-none relative shrink-0 text-muted" aria-hidden>›</span>
+    </Tarjeta>
+  );
+}
+
+export function Detalle({ t, analisis }) {
+  const E = ESTADO[t.estado] || ESTADO.normal;
+  return (
+    <div className="cm-detalle">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <span className="whitespace-nowrap">
+          <span className="font-display text-[34px] font-semibold leading-none tracking-[-0.8px]" style={t.estado === "normal" ? { color: "#eef0ff" } : { color: E.hex }}>{t.texto}</span>
+          {t.unidad && <span className="ml-1.5 text-xs text-muted">{t.k === "sueno" ? "horas" : t.unidad}</span>}
+        </span>
+        <span className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: E.hex }}><span className="dot-estado" />{palabraEstado(t)}</span>
+      </div>
+      <div className="mt-3 flex items-end justify-between gap-3">
+        <span className="min-w-0 text-[13px] text-soft">{secundario(t, analisis)}</span>
+        {t.k === "conciencia" ? <DiasConciencia t={t} /> : <span className="shrink-0"><Sparkline data={t.serie7} color={E.hex} w={110} h={34} /></span>}
+      </div>
     </div>
   );
 }

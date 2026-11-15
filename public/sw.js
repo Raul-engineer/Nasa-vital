@@ -1,8 +1,9 @@
-const CACHE = "quickfix-v3";
-const PAGINAS = ["/", "/analisis", "/pruebas", "/historial", "/perfil", "/reloj", "/bienvenida", "/tripulacion"];
+const CACHE = "quickfix-v9";
+const PAGINAS = ["/", "/analisis", "/pruebas", "/historial", "/perfil", "/reloj", "/bienvenida", "/tripulacion", "/acceso", "/cuenta"];
 const ASSETS = [
   "/favicon.png",
   "/esqueleto.webp",
+  ...[1, 2, 3, 4, 5, 6, 7].flatMap((n) => [`/fondos/espacio-${n}.webp`, `/fondos/espacio-${n}-movil.webp`]),
   "/manifest.webmanifest",
   "/logo-quickfix.png",
   "/logo-quickfix-oscuro.png",

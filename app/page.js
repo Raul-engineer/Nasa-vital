@@ -1,10 +1,13 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChipGeneral, ESTADO, ESTADO_GENERAL, Shell } from "@/components/Shell";
 import Cuerpo from "@/components/Cuerpo";
+import CyberMedic from "@/components/CyberMedic";
+import BotonVital from "@/components/BotonVital";
+import FondoCuerpo from "@/components/FondoCuerpo";
 import { GRUPOS, ORDEN_ESPACIO, ORDEN_MENTAL } from "@/components/Personaje";
-import { Metrica, Mini, motivoGeneral, ORDEN_VISUAL, Seccion, Urgencia } from "@/components/PanelTripulante";
+import { Compacta, Detalle, motivoGeneral, ORDEN_VISUAL, Seccion, Urgencia } from "@/components/PanelTripulante";
 import { PRIORIDAD_NIVEL } from "@/lib/cuerpo";
 import { useAstronautId, useQuickFix } from "@/lib/useQuickFix";
 
@@ -70,6 +73,7 @@ export default function Inicio() {
   const { data, analisis, loading, error } = useQuickFix(aid);
   const ancho = useMedia("(min-width: 640px)");
   const [debug, setDebug] = useState(false);
+  const modales = useRef({});
   useEffect(() => {
     setDebug(new URLSearchParams(window.location.search).get("debug") === "cuerpo");
   }, []);
@@ -83,6 +87,8 @@ export default function Inicio() {
   const eg = analisis.general;
   const motivo = motivoGeneral(analisis, porK);
   const ir = (k) => router.push(`/analisis?a=${aid}&var=${k}`);
+  const medic = (k) => <CyberMedic ref={(r) => { modales.current[k] = r; }} t={porK[k]} it={analisis.interpretaciones?.[k]} dia={astronaut.dia_mision} onProceder={() => ir(k)} detalle={<Detalle t={porK[k]} analisis={analisis} />} />;
+  const abrir = (k) => (modales.current[k] ? modales.current[k].abrir() : ir(k));
 
   return (
     <Shell active="/" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis} pie="Datos simulados · Medic no diagnostica">
@@ -101,21 +107,22 @@ export default function Inicio() {
         className="grid grid-cols-2 gap-[9px] min-[640px]:grid-cols-3 min-[640px]:gap-[14px] min-[1100px]:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)] min-[1100px]:grid-rows-3">
         <article aria-label="Cuerpo del astronauta"
           className="glass relative col-span-2 h-[380px] overflow-hidden min-[640px]:col-span-3 min-[640px]:h-[440px] min-[1100px]:col-span-1 min-[1100px]:col-start-2 min-[1100px]:row-span-3 min-[1100px]:row-start-1 min-[1100px]:h-auto min-[1100px]:min-h-[490px]"
-          style={{ background: "radial-gradient(ellipse at 50% 40%, #3a2a2a66, transparent 70%), linear-gradient(160deg, #2b232499, #1b202a99), var(--glass)" }}>
+          style={{ background: "linear-gradient(180deg, rgba(8,10,28,.18), rgba(8,10,28,.42))", backdropFilter: "none", WebkitBackdropFilter: "none", "--tono": ESTADO[eg]?.hex }}>
+          <FondoCuerpo />
           <Cuerpo analisis={analisis} onVer={ir} maxBurbujas={ancho ? 3 : 2} debug={debug} hrefMas={`/analisis?a=${aid}`} />
         </article>
-        {IZQ.map((k, i) => <Metrica key={k} t={porK[k]} analisis={analisis} onClick={() => ir(k)} className={`min-[1100px]:col-start-1 ${FILA[i]}`} />)}
-        {DER.map((k, i) => <Metrica key={k} t={porK[k]} analisis={analisis} onClick={() => ir(k)} className={`min-[1100px]:col-start-3 ${FILA[i]}`} />)}
+        {IZQ.map((k, i) => <BotonVital key={k} t={porK[k]} onClick={() => abrir(k)} extra={medic(k)} className={`min-[1100px]:col-start-1 min-[1100px]:self-center ${FILA[i]}`} />)}
+        {DER.map((k, i) => <BotonVital key={k} t={porK[k]} onClick={() => abrir(k)} extra={medic(k)} className={`min-[1100px]:col-start-3 min-[1100px]:self-center ${FILA[i]}`} />)}
       </section>
 
       <Seccion glifo="✦" titulo={GRUPOS.espacio} n={ORDEN_ESPACIO.length} />
       <section aria-label={GRUPOS.espacio} className="grid grid-cols-2 gap-[9px] min-[640px]:gap-[14px] min-[1100px]:grid-cols-4">
-        {ORDEN_ESPACIO.map((k) => <Mini key={k} t={porK[k]} analisis={analisis} onClick={() => ir(k)} />)}
+        {ORDEN_ESPACIO.map((k) => <Compacta key={k} t={porK[k]} onClick={() => abrir(k)} extra={medic(k)} accion="Ver detalle" />)}
       </section>
 
       <Seccion glifo="◈" titulo={GRUPOS.mental} n={ORDEN_MENTAL.length} />
       <section aria-label={GRUPOS.mental} className="grid grid-cols-2 gap-[9px] pb-16 min-[640px]:gap-[14px] min-[1100px]:grid-cols-4">
-        {ORDEN_MENTAL.map((k) => <Mini key={k} t={porK[k]} analisis={analisis} onClick={() => ir(k)} ancha />)}
+        {ORDEN_MENTAL.map((k) => <Compacta key={k} t={porK[k]} onClick={() => abrir(k)} extra={medic(k)} accion="Ver detalle" className="min-[1100px]:col-span-2" />)}
       </section>
 
       <Aviso analisis={analisis} onVer={ir} />
