@@ -43,7 +43,7 @@ export default function VigiaFichas({ astronautId, ejecutar = true, onAbrir, fic
     if (!aviso || !visible || ultimoSonido.current === id) return;
     const edad = Date.now() - Date.parse(aviso.t);
     ultimoSonido.current = id;
-    if (aviso.sonar && edad < 5 * 6e4) sonarAviso(aviso.nivel === "emergencia");
+    if (aviso.sonar && edad < 5 * 6e4) sonarAviso(aviso.nivel === "critico");
   }, [id, visible]);
 
   if (!aviso || visto === id || Date.now() - Date.parse(aviso.t) > 30 * 6e4) return null;

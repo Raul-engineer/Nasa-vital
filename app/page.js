@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Shell } from "@/components/Shell";
 import Link from "next/link";
@@ -7,9 +7,10 @@ import Cuerpo, { MAX_TARJETAS } from "@/components/Cuerpo";
 import { Metrica } from "@/components/PanelTripulante";
 import CyberButton from "@/components/CyberButton";
 import Ficha from "@/components/Ficha";
-import { CLAVES_FICHA } from "@/lib/fichas";
+import { CLAVES_FICHA, gravedadesConFichas } from "@/lib/fichas";
 import { BarraVida, BotonesGravedad, FILTROS, useAlertasActivas, valorCorto } from "@/components/ListaAlertas";
-import { COLOR_GRAVEDAD } from "@/lib/analysis";
+import { COLOR_GRAVEDAD, saludGeneral } from "@/lib/analysis";
+import { useFichas } from "@/lib/useFichas";
 import { useAstronautId, useQuickFix } from "@/lib/useQuickFix";
 
 const AVISO_CRITICO_MS = 3000;
@@ -78,7 +79,13 @@ export default function Inicio() {
   const ancho = useMedia("(min-width: 1100px)");
   const [debug, setDebug] = useState(false);
   const idDatos = data?.astronaut?.id;
-  const items = useAlertasActivas(analisis, idDatos);
+  const fichas = useFichas(idDatos);
+  const vista = useMemo(() => {
+    if (!analisis) return null;
+    const gravedades = gravedadesConFichas(analisis.gravedades, fichas.eventos);
+    return { ...analisis, gravedades, salud: saludGeneral({ gravedades }) };
+  }, [analisis, fichas.eventos]);
+  const items = useAlertasActivas(vista, idDatos);
   const [filtro, setFiltro] = useState(null);
   const [ficha, setFicha] = useState(null);
   const urlLista = useRef(false);
@@ -111,7 +118,7 @@ export default function Inicio() {
   if (loading || !analisis) return <div className="flex min-h-screen items-center justify-center text-muted">Cargando QuickFix…</div>;
 
   const { astronaut, astronauts } = data;
-  const salud = analisis.salud;
+  const salud = vista.salud;
   const ir = (k) => setFicha(k);
   const filtrados = filtro ? items.filter((a) => a.nivel === filtro) : items;
 
@@ -127,7 +134,7 @@ export default function Inicio() {
           <BarraVida salud={salud} />
         </div>
         <div className="relative min-h-0 flex-1">
-          <Cuerpo analisis={analisis} lista={filtrados} todas={items} onVer={ir} debug={debug} conTarjetas={ancho} masHref={filtro ? `/analisis?a=${aid}&tab=alertas` : null}
+          <Cuerpo analisis={vista} lista={filtrados} todas={items} onVer={ir} debug={debug} conTarjetas={ancho} masHref={filtro ? `/analisis?a=${aid}&tab=alertas` : null}
             brillo={{ color: salud.color, pulsa: salud.clave === "critico" }} />
         </div>
       </section>

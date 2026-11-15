@@ -2,7 +2,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import CyberButton from "./CyberButton";
-import { abrirEventoFicha, actualizarEventoFicha, cerrarEventoFicha, desmarcarPaso, guardarRespuestas, marcarPaso, registrarMedicamento, setEnVivo } from "@/lib/data";
+import { abrirEventoFicha, actualizarEventoFicha, cerrarEventoFicha, desmarcarPaso, guardarRespuestas, marcarPaso, medirPresion, registrarMedicamento, setEnVivo, setEnVivoTripulacion, setEnVivoVarios } from "@/lib/data";
 import {
   CAMPOS_REMEDIR, CATEGORIA_FICHA, COLOR_NIVEL, contextoFicha, ETIQUETA_NIVEL, evaluarRemedicion, lecturaDeContexto, limpiarRespuestas, mayorNivel,
   MOTIVOS_NO_PUEDO, NOTA_BOTIQUIN, preguntasDe, RESPUESTAS, subirNivel, TEXTO_NO_LIBRE, TITULOS,
@@ -16,13 +16,15 @@ import { useQuickFix } from "@/lib/useQuickFix";
 const REUSO_MIN = 30;
 const hora = (iso) => (iso ? new Date(iso).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }) : "—");
 
-function Nivel({ nivel, grande = false }) {
+const GUARDAR_REMEDIR = { fc: "fc", frec_resp: "frec_resp", spo2: "spo2", temperatura: "temperatura", who5: "who5", reaccion: "reaccion", huesosPct: "ejercicio_pct" };
+
+function Nivel({ nivel, grande = false, etiqueta = null }) {
   const c = COLOR_NIVEL[nivel] || COLOR_NIVEL.moderado;
   return (
     <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border font-semibold ${grande ? "px-3 py-1.5 text-sm" : "px-2 py-0.5 text-[11px]"}`}
       style={{ color: c, borderColor: `color-mix(in oklab, ${c} 55%, transparent)`, background: `color-mix(in oklab, ${c} 12%, transparent)` }} data-nivel-ficha={nivel}>
       <span className="dot-estado" style={{ width: 6, height: 6 }} />
-      {ETIQUETA_NIVEL[nivel] || nivel}
+      {etiqueta || ETIQUETA_NIVEL[nivel] || nivel}
     </span>
   );
 }
@@ -221,7 +223,7 @@ function Remedir({ clave, ev, contexto, inicial, onResultado, deshabilitado }) {
     const nueva = usarActual ? actual : Object.fromEntries(campos.map((c) => [c.campo, vals[c.campo] === "" || vals[c.campo] == null ? null : Number(String(vals[c.campo]).replace(",", "."))]));
     const r = evaluarRemedicion(clave, contexto, nueva, inicial);
     setRes(r.resultado);
-    onResultado(r, nueva);
+    onResultado(r, nueva, usarActual);
   };
   const r = ev.ficha.remedir || {};
   return (
@@ -295,13 +297,13 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
 
   const calc = useMemo(() => {
     if (!clave || !analisis || !data) return null;
-    const contexto = contextoFicha(clave, analisis, data, { oximetro: m.oximetro, nivelMinimo: m.nivelMin, rama: m.rama });
+    const contexto = contextoFicha(clave, analisis, data, { oximetro: m.oximetro, nivelMinimo: evento ? mayorNivel(evento.nivel, m.nivelMin || "ok") : null, rama: m.rama });
     const todas = Object.fromEntries(abiertos.filter((e) => e.clave !== clave).map((e) => [e.clave, e.respuestas || {}]));
     const causas = Object.fromEntries(abiertos.map((e) => [e.clave, String(e.causa || "").split(",")[0] || null]));
     const entrada = entradaCombinaciones({ analisis, data, tripulacion: trip, medicamentos: db.medicamentos, medicamentosTripulacion: db.medicamentosTripulacion, respuestas: todas, causas, oximetro: m.oximetro });
     const { ficha, combinaciones } = evaluarConCombinaciones(clave, { contexto, respuestas, todas, entrada });
     return { contexto, ficha, combinaciones };
-  }, [clave, analisis, data, respuestas, abiertos, trip, db.medicamentos, db.medicamentosTripulacion]);
+  }, [clave, analisis, data, respuestas, abiertos, evento?.nivel, trip, db.medicamentos, db.medicamentosTripulacion]);
 
   const ev = calc?.ficha;
   const causaTxt = ev ? ev.principales.map((c) => c.id).join(",") : "";
@@ -396,8 +398,16 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
       setMensaje(`No se pudo registrar: ${e?.message || e}`);
     }
   };
-  const alRemedir = async (r, nueva) => {
+  const guardarLectura = async (nueva) => {
+    const valores = Object.fromEntries(Object.entries(nueva || {}).filter(([, v]) => v != null && Number.isFinite(v)));
+    if (clave === "pa" && valores.sistolica != null && valores.diastolica != null) return medirPresion(aid, valores.sistolica, valores.diastolica);
+    if (clave === "cabina" && valores.co2_ppm != null) return setEnVivoTripulacion(ids, { co2_ppm: valores.co2_ppm });
+    const vivo = Object.fromEntries(Object.entries(valores).filter(([k]) => GUARDAR_REMEDIR[k]).map(([k, v]) => [GUARDAR_REMEDIR[k], v]));
+    if (Object.keys(vivo).length) return setEnVivoVarios(aid, vivo);
+  };
+  const alRemedir = async (r, nueva, usarActual) => {
     if (!evento) return;
+    if (!usarActual) await guardarLectura(nueva).catch((e) => setMensaje(`No se pudo guardar la lectura: ${e?.message || e}`));
     const mm = { ...(evento.respuestas?._m || {}) };
     if (clave === "spo2" && nueva?.spo2 != null && (CAMPOS_REMEDIR.spo2[0].campo in nueva)) mm.oximetro = nueva.spo2;
     mm.remediciones = [...(mm.remediciones || []), { t: new Date().toISOString(), resultado: r.resultado, lectura: r.lectura }].slice(-10);
@@ -410,7 +420,7 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
         mm.peor = true;
         mm.avisos = [...(mm.avisos || []), { id: `peor.${Date.now()}`, t: new Date().toISOString(), nivel, sonar: true, texto: `${TITULOS[clave]}: empeoró al volver a medir. Sube a ${ETIQUETA_NIVEL[nivel]}.` }].slice(-30);
         await actualizarEventoFicha(evento.id, { nivel, respuestas: toque({ ...(evento.respuestas || {}), _m: mm }) });
-      } else if (r.resultado === "resuelto" && !(clave === "spo2" && ev.nivel === "emergencia" && nueva?.spo2 < 90)) {
+      } else if (r.resultado === "resuelto" && !(clave === "spo2" && ev.nivel === "critico" && nueva?.spo2 < 90)) {
         await actualizarEventoFicha(evento.id, { respuestas: toque({ ...(evento.respuestas || {}), _m: mm }) });
         cerradoAqui.current = true;
         await cerrarEventoFicha(evento.id, "resuelto");
@@ -477,7 +487,7 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
                 <ul className="space-y-2">
                   {ev.combinaciones.map((c) => (
                     <li key={c.id} className="text-sm" data-combinacion={c.id}>
-                      <div className="flex flex-wrap items-center gap-2"><span className="font-semibold">{c.titulo}</span><Nivel nivel={c.nivel} />{c.todos && <span className="text-[11px] text-muted">Toda la tripulación</span>}</div>
+                      <div className="flex flex-wrap items-center gap-2"><span className="font-semibold">{c.titulo}</span><Nivel nivel={c.nivel} etiqueta={c.nivel === "info" ? "Aviso" : null} />{c.todos && <span className="text-[11px] text-muted">Toda la tripulación</span>}</div>
                       <p className="mt-0.5 text-xs text-muted">{c.significado}</p>
                       <Fuentes ids={c.fuente.split(",")} />
                     </li>
@@ -523,6 +533,7 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
               <>
                 <Seccion titulo="Qué está pasando">
                   <p className="text-[15px] leading-snug" data-frase>{ev.frase}</p>
+                  {ev.causaProbable && <p className="mt-2 text-[15px] font-semibold text-accent" data-causa-probable>{ev.causaProbable}.</p>}
                   {ev.contexto && <p className="mt-2 text-xs leading-snug text-muted">{ev.contexto}</p>}
                   {ev.ficha.nota && <p className="mt-2 text-xs leading-snug text-warn">{ev.ficha.nota}</p>}
                   {ev.exclusion && (
@@ -638,7 +649,7 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
             <Seccion titulo="Cuándo escalar">
               <ul className="space-y-1.5">
                 {ev.ficha.escalar.map((e) => (
-                  <li key={e.texto} className="flex items-start gap-2 text-sm"><Nivel nivel={e.nivel} /><span className="min-w-0 flex-1 text-soft">{e.texto}</span></li>
+                  <li key={e.texto} className="flex items-start gap-2 text-sm"><Nivel nivel={e.nivel} etiqueta={e.nivel === "info" ? "Aviso" : null} /><span className="min-w-0 flex-1 text-soft">{e.texto}</span></li>
                 ))}
               </ul>
             </Seccion>
