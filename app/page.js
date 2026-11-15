@@ -80,7 +80,8 @@ export default function Inicio() {
   const porK = Object.fromEntries(analisis.tarjetas.map((t) => [t.k, t]));
   const eg = analisis.general;
   const motivo = motivoGeneral(analisis, porK);
-  const ir = (k) => router.push(`/analisis?a=${aid}&var=${k}`);
+  const ir = (k) => router.push(`/analisis?a=${aid}&tab=alertas&var=${k}`);
+  const irAlertas = () => router.push(`/analisis?a=${aid}&tab=alertas`);
 
   return (
     <Shell active="/" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis} pie="Datos simulados · Medic no diagnostica">
@@ -97,7 +98,7 @@ export default function Inicio() {
 
       <section aria-label="Cuerpo del astronauta" className="glass relative h-[min(calc(100vh-292px),760px)] min-h-[420px] overflow-hidden max-[1099px]:h-[460px]"
         style={{ background: "radial-gradient(ellipse at 50% 40%, #3a2a2a66, transparent 70%), linear-gradient(160deg, #2b232499, #1b202a99), var(--glass)" }}>
-        <Cuerpo analisis={analisis} lista={lista} onVer={ir} debug={debug} hrefMas={`/analisis?a=${aid}`} conTarjetas={ancho} />
+        <Cuerpo analisis={analisis} lista={lista} onVer={ir} debug={debug} hrefMas={`/analisis?a=${aid}&tab=alertas`} conTarjetas={ancho} />
       </section>
 
       {!ancho && lista.length > 0 && (
@@ -108,7 +109,7 @@ export default function Inicio() {
             </div>
           ))}
           {lista.length > MAX_TARJETAS && (
-            <Link href={`/analisis?a=${aid}`} className="glass col-span-2 rounded-full px-3 py-2 text-center text-xs font-semibold text-soft" data-burbuja="mas">
+            <Link href={`/analisis?a=${aid}&tab=alertas`} className="glass col-span-2 rounded-full px-3 py-2 text-center text-xs font-semibold text-soft" data-burbuja="mas">
               +{lista.length - MAX_TARJETAS} {lista.length - MAX_TARJETAS === 1 ? "alerta" : "alertas"}
             </Link>
           )}
@@ -116,10 +117,10 @@ export default function Inicio() {
       )}
 
       <div className="mb-16 mt-5 flex justify-center">
-        <CyberButton href={`/analisis?a=${aid}`} tam="sm" atajo="2" texto="Ver todos mis datos">Ver todos mis datos</CyberButton>
+        <CyberButton href={`/analisis?a=${aid}&tab=completo`} tam="sm" texto="Ver todos mis datos">Ver todos mis datos</CyberButton>
       </div>
 
-      <Aviso analisis={analisis} onVer={ir} />
+      <Aviso analisis={analisis} onVer={irAlertas} />
     </Shell>
   );
 }

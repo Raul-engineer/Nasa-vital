@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Icon } from "@/components/Icons";
 import CyberButton from "@/components/CyberButton";
-import { Dot, ESTADO } from "@/components/Shell";
+import { ESTADO } from "@/components/Shell";
 import { Fuente, fmtNum } from "@/components/Widgets";
 import { TrendChart } from "@/components/Charts";
 import { Monitor } from "@/components/monitor";
@@ -233,7 +233,7 @@ function QueHacer({ plan, it, clave }) {
   );
 }
 
-export function VistaVariable({ k, analisis, data, aid, onCambiar, onTodas }) {
+export function VistaVariable({ k, analisis, data, aid }) {
   const [periodo, setPeriodo] = useState("30");
   const [agrupar, setAgrupar] = useState("dia");
   const t = analisis.tarjetas.find((x) => x.k === k);
@@ -246,23 +246,12 @@ export function VistaVariable({ k, analisis, data, aid, onCambiar, onTodas }) {
   const s = simboloEstado(t);
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <div className="mb-4 mt-2 flex flex-wrap items-end gap-3">
-          <div className="min-w-0">
-            <h1 className="titulo-pagina">{t.nombre}</h1>
-            <div className="mt-1.5 text-[13px] text-muted">{it.conclusion}</div>
-          </div>
-          <ChipEstado estado={t.estado} className="mb-1">{s.palabra}</ChipEstado>
-          <CyberButton onClick={onTodas} tam="sm" className="ml-auto" texto="Ver los 12 signos">Ver los 12 signos</CyberButton>
+      <div className="flex flex-wrap items-end gap-3 px-0.5" data-detalle={k}>
+        <div className="min-w-0">
+          <h2 className="font-display text-[clamp(22px,2.2vw,28px)] font-semibold leading-tight tracking-[-0.6px]">{t.nombre}</h2>
+          <div className="mt-1 text-[13px] text-muted">{it.conclusion}</div>
         </div>
-        <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Variables">
-          {analisis.tarjetas.map((x) => (
-            <button key={x.k} role="tab" aria-selected={x.k === k} onClick={() => onCambiar(x.k)}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition ${x.k === k ? `bg-ink/10 font-semibold ${ESTADO[x.estado].border}` : "border-line hover:bg-ink/5"}`}>
-              <Dot estado={x.estado} /> {x.nombre}
-            </button>
-          ))}
-        </div>
+        <ChipEstado estado={t.estado} className="mb-1">{s.palabra}</ChipEstado>
       </div>
 
       <div className="glass p-2"><Monitor key={`${k}-${aid}`} k={k} t={t} analisis={analisis} data={data} aid={aid} /></div>
