@@ -271,9 +271,21 @@ select option { background: #242026; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
 
+.ficha-panel { animation: ficha-entra .28s cubic-bezier(.2, .8, .2, 1) both; background: linear-gradient(160deg, rgba(40, 32, 34, 0.985), rgba(21, 18, 24, 0.99)); }
+@keyframes ficha-entra { from { opacity: 0; transform: translateX(24px) } to { opacity: 1; transform: none } }
+.ficha-peligro { animation: ficha-peligro 1.6s ease-in-out 3; }
+@keyframes ficha-peligro { 50% { box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-crit) 30%, transparent) } }
+.ficha-seccion:first-of-type { border-top: 0; }
+
+@media (prefers-reduced-transparency: reduce) {
+  .ficha-panel, .ficha-panel header { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: #17141a !important; }
+  .ficha-fondo { background: rgba(0, 0, 0, 0.75); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .beam { animation: none; opacity: 0; }
-  .cuerpo-fig, .cuerpo-poses, .cuerpo-aura, .cuerpo-punto-anillo, .pose-entra, .pose-sale, .burbuja-entra, .burbuja-sale, .aviso-entra, .pulso-contador, .vida-pulsa, .fila-entra, .fila-sale { animation: none !important; }
+  .cuerpo-fig, .cuerpo-poses, .cuerpo-aura, .cuerpo-punto-anillo, .pose-entra, .pose-sale, .burbuja-entra, .burbuja-sale, .aviso-entra, .pulso-contador, .vida-pulsa, .fila-entra, .fila-sale, .ficha-panel, .ficha-peligro { animation: none !important; }
+  .ficha-panel * { transition: none !important; }
   .vida-relleno { transition: none; }
   .burbuja { transition: none; }
   .astro-float, .halo-pulso, .vibrate, .pulse-ring::after, .giro-lento, .trazo, .parpadeo { animation: none; }

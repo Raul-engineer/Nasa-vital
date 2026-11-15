@@ -6,6 +6,8 @@ import Link from "next/link";
 import Cuerpo, { MAX_TARJETAS } from "@/components/Cuerpo";
 import { Metrica } from "@/components/PanelTripulante";
 import CyberButton from "@/components/CyberButton";
+import Ficha from "@/components/Ficha";
+import { CLAVES_FICHA } from "@/lib/fichas";
 import { BarraVida, BotonesGravedad, FILTROS, useAlertasActivas, valorCorto } from "@/components/ListaAlertas";
 import { COLOR_GRAVEDAD } from "@/lib/analysis";
 import { useAstronautId, useQuickFix } from "@/lib/useQuickFix";
@@ -78,12 +80,15 @@ export default function Inicio() {
   const idDatos = data?.astronaut?.id;
   const items = useAlertasActivas(analisis, idDatos);
   const [filtro, setFiltro] = useState(null);
+  const [ficha, setFicha] = useState(null);
   const urlLista = useRef(false);
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
     setDebug(p.get("debug") === "cuerpo");
     const f = p.get("filtro");
     if (FILTROS.includes(f)) setFiltro(f);
+    const fi = p.get("ficha");
+    if (CLAVES_FICHA.includes(fi)) setFicha(fi);
     urlLista.current = true;
   }, []);
   const hayFiltro = !filtro || items.some((a) => a.nivel === filtro);
@@ -95,9 +100,11 @@ export default function Inicio() {
     const url = new URL(window.location.href);
     if (filtro) url.searchParams.set("filtro", filtro);
     else url.searchParams.delete("filtro");
+    if (ficha) url.searchParams.set("ficha", ficha);
+    else url.searchParams.delete("ficha");
     const nueva = `${url.pathname}${url.search}`;
     if (nueva !== `${window.location.pathname}${window.location.search}`) router.replace(nueva, { scroll: false });
-  }, [filtro, router]);
+  }, [filtro, ficha, router]);
 
   if (error)
     return <div className="p-10 text-crit">No se pudieron cargar los datos: {error}. Revisa tus variables de Supabase en .env.local (o bórralas para usar datos locales).</div>;
@@ -105,11 +112,11 @@ export default function Inicio() {
 
   const { astronaut, astronauts } = data;
   const salud = analisis.salud;
-  const ir = (k) => router.push(`/analisis?a=${aid}&tab=alertas&var=${k}`);
+  const ir = (k) => setFicha(k);
   const filtrados = filtro ? items.filter((a) => a.nivel === filtro) : items;
 
   return (
-    <Shell active="/" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis} pie={false}>
+    <Shell active="/" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis} pie={false} onAbrirFicha={setFicha}>
       <h1 className="sr-only">Inicio · {astronaut.nombre}</h1>
 
       <BotonesGravedad items={items} filtro={filtro} onFiltro={setFiltro} />
@@ -145,6 +152,7 @@ export default function Inicio() {
       </div>
 
       <Aviso items={items} aid={idDatos} onVer={ir} />
+      {ficha && <Ficha clave={ficha} astronautId={aid} data={data} analisis={analisis} onClose={() => setFicha(null)} onAbrir={setFicha} />}
     </Shell>
   );
 }

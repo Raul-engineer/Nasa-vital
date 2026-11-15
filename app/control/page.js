@@ -2,8 +2,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ESTADO, iniciales } from "@/components/Shell";
 import { NOMBRE_SINTOMA } from "@/lib/analysis";
-import { confirmarRefugio, iniciarTormenta, resetEnVivo, setActividad, setEnVivo, setEnVivoVarios, terminarTormenta } from "@/lib/data";
+import { borrarEnVivo, CLAVES_TRIPULACION, confirmarRefugio, iniciarTormenta, resetEnVivo, setActividad, setEnVivo, setEnVivoTripulacion, setEnVivoVarios, terminarTormenta } from "@/lib/data";
 import { useAstronautId, useConexion, useQuickFix } from "@/lib/useQuickFix";
+import { useFichas } from "@/lib/useFichas";
+import { COLOR_NIVEL, ETIQUETA_NIVEL, pasosDeEvento, TITULOS } from "@/lib/fichas";
+import { pasosHechos } from "@/lib/escalamiento";
+import Ficha from "@/components/Ficha";
+import VigiaFichas from "@/components/VigiaFichas";
 
 const GRUPOS = [
   ["Signos vitales", [
@@ -16,7 +21,9 @@ const GRUPOS = [
   ]],
   ["Salud en el espacio", [
     { c: "tasa_radiacion", n: "Radiación (tasa)", u: "µSv/h", paso: 5, min: 0, max: 1000, v: "radiacion" },
-    { c: "co2_ppm", n: "CO₂ de la cabina", u: "ppm", paso: 250, min: 400, max: 8000, v: "cabina" },
+    { c: "co2_ppm", n: "CO₂ de la cabina · toda la tripulación", u: "ppm", paso: 250, min: 400, max: 8000, v: "cabina" },
+    { c: "temp_cabina", n: "Temperatura de la cabina", u: "°C", paso: 0.5, min: 10, max: 35, v: "cabina", dec: 1 },
+    { c: "humedad_cabina", n: "Humedad de la cabina", u: "%", paso: 5, min: 5, max: 95, v: "cabina" },
     { c: "ejercicio_pct", n: "Ejercicio", u: "%", paso: 10, min: 0, max: 200, v: "huesos" },
   ]],
   ["Mente y sueño", [
@@ -28,6 +35,36 @@ const GRUPOS = [
 ];
 
 const SINTOMAS = ["garganta", "llagas", "ronchas", "estomago"];
+const FASES = [["orbita", "Órbita"], ["luna", "Luna"], ["marte", "Marte"], ["regreso", "Regreso"]];
+const hora = (iso) => (iso ? new Date(iso).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }) : "—");
+
+function FichasAbiertas({ fichas, onAbrir }) {
+  const abiertos = fichas.eventos.filter((e) => !e.cerrado_en);
+  if (!abiertos.length) return <p className="px-1 text-sm text-muted">Sin fichas abiertas.</p>;
+  return (
+    <ul className="grid gap-2">
+      {abiertos.map((e) => {
+        const pasos = pasosDeEvento(e);
+        const hechos = pasosHechos(fichas.pasos, e.id);
+        const n = pasos.filter((p) => hechos.has(p.id)).length;
+        const c = COLOR_NIVEL[e.nivel] || COLOR_NIVEL.moderado;
+        return (
+          <li key={e.id}>
+            <button onClick={() => onAbrir(e.clave)} data-ficha-abierta={e.clave}
+              className="glass flex min-h-12 w-full items-center gap-3 px-4 py-3 text-left" style={{ borderColor: `color-mix(in oklab, ${c} 55%, transparent)` }}>
+              <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: c }} />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold">{TITULOS[e.clave] || e.clave}</span>
+                <span className="block text-xs text-muted">{ETIQUETA_NIVEL[e.nivel]} · {n} de {pasos.length} pasos · desde {hora(e.abierto_en)}</span>
+              </span>
+              <span className="text-sm font-semibold text-cyan">Abrir</span>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
 const ESCENARIOS = ["Normal", "Esfuerzo", "Fiebre", "Fatiga", "Oxígeno bajo", "Presión baja", "Tormenta solar", "CO₂ alto"];
 const DEBOUNCE_MS = 250;
 
@@ -39,7 +76,9 @@ function valoresActuales(data, analisis) {
   return {
     fc: r.fc, sistolica: r.sistolica, diastolica: r.diastolica, frec_resp: r.frec_resp, spo2: r.spo2, temperatura: r.temperatura,
     tasa_radiacion: Math.round(((Number(v.dosis_dia_msv) || 0) * 1000) / 24), co2_ppm: porK.cabina?.valor, ejercicio_pct: porK.huesos?.valor,
+    temp_cabina: porK.cabina?.cabinaHoy?.temp_c, humedad_cabina: porK.cabina?.cabinaHoy?.humedad,
     horas_sueno: v.horas_sueno, who5: porK.animo?.valor, estres: ci.estres, tripulacion: ci.tripulacion,
+    pulso_irregular: !!data.enVivo?.pulso_irregular, tarea_critica: !!data.enVivo?.tarea_critica, alarma_nave: data.enVivo?.alarma_nave || null, fase_mision: data.enVivo?.fase_mision || "orbita",
     confusion: !!ci.confusion, mareo_de_pie: !!ci.mareo_de_pie, vision_borrosa: !!ci.vision_borrosa, dolor_cabeza: !!ci.dolor_cabeza,
     sintomas: Array.isArray(ci.sintomas) ? ci.sintomas : [],
   };
@@ -108,7 +147,10 @@ export default function Control() {
   const { data, analisis, loading, error } = useQuickFix(aid);
   const [pendientes, setPendientes] = useState({});
   const [aviso, setAviso] = useState(null);
+  const [ficha, setFicha] = useState(null);
   const timers = useRef({});
+  const idsTrip = (data?.astronauts || []).map((a) => a.id);
+  const fichas = useFichas(data?.astronaut?.id ?? aid);
 
   useEffect(() => {
     setPendientes({});
@@ -126,7 +168,8 @@ export default function Control() {
     clearTimeout(timers.current[clave]);
     timers.current[clave] = setTimeout(async () => {
       try {
-        await setEnVivo(aid, clave, valor);
+        if (CLAVES_TRIPULACION.includes(clave)) await setEnVivoTripulacion(idsTrip, { [clave]: valor });
+        else await setEnVivo(aid, clave, valor);
       } catch (e) {
         avisar(`No se pudo guardar: ${e?.message || e}`);
       }
@@ -137,7 +180,7 @@ export default function Control() {
         return r;
       }), 1500);
     }, DEBOUNCE_MS);
-  }, [aid, avisar]);
+  }, [aid, avisar, idsTrip.join(",")]);
 
   if (error) return <div className="p-8 text-crit">No se pudieron cargar los datos: {error}</div>;
   if (loading || !analisis) return <div className="grid min-h-screen place-items-center text-muted">Conectando…</div>;
@@ -168,6 +211,7 @@ export default function Control() {
       Normal: async () => {
         await resetEnVivo(aid);
         await setEnVivoVarios(aid, normal);
+        await borrarEnVivo(idsTrip, CLAVES_TRIPULACION);
         await terminarTormenta();
       },
       Esfuerzo: () => setActividad(aid, "ejercicio"),
@@ -176,7 +220,10 @@ export default function Control() {
       "Oxígeno bajo": () => setEnVivoVarios(aid, { spo2: 89, frec_resp: 23 }),
       "Presión baja": () => setEnVivoVarios(aid, { sistolica: 88, diastolica: 56, mareo_de_pie: true }),
       "Tormenta solar": () => iniciarTormenta("S3"),
-      "CO₂ alto": () => setEnVivoVarios(aid, { co2_ppm: 4300, dolor_cabeza: true }),
+      "CO₂ alto": async () => {
+        await setEnVivoTripulacion(idsTrip, { co2_ppm: 4300 });
+        await setEnVivoVarios(aid, { dolor_cabeza: true });
+      },
     };
     setPendientes({});
     ejecutar(mapa[nombre], `Escenario: ${nombre}`);
@@ -210,6 +257,11 @@ export default function Control() {
             </button>
           ))}
         </div>
+      </section>
+
+      <section className="mt-5" aria-label="Fichas abiertas">
+        <h2 className="etiqueta mb-2 px-1">Fichas abiertas</h2>
+        <FichasAbiertas fichas={fichas} onAbrir={setFicha} />
       </section>
 
       <section className="mt-5" aria-label="Escenarios rápidos">
@@ -257,13 +309,28 @@ export default function Control() {
           <Interruptor etiqueta="Ejercicio en curso" activo={enEjercicio} onClick={() => ejecutar(() => setActividad(aid, enEjercicio ? "recuperacion" : "ejercicio"), enEjercicio ? "Ejercicio terminado" : "Ejercicio iniciado")} />
           <Interruptor etiqueta="Tormenta solar activa" activo={!!r.activo} onClick={() => ejecutar(() => (r.activo ? terminarTormenta() : iniciarTormenta("S3")), r.activo ? "Tormenta terminada" : "Tormenta solar S3")} />
           <Interruptor etiqueta="Ya en refugio" activo={!!r.refugio} disabled={!r.activo || r.refugio} onClick={() => ejecutar(() => confirmarRefugio(aid), "Refugio confirmado")} />
+          <Interruptor etiqueta="Pulso irregular" activo={val("pulso_irregular")} onClick={() => guardar("pulso_irregular", !val("pulso_irregular"))} />
+          <Interruptor etiqueta="Tarea crítica (caminata o maniobra)" activo={val("tarea_critica")} onClick={() => guardar("tarea_critica", !val("tarea_critica"))} />
+          <Interruptor etiqueta="Alarma de la nave · toda la tripulación" activo={!!val("alarma_nave")} onClick={() => guardar("alarma_nave", val("alarma_nave") ? null : { tipo: "incendio", desde: new Date().toISOString() })} />
+          <div className="rounded-2xl border border-white/12 bg-white/[0.05] p-3">
+            <div className="mb-2 text-sm font-medium text-soft">Fase de la misión · toda la tripulación</div>
+            <div className="grid grid-cols-4 gap-2">
+              {FASES.map(([k, n]) => (
+                <button key={k} onClick={() => guardar("fase_mision", k)} aria-pressed={val("fase_mision") === k}
+                  className={`min-h-11 rounded-xl border px-2 text-sm font-medium ${val("fase_mision") === k ? "border-accent/70 bg-accent/15 text-fg" : "border-white/12 text-soft"}`}>{n}</button>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
-      <button onClick={() => { setPendientes({}); ejecutar(async () => { await resetEnVivo(aid); await terminarTormenta(); }, "Cambios en vivo borrados"); }}
+      <button onClick={() => { setPendientes({}); ejecutar(async () => { await resetEnVivo(aid); await borrarEnVivo(idsTrip, CLAVES_TRIPULACION); await terminarTormenta(); }, "Cambios en vivo borrados"); }}
         className="mt-6 min-h-12 w-full rounded-2xl border border-crit/60 bg-crit/10 px-4 py-3 font-semibold text-crit active:scale-[0.99]" data-accion="restablecer">
         Restablecer
       </button>
+
+      <VigiaFichas astronautId={data.astronaut.id} ejecutar={false} fichas={fichas} onAbrir={setFicha} />
+      {ficha && <Ficha clave={ficha} astronautId={data.astronaut.id} data={data} analisis={analisis} onClose={() => setFicha(null)} onAbrir={setFicha} quien="control" />}
 
       {aviso && (
         <div role="status" className="glass aviso-entra fixed bottom-4 left-1/2 z-40 w-[calc(100%-2rem)] max-w-[480px] -translate-x-1/2 rounded-full px-4 py-2.5 text-center text-sm font-semibold">
