@@ -75,7 +75,8 @@ function colocar(items, H, alto) {
   return orden;
 }
 
-export default function Cuerpo({ analisis, lista, onVer, debug = false, conTarjetas = true, brillo = null }) {
+export default function Cuerpo({ analisis, lista, todas = null, onVer, debug = false, conTarjetas = true, brillo = null, resaltado = null }) {
+  const completas = todas || lista;
   const caja = useRef(null);
   const { W, H } = useTam(caja);
   const estado = estadoPersonaje(analisis);
@@ -126,18 +127,22 @@ export default function Cuerpo({ analisis, lista, onVer, debug = false, conTarje
     return () => clearTimeout(t);
   }, [firma]);
 
+  const enFiltro = new Set(lista.map((v) => v.k));
   const zonasActivas = {};
-  for (const v of lista) {
+  for (const v of completas) {
     const z = ZONA_DE[v.k];
-    if (!zonasActivas[z] || ORDEN_GRAVEDAD[v.nivel] < ORDEN_GRAVEDAD[zonasActivas[z].nivel]) zonasActivas[z] = v;
+    const actual = zonasActivas[z];
+    const mejor = !actual || (enFiltro.has(v.k) && !enFiltro.has(actual.k)) || (enFiltro.has(v.k) === enFiltro.has(actual.k) && ORDEN_GRAVEDAD[v.nivel] < ORDEN_GRAVEDAD[actual.nivel]);
+    if (mejor) zonasActivas[z] = v;
   }
-  const todoBien = lista.length === 0 && poseFalta(POSES.estable);
+  const zonaResaltada = resaltado ? ZONA_DE[resaltado] : null;
+  const todoBien = completas.length === 0 && poseFalta(POSES.estable);
   const mano = punto("manoDer");
   const colorDe = (nivel) => COLOR_GRAVEDAD[nivel] || COLOR_GRAVEDAD.ok;
   const xDe = (b) => (b.lado === "izq" ? xIzq : xDer);
   const finLinea = (b) => (b.lado === "izq" ? xIzq + cw : xDer);
   const fantasmas = saliendo.filter((s) => !actuales.has(`${s.k}-${s.nivel}`));
-  const auraRad = lista.some((v) => v.k === "radiacion");
+  const auraRad = completas.some((v) => v.k === "radiacion");
 
   return (
     <div ref={caja} className="cuerpo relative h-full w-full" data-estado={estado} data-aura={auraRad ? "radiacion" : undefined}
@@ -163,9 +168,12 @@ export default function Cuerpo({ analisis, lista, onVer, debug = false, conTarje
           )}
           {Object.entries(zonasActivas).map(([z, v]) => {
             const p = punto(z);
+            const visible = enFiltro.has(v.k);
+            const grande = zonaResaltada === z;
             return (
-              <button key={z} onClick={() => onVer(v.k)} aria-label={`${v.t.nombre}: ver análisis`} className="cuerpo-punto absolute"
-                style={{ left: p.px - 7, top: p.py - 7, color: colorDe(v.nivel) }} data-zona={z} data-gravedad={v.nivel}>
+              <button key={z} onClick={() => onVer(v.k)} aria-label={`${v.t.nombre}: ver análisis`} className="cuerpo-punto absolute" tabIndex={visible ? 0 : -1} aria-hidden={!visible}
+                style={{ left: p.px - 7, top: p.py - 7, color: colorDe(v.nivel), opacity: visible ? 1 : 0, pointerEvents: visible ? "auto" : "none", transform: `scale(${grande ? 1.7 : 1})`, transition: "opacity .35s ease, transform .25s ease, color .4s ease" }}
+                data-zona={z} data-gravedad={v.nivel} data-visible={visible ? "si" : "no"} data-resaltado={grande ? "si" : undefined}>
                 <span className="cuerpo-punto-anillo" />
                 <span className="cuerpo-punto-centro" />
               </button>
@@ -182,7 +190,8 @@ export default function Cuerpo({ analisis, lista, onVer, debug = false, conTarje
           })}
           {[...tarjetas.map((b) => ({ ...b, sale: false })), ...fantasmas.map((b) => ({ ...b, sale: true }))].map((b) => (
             <div key={`t-${b.k}-${b.nivel}`} className={`absolute z-10 ${b.sale ? "burbuja-sale pointer-events-none" : "burbuja-entra"}`}
-              style={{ left: xDe(b), top: b.y, width: cw, height: ALTO_T, transition: "top .35s ease, left .35s ease" }} data-tarjeta={b.k} data-nivel={b.nivel}>
+              style={{ left: xDe(b), top: b.y, width: cw, height: ALTO_T, transition: "top .35s ease, left .35s ease, outline-color .2s ease", borderRadius: 23, outline: resaltado === b.k ? `3px solid ${colorDe(b.nivel)}` : "3px solid transparent", outlineOffset: 3 }}
+              data-tarjeta={b.k} data-nivel={b.nivel} data-resaltado={resaltado === b.k ? "si" : undefined}>
               <Metrica t={b.t} analisis={analisis} onClick={() => onVer(b.k)} className="h-full w-full" acento={colorDe(b.nivel)} />
             </div>
           ))}

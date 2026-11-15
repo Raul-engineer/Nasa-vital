@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Shell } from "@/components/Shell";
 import Cuerpo from "@/components/Cuerpo";
 import CyberButton from "@/components/CyberButton";
-import { BarraVida, ListaAlertas, useAlertasActivas, valorCorto } from "@/components/ListaAlertas";
+import { BarraVida, FILTROS, FranjaAlertas, useAlertasActivas, valorCorto } from "@/components/ListaAlertas";
 import { COLOR_GRAVEDAD } from "@/lib/analysis";
 import { useAstronautId, useQuickFix } from "@/lib/useQuickFix";
 
@@ -75,9 +75,28 @@ export default function Inicio() {
   const [debug, setDebug] = useState(false);
   const idDatos = data?.astronaut?.id;
   const items = useAlertasActivas(analisis, idDatos);
+  const [filtro, setFiltro] = useState(null);
+  const [resaltado, setResaltado] = useState(null);
+  const urlLista = useRef(false);
   useEffect(() => {
-    setDebug(new URLSearchParams(window.location.search).get("debug") === "cuerpo");
+    const p = new URLSearchParams(window.location.search);
+    setDebug(p.get("debug") === "cuerpo");
+    const f = p.get("filtro");
+    if (FILTROS.includes(f)) setFiltro(f);
+    urlLista.current = true;
   }, []);
+  const hayFiltro = !filtro || items.some((a) => a.nivel === filtro);
+  useEffect(() => {
+    if (analisis && idDatos != null && !hayFiltro) setFiltro(null);
+  }, [analisis, idDatos, hayFiltro]);
+  useEffect(() => {
+    if (!urlLista.current) return;
+    const url = new URL(window.location.href);
+    if (filtro) url.searchParams.set("filtro", filtro);
+    else url.searchParams.delete("filtro");
+    const nueva = `${url.pathname}${url.search}`;
+    if (nueva !== `${window.location.pathname}${window.location.search}`) router.replace(nueva, { scroll: false });
+  }, [filtro, router]);
 
   if (error)
     return <div className="p-10 text-crit">No se pudieron cargar los datos: {error}. Revisa tus variables de Supabase en .env.local (o bórralas para usar datos locales).</div>;
@@ -86,27 +105,26 @@ export default function Inicio() {
   const { astronaut, astronauts } = data;
   const salud = analisis.salud;
   const ir = (k) => router.push(`/analisis?a=${aid}&tab=alertas&var=${k}`);
+  const filtrados = filtro ? items.filter((a) => a.nivel === filtro) : items;
 
   return (
     <Shell active="/" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis} pie={false}>
-      <div className="mb-5 mt-2 px-0.5">
-        <h1 className="titulo-pagina">Bienvenido a bordo, {astronaut.nombre} <span className="text-accent">✦</span></h1>
-      </div>
+      <h1 className="sr-only">Inicio · {astronaut.nombre}</h1>
 
-      <div className="grid gap-[14px] min-[1100px]:h-[min(calc(100vh-250px),780px)] min-[1100px]:min-h-[480px] min-[1100px]:grid-cols-[minmax(0,1fr)_340px]">
-        <section aria-label="Cuerpo del astronauta" className="glass relative flex h-[480px] flex-col overflow-hidden min-[1100px]:h-full"
-          style={{ background: "radial-gradient(ellipse at 50% 40%, #3a2a2a66, transparent 70%), linear-gradient(160deg, #2b232499, #1b202a99), var(--glass)" }}>
-          <div className="relative z-20 px-4 pt-4">
-            <BarraVida salud={salud} />
-          </div>
-          <div className="relative min-h-0 flex-1">
-            <Cuerpo analisis={analisis} lista={items} onVer={ir} debug={debug} conTarjetas={ancho} brillo={{ color: salud.color, pulsa: salud.clave === "critico" }} />
-          </div>
-        </section>
-        <ListaAlertas items={items} onVer={ir} max={ancho ? 8 : 5} hrefMas={`/analisis?a=${aid}&tab=alertas`} className="min-h-[220px] min-[1100px]:h-full" />
-      </div>
+      <FranjaAlertas items={items} filtro={filtro} onFiltro={setFiltro} onVer={ir} onHover={setResaltado} hrefMas={`/analisis?a=${aid}&tab=alertas`} />
 
-      <div className="mb-10 mt-5 flex justify-center min-[1100px]:pr-[354px]">
+      <section aria-label="Cuerpo del astronauta" className="glass relative mt-[14px] flex h-[480px] flex-col overflow-hidden min-[1100px]:h-[min(calc(100vh-250px),780px)] min-[1100px]:min-h-[480px]"
+        style={{ background: "radial-gradient(ellipse at 50% 40%, #3a2a2a66, transparent 70%), linear-gradient(160deg, #2b232499, #1b202a99), var(--glass)" }}>
+        <div className="relative z-20 px-4 pt-4">
+          <BarraVida salud={salud} />
+        </div>
+        <div className="relative min-h-0 flex-1">
+          <Cuerpo analisis={analisis} lista={filtrados} todas={items} onVer={ir} debug={debug} conTarjetas={ancho} resaltado={resaltado}
+            brillo={{ color: salud.color, pulsa: salud.clave === "critico" }} />
+        </div>
+      </section>
+
+      <div className="mb-10 mt-5 flex justify-center">
         <CyberButton href={`/analisis?a=${aid}&tab=completo`} tam="sm" texto="Ver todos mis datos">Ver todos mis datos</CyberButton>
       </div>
 

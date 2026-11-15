@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Icon } from "./Icons";
 import { COLOR_GRAVEDAD, ETIQUETA_GRAVEDAD, ORDEN_GRAVEDAD } from "@/lib/analysis";
@@ -7,7 +7,6 @@ import { tiempoRelativo } from "./analisis/comun";
 
 const CORTO = { fc: "FC", pa: "Presión", fr: "FR", temp: "Temperatura", spo2: "SpO₂", conciencia: "Conciencia", radiacion: "Radiación", vision: "Visión", huesos: "Huesos", cabina: "CO₂", sueno: "Sueño", animo: "Ánimo" };
 const UNIDAD = { fc: "lpm", pa: "", fr: "rpm", temp: "°C", spo2: "%", conciencia: "", radiacion: "µSv/h", vision: "", huesos: "%", cabina: "ppm", sueno: "h", animo: "/100" };
-const PLURAL = { critico: "Críticas", urgente: "Urgentes", moderado: "Moderadas" };
 const TOOLTIP_VIDA = "Indicador orientativo calculado con tus alertas activas. No es un diagnóstico.";
 const memoria = {};
 
@@ -69,73 +68,65 @@ export function useAlertasActivas(analisis, aid) {
   return items;
 }
 
-function Fila({ a, onVer, sale }) {
-  const color = COLOR_GRAVEDAD[a.nivel];
+export const FILTROS = ["critico", "urgente", "moderado", "info"];
+const NOMBRE_FILTRO = { critico: "Críticas", urgente: "Urgentes", moderado: "Moderadas", info: "Esfuerzo" };
+const COLOR_TODAS = "#a8fff0";
+
+function ChipFiltro({ activo, color, texto, n, onClick, punto = true, clave }) {
   return (
-    <button onClick={() => onVer(a.k)} data-fila-alerta={a.k} data-gravedad={a.nivel} aria-label={`${ETIQUETA_GRAVEDAD[a.nivel]}: ${valorCorto(a.t)}. ${a.frase}. Ver análisis`}
-      className={`relative flex w-full items-center gap-3 overflow-hidden rounded-l-none rounded-r-xl border border-l-0 bg-white/[0.04] py-1.5 pl-4 pr-3 text-left hover:bg-white/[0.09] ${sale ? "fila-sale pointer-events-none" : "fila-entra"}`}
-      style={{ borderColor: `color-mix(in oklab, ${color} 28%, transparent)`, transition: "border-color .4s ease, background-color .2s" }}>
-      <span aria-hidden className="absolute inset-y-0 left-0 w-[3px]" style={{ background: color, transition: "background .4s ease" }} />
-      <span className="min-w-0 flex-1">
-        <span className="flex min-w-0 items-center gap-2">
-          <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color, transition: "color .4s ease" }}>{ETIQUETA_GRAVEDAD[a.nivel]}</span>
-          <span className="flex min-w-0 items-center gap-1.5 truncate text-[13px] font-semibold">
-            <Icon name={a.t.icono} size={14} className="shrink-0 text-[#ffb888]" />
-            <span className="truncate">{valorCorto(a.t)}</span>
-          </span>
-        </span>
-        <span className="mt-0.5 block truncate text-xs text-muted">{a.frase}</span>
-      </span>
-      <span className="shrink-0 self-start pt-0.5 text-[11px] text-muted">{tiempoRelativo(a.desde)}</span>
+    <button onClick={onClick} aria-pressed={activo} data-filtro={clave}
+      className="flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition"
+      style={activo ? { background: color, borderColor: color, color: "#100f13", boxShadow: `0 0 14px color-mix(in oklab, ${color} 45%, transparent)` } : { borderColor: `color-mix(in oklab, ${color} 45%, transparent)`, color, background: `color-mix(in oklab, ${color} 8%, transparent)` }}>
+      {punto && <span className="dot-estado" style={{ width: 6, height: 6, color: activo ? "#100f13" : color }} />}
+      {texto} · {n}
     </button>
   );
 }
 
-export function ListaAlertas({ items, onVer, max = 8, hrefMas = "/analisis?tab=alertas", className = "" }) {
-  const [saliendo, setSaliendo] = useState([]);
-  const previos = useRef({});
-  const visibles = items.slice(0, max);
-  const firma = visibles.map((a) => a.k).join("|");
-  useEffect(() => {
-    const ahora = Object.fromEntries(visibles.map((a) => [a.k, a]));
-    const fuera = Object.keys(previos.current).filter((k) => !(k in ahora)).map((k) => previos.current[k]);
-    previos.current = ahora;
-    if (!fuera.length) return;
-    setSaliendo((s) => [...s.filter((x) => !(x.k in ahora)), ...fuera]);
-    const t = setTimeout(() => setSaliendo((s) => s.filter((x) => !fuera.includes(x))), 320);
-    return () => clearTimeout(t);
-  }, [firma]);
-  const cuenta = (n) => items.filter((a) => a.nivel === n).length;
-  const resto = items.length - visibles.length;
-  const fantasmas = saliendo.filter((s) => !visibles.some((v) => v.k === s.k));
+function ChipAlerta({ a, onVer, onHover }) {
+  const color = COLOR_GRAVEDAD[a.nivel];
   return (
-    <section aria-label="Alertas" className={`glass flex flex-col overflow-hidden p-4 ${className}`} data-lista-alertas>
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-        <h2 className="text-lg font-semibold">Alertas</h2>
-        <div className="flex flex-wrap items-center gap-2.5">
-          {["critico", "urgente", "moderado"].map((n) => cuenta(n) > 0 && (
-            <span key={n} className="flex items-center gap-1 text-[11px] font-semibold" style={{ color: COLOR_GRAVEDAD[n] }} data-cuenta={n}>
-              <span className="dot-estado" style={{ width: 6, height: 6 }} />{cuenta(n)} {PLURAL[n]}
-            </span>
-          ))}
-        </div>
+    <button onClick={() => onVer(a.k)} onMouseEnter={() => onHover(a.k)} onMouseLeave={() => onHover(null)} onFocus={() => onHover(a.k)} onBlur={() => onHover(null)}
+      data-chip-alerta={a.k} data-gravedad={a.nivel} aria-label={`${ETIQUETA_GRAVEDAD[a.nivel]}: ${valorCorto(a.t)}. ${a.frase}. Ver análisis`}
+      className="burbuja-entra flex min-h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border bg-white/[0.04] py-1.5 pl-2.5 pr-3 text-left hover:bg-white/[0.09]"
+      style={{ borderColor: `color-mix(in oklab, ${color} 60%, transparent)`, transition: "border-color .4s ease, background-color .2s" }}>
+      <span className="dot-estado" style={{ color }} />
+      <span className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color, transition: "color .4s ease" }}>{ETIQUETA_GRAVEDAD[a.nivel]}</span>
+      <Icon name={a.t.icono} size={14} className="text-[#ffb888]" />
+      <span className="text-[13px] font-semibold">{valorCorto(a.t)}</span>
+      <span className="text-[11px] text-muted">{tiempoRelativo(a.desde)}</span>
+    </button>
+  );
+}
+
+export function FranjaAlertas({ items, filtro, onFiltro, onVer, onHover, max = 8, hrefMas = "/analisis?tab=alertas" }) {
+  const cuenta = (n) => items.filter((a) => a.nivel === n).length;
+  const filtrados = filtro ? items.filter((a) => a.nivel === filtro) : items;
+  const visibles = filtrados.slice(0, max);
+  const resto = filtrados.length - visibles.length;
+  if (!items.length)
+    return (
+      <section aria-label="Alertas" className="glass flex min-h-[56px] items-center px-4 py-2.5" data-franja-alertas data-sin-alertas>
+        <span className="flex items-center gap-2 text-sm font-semibold text-ok"><span aria-hidden>✓</span> Sin alertas · todo estable</span>
+      </section>
+    );
+  return (
+    <section aria-label="Alertas" className="glass flex min-h-[56px] flex-col gap-2 px-2.5 py-2.5 min-[900px]:flex-row min-[900px]:items-center" data-franja-alertas>
+      <div className="no-scrollbar flex shrink-0 items-center gap-1.5 overflow-x-auto" role="group" aria-label="Filtrar por gravedad">
+        <ChipFiltro clave="todas" activo={!filtro} color={COLOR_TODAS} texto="Todas" n={items.length} punto={false} onClick={() => onFiltro(null)} />
+        {FILTROS.map((f) => cuenta(f) > 0 && (
+          <ChipFiltro key={f} clave={f} activo={filtro === f} color={COLOR_GRAVEDAD[f]} texto={NOMBRE_FILTRO[f]} n={cuenta(f)} onClick={() => onFiltro(filtro === f ? null : f)} />
+        ))}
       </div>
-      {items.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-xl border border-ok/35 bg-ok/[0.07] p-5 text-center" data-sin-alertas>
-          <span className="text-3xl" aria-hidden>👍</span>
-          <span className="font-semibold text-ok">✓ Sin alertas · todo estable</span>
-        </div>
-      ) : (
-        <div className="flex min-h-0 flex-1 flex-col gap-1">
-          {visibles.map((a) => <Fila key={a.k} a={a} onVer={onVer} />)}
-          {fantasmas.map((a) => <Fila key={`f-${a.k}`} a={a} onVer={onVer} sale />)}
-          {resto > 0 && (
-            <Link href={hrefMas} className="mt-1 rounded-xl border border-white/12 bg-white/[0.04] px-3 py-2 text-center text-xs font-semibold text-soft hover:bg-white/[0.09] hover:text-fg" data-mas-alertas>
-              +{resto} {resto === 1 ? "alerta más" : "alertas más"}
-            </Link>
-          )}
-        </div>
-      )}
+      <span aria-hidden className="hidden h-7 w-px shrink-0 bg-white/15 min-[900px]:block" />
+      <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto" aria-label="Alertas activas">
+        {visibles.map((a) => <ChipAlerta key={`${a.k}-${a.nivel}`} a={a} onVer={onVer} onHover={onHover} />)}
+        {resto > 0 && (
+          <Link href={hrefMas} className="flex min-h-9 shrink-0 items-center rounded-full border border-white/15 bg-white/[0.05] px-3 text-xs font-semibold text-soft hover:text-fg" data-mas-alertas>
+            +{resto}
+          </Link>
+        )}
+      </div>
     </section>
   );
 }
