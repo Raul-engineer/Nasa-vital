@@ -1,104 +1,76 @@
 {
-  "ui_component": "segmented_health_bar",
-  "version": "1.0",
-  "meta_info": "Indicador de Estado Mental y Cognitivo",
-  "layout_config": {
-    "total_segments": 3,
-    "display_type": "horizontal_split_bar",
-    "theme": "dark_medical"
-  },
-  "sections": [
+  "version": "1.2",
+  "titulo": "Monitor de mente y bienestar",
+  "astronauta": "Cmdr. A. Reyes",
+  "modo": "demo",
+  "aviso": "Valores ilustrativos de demostración; no son mediciones reales ni un diagnóstico.",
+  "secciones": [
     {
-      "id": "sec_stress",
-      "label": "Estrés & Carga Fisiológica",
-      "biomarker_target": "Cortisol (vía VFC / Autónomo)",
-      "weight_percentage": 35,
-      "current_value": 78.5,
-      "unit": "%",
-      "status": "WARNING",
-      "color_hex": "#F59E0B",
-      "sub_metrics": [
+      "id": "stress",
+      "titulo": "Estrés reportado y VFC",
+      "titulo_corto": "Estrés",
+      "descripcion": "El auto-reporte y la VFC se muestran por separado. La VFC no mide cortisol.",
+      "metricas": [
         {
-          "name": "Variabilidad Frecuencia Cardíaca (VFC)",
-          "value": 38,
-          "unit": "ms",
-          "optimal_range": [50, 100]
+          "id": "vfc",
+          "etiqueta": "Variabilidad de frecuencia cardíaca",
+          "valor": 38,
+          "unidad": "ms",
+          "fuente": "Dato ilustrativo",
+          "historial": [
+            {"fecha": "D-5", "valor": 50},
+            {"fecha": "D-4", "valor": 48},
+            {"fecha": "D-3", "valor": 45},
+            {"fecha": "D-2", "valor": 42},
+            {"fecha": "D-1", "valor": 40},
+            {"fecha": "Hoy", "valor": 38}
+          ]
         },
         {
-          "name": "Nivel de Estrés Subjetivo",
-          "value": 7,
-          "unit": "/10",
-          "optimal_range": [0, 4]
+          "id": "stress-report",
+          "etiqueta": "Estrés reportado",
+          "valor": 7,
+          "unidad": "/10",
+          "fuente": "Auto-reporte de ejemplo"
         }
-      ],
-      "thresholds": {
-        "normal": {"min": 0, "max": 50, "color": "#10B981"},
-        "warning": {"min": 51, "max": 80, "color": "#F59E0B"},
-        "critical": {"min": 81, "max": 100, "color": "#EF4444"}
-      }
+      ]
     },
     {
-      "id": "sec_lucidity",
-      "label": "Lucidez & Alerta Cognitiva",
-      "biomarker_target": "Dopamina & Velocidad de Procesamiento",
-      "weight_percentage": 40,
-      "current_value": 92.0,
-      "unit": "%",
-      "status": "OPTIMAL",
-      "color_hex": "#10B981",
-      "sub_metrics": [
+      "id": "lucidity",
+      "titulo": "Sueño y alerta cognitiva",
+      "titulo_corto": "Alerta",
+      "descripcion": "Valores de ejemplo; el PVT-B completo se realiza desde Pruebas.",
+      "metricas": [
         {
-          "name": "Tiempo de Reacción (PVT)",
-          "value": 215,
-          "unit": "ms",
-          "optimal_range": [180, 250]
+          "id": "pvt",
+          "etiqueta": "Tiempo medio de reacción PVT",
+          "valor": 215,
+          "unidad": "ms",
+          "fuente": "Dato ilustrativo"
         },
         {
-          "name": "Lapsos de Atención (Micro-sueños)",
-          "value": 0,
-          "unit": "eventos",
-          "optimal_range": [0, 1]
+          "id": "lapses",
+          "etiqueta": "Lapsos de atención",
+          "valor": 0,
+          "unidad": "eventos",
+          "fuente": "Dato ilustrativo"
         }
-      ],
-      "thresholds": {
-        "critical": {"min": 0, "max": 59, "color": "#EF4444"},
-        "warning": {"min": 60, "max": 79, "color": "#F59E0B"},
-        "optimal": {"min": 80, "max": 100, "color": "#10B981"}
-      }
+      ]
     },
     {
-      "id": "sec_wellbeing",
-      "label": "Resiliencia & Conexión",
-      "biomarker_target": "Oxitocina / Endorfinas (Soporte Social & Ánimo)",
-      "weight_percentage": 25,
-      "current_value": 65.0,
-      "unit": "%",
-      "status": "OPTIMAL",
-      "color_hex": "#10B981",
-      "sub_metrics": [
+      "id": "wellbeing",
+      "titulo": "Bienestar",
+      "titulo_corto": "Bienestar",
+      "descripcion": "El WHO-5 es un tamizaje, no un diagnóstico.",
+      "metricas": [
         {
-          "name": "Afecto Positivo (PANAS)",
-          "value": 34,
-          "unit": "pts",
-          "optimal_range": [30, 50]
-        },
-        {
-          "name": "Interacción Social Efectiva",
-          "value": 80,
-          "unit": "%",
-          "optimal_range": [60, 100]
+          "id": "who5",
+          "etiqueta": "Bienestar WHO-5",
+          "valor": 40,
+          "unidad": "/100",
+          "fuente": "Resultado de ejemplo"
         }
-      ],
-      "thresholds": {
-        "critical": {"min": 0, "max": 40, "color": "#EF4444"},
-        "warning": {"min": 41, "max": 64, "color": "#F59E0B"},
-        "optimal": {"min": 65, "max": 100, "color": "#10B981"}
-      }
+      ]
     }
-  ],
-  "global_summary": {
-    "overall_score": 78.5,
-    "status": "STABLE_WITH_WARNING",
-    "primary_action_required": "Iniciar sesión de respiración guiada para regular VFC."
-  }
+  ]
 }
