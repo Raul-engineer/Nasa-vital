@@ -331,3 +331,6 @@ select option { background: #242026; }
 .menu-cuenta-item { display: flex; width: 100%; align-items: center; gap: 10px; border-radius: 12px; padding: 9px 10px; font-size: 13.5px; text-align: left; transition: background 0.15s; }
 .menu-cuenta-item:hover, .menu-cuenta-item:focus-visible { background: rgba(255, 255, 255, 0.07); outline: none; }
 .menu-cuenta-item > span:first-child { width: 18px; text-align: center; opacity: 0.85; }
+
+html[data-idioma="en"]:not([data-idioma-listo]) body { opacity: 0; }
+body:has([data-boton-idioma="header"]) .idioma-flotante { display: none; }

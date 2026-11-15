@@ -2,6 +2,8 @@ import "./globals.css";
 import { DM_Sans, Space_Grotesk } from "next/font/google";
 import RegistrarSW from "@/components/RegistrarSW";
 import FondoApp from "@/components/FondoApp";
+import { BotonIdioma, Traductor } from "@/components/Idioma";
+import { SCRIPT_IDIOMA } from "@/lib/i18n/traductor";
 
 const dmSans = DM_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-dm-sans", display: "swap" });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-space-grotesk", display: "swap" });
@@ -21,10 +23,15 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="es-MX" data-theme="dark" className={`${dmSans.variable} ${spaceGrotesk.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_IDIOMA }} />
+      </head>
       <body className="font-sans antialiased">
         <FondoApp />
         {children}
         <RegistrarSW />
+        <Traductor />
+        <BotonIdioma flotante />
       </body>
     </html>
   );

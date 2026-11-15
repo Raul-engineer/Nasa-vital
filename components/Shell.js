@@ -11,6 +11,7 @@ import { useAtajosDemo, useConexion } from "@/lib/useQuickFix";
 import ModalQR from "./ModalQR";
 import VigiaFichas from "./VigiaFichas";
 import AlarmaCritica from "./AlarmaCritica";
+import { BotonIdioma } from "./Idioma";
 
 export const ESTADO = {
   normal: { txt: "Normal", color: "text-ok", bg: "bg-ok", border: "border-ok/50", hex: "var(--color-ok)" },
@@ -162,6 +163,7 @@ export function Shell({ children, active, astronaut, astronauts = [], onAstronau
 
         <div className="ml-auto flex items-center gap-2 min-[1100px]:ml-0">
           {eg && <ChipGeneral estado={eg} className="hidden sm:inline-flex">{ESTADO_GENERAL[eg]}</ChipGeneral>}
+          <BotonIdioma />
           <FullscreenToggle />
           <MenuCuenta astronaut={astronaut} astronauts={astronauts} onAstronaut={onAstronaut} hora={hora} q={q} />
         </div>
