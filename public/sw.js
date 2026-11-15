@@ -1,7 +1,8 @@
-const CACHE = "quickfix-v2";
-const PAGINAS = ["/", "/analisis", "/pruebas", "/historial", "/perfil", "/reloj", "/bienvenida"];
+const CACHE = "quickfix-v3";
+const PAGINAS = ["/", "/analisis", "/pruebas", "/historial", "/perfil", "/reloj", "/bienvenida", "/tripulacion"];
 const ASSETS = [
   "/favicon.png",
+  "/esqueleto.webp",
   "/manifest.webmanifest",
   "/logo-quickfix.png",
   "/logo-quickfix-oscuro.png",

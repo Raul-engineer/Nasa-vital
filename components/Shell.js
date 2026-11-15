@@ -39,6 +39,7 @@ const NAV = [
   { href: "/pruebas", label: "Pruebas", glifo: "✚" },
   { href: "/historial", label: "Historial", glifo: "◷" },
   { href: "/perfil", label: "Perfil", glifo: "♙" },
+  { href: "/tripulacion", label: "Tripulación", glifo: "⚕" },
 ];
 
 export function useMissionClock() {
