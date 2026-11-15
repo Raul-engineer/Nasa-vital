@@ -1,11 +1,12 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Shell, Toast, ESTADO, ESTADO_GENERAL } from "@/components/Shell";
+import { EncabezadoPagina, Shell, Toast, ESTADO, ESTADO_GENERAL } from "@/components/Shell";
 import { Icon } from "@/components/Icons";
+import CyberButton from "@/components/CyberButton";
 import { EstadoPill, Fuente, fmtNum } from "@/components/Widgets";
 import { TrendChart } from "@/components/Charts";
 import { useAstronautId, useQuickFix } from "@/lib/useQuickFix";
-import { analizarDia, diaMision, fechaLocal, PRUEBAS, SISTEMAS, UMBRALES } from "@/lib/analysis";
+import { analizarDia, diaMision, fechaLocal, NOMBRE_SINTOMA, PRUEBAS, SISTEMAS, UMBRALES } from "@/lib/analysis";
 import { mensajeMedic } from "@/lib/medic";
 import { saveHistoria } from "@/lib/data";
 
@@ -64,9 +65,9 @@ function HistoriaClinica({ astronautId, historia, onToast }) {
         </div>
         <div className="flex items-center gap-3">
           {sucio && <span className="text-sm text-warn">Cambios sin guardar</span>}
-          <button onClick={guardar} disabled={!sucio || guardando} className="rounded-xl bg-accent px-5 py-2 font-semibold text-onaccent hover:brightness-110 disabled:opacity-50">
+          <CyberButton onClick={guardar} disabled={!sucio || guardando} atajo="↵" texto={guardando ? "Guardando…" : "Guardar historia clínica"}>
             {guardando ? "Guardando…" : "Guardar historia clínica"}
-          </button>
+          </CyberButton>
         </div>
       </div>
       <div className="space-y-2">
@@ -176,7 +177,7 @@ export default function Historial() {
 
   return (
     <Shell active="/historial" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis}>
-      <h1 className="mb-5 text-2xl font-semibold">Historial</h1>
+      <EncabezadoPagina titulo="Historial" sub={`${vitals.length} días de misión · calendario e historia clínica`} />
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
         <section className="card p-5">
@@ -277,10 +278,15 @@ export default function Historial() {
             <div className="mb-1 text-xs uppercase tracking-widest text-muted">Check-in</div>
             {ci ? (
               <div className="text-sm">
-                Ánimo {ci.animo}/5 · estrés {ci.estres}/5 · fatiga {ci.fatiga}/5{ci.tiempo_reaccion_ms ? ` · reacción ${ci.tiempo_reaccion_ms} ms` : ""}
-                {(ci.confusion || ci.vision_cefalea || ci.mareo_de_pie) && (
-                  <div className="text-warn">Reportó: {[ci.confusion && "confusión", ci.vision_cefalea && "visión borrosa o cefalea", ci.mareo_de_pie && "mareo de pie"].filter(Boolean).join(", ")}</div>
-                )}
+                Ánimo {ci.animo}/5 · estrés {ci.estres}/5 · fatiga {ci.fatiga}/5{ci.tripulacion ? ` · tripulación ${ci.tripulacion}/5` : ""}{ci.tiempo_reaccion_ms ? ` · reacción ${ci.tiempo_reaccion_ms} ms` : ""}
+                {(() => {
+                  const f = [ci.confusion && "confusión", ci.mareo_de_pie && "mareo", (ci.vision_borrosa || ci.vision_cefalea) && "visión borrosa", (ci.dolor_cabeza || ci.vision_cefalea) && "dolor de cabeza", ...(ci.sintomas || []).map((x) => NOMBRE_SINTOMA[x] || x)].filter(Boolean);
+                  return f.length ? <div className="text-warn">Reportó: {f.join(", ")}</div> : null;
+                })()}
+                {(() => {
+                  const cb = (data.cabina || []).find((x) => x.fecha === sel);
+                  return cb ? <div className="text-muted">Cabina: CO₂ {cb.co2_ppm.toLocaleString("es-MX")} ppm · {cb.temp_c} °C · {cb.humedad} % humedad</div> : null;
+                })()}
               </div>
             ) : <div className="text-sm text-muted">Sin check-in.</div>}
           </div>

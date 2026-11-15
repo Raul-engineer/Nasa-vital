@@ -1,31 +1,44 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Icon } from "./Icons";
-import { Marca } from "./Marca";
+import CyberButton from "./CyberButton";
 import { AlarmaRadiacion } from "./Radiacion";
 import { MODO } from "@/lib/data";
-import { useTheme } from "@/lib/theme";
+import { useAtajosDemo } from "@/lib/useQuickFix";
 
 export const ESTADO = {
   normal: { txt: "Normal", color: "text-ok", bg: "bg-ok", border: "border-ok/50", hex: "var(--color-ok)" },
   atencion: { txt: "Atención", color: "text-warn", bg: "bg-warn", border: "border-warn/60", hex: "var(--color-warn)" },
   critico: { txt: "Crítico", color: "text-crit", bg: "bg-crit", border: "border-crit/70", hex: "var(--color-crit)" },
+  info: { txt: "Esfuerzo", color: "text-info", bg: "bg-info", border: "border-info/60", hex: "var(--color-info)" },
   sin: { txt: "Sin datos", color: "text-muted", bg: "bg-muted", border: "border-line", hex: "var(--color-muted)" },
 };
 
-export const ESTADO_GENERAL = { normal: "En equilibrio", atencion: "Atención", critico: "Precaución" };
+export const ESTADO_GENERAL = { normal: "Bien", atencion: "Precaución", critico: "Actúa ahora" };
 
 export function Dot({ estado, className = "" }) {
   return <span className={`inline-block h-2.5 w-2.5 shrink-0 rounded-full ${ESTADO[estado]?.bg} ${className}`} />;
 }
 
+export function ChipGeneral({ estado, children, className = "" }) {
+  const E = ESTADO[estado] || ESTADO.normal;
+  return (
+    <span className={`inline-flex items-center gap-2 whitespace-nowrap rounded-full border px-3.5 py-2 text-xs font-semibold ${E.border} ${E.color} ${className}`}
+      style={{ background: `color-mix(in oklab, ${E.hex} 9%, transparent)` }}>
+      <span className="dot-estado" />
+      {children}
+    </span>
+  );
+}
+
 const NAV = [
-  { href: "/", label: "Inicio", icon: "home" },
-  { href: "/analisis", label: "Análisis", icon: "chart" },
-  { href: "/pruebas", label: "Pruebas", icon: "flask" },
-  { href: "/historial", label: "Historial", icon: "calendar" },
-  { href: "/perfil", label: "Perfil", icon: "user" },
+  { href: "/", label: "Inicio", glifo: "⌂" },
+  { href: "/analisis", label: "Análisis", glifo: "◫" },
+  { href: "/pruebas", label: "Pruebas", glifo: "✚" },
+  { href: "/historial", label: "Historial", glifo: "◷" },
+  { href: "/perfil", label: "Perfil", glifo: "♙" },
 ];
 
 export function useMissionClock() {
@@ -35,104 +48,134 @@ export function useMissionClock() {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
-  if (!now) return { hora: "--:--", ventana: "--:--" };
-  const h = now.getHours();
-  const m = now.getMinutes();
-  const mins = (6 * 60 - ((h * 60 + m) % (6 * 60))) % (6 * 60);
+  if (!now) return { hora: "--:--" };
   const pad = (n) => String(n).padStart(2, "0");
-  return { hora: `${pad(h)}:${pad(m)}`, ventana: `${pad(Math.floor(mins / 60))}:${pad(mins % 60)}` };
+  return { hora: `${pad(now.getHours())}:${pad(now.getMinutes())}` };
 }
 
-export function ThemeToggle({ className = "" }) {
-  const { tema, alternar } = useTheme();
+export function iniciales(nombre = "") {
+  const partes = nombre.split(/\s+/).filter((p) => p && !/^(cmdr|dra?|ing|sr|sra|lic)\.?$/i.test(p));
+  return partes.map((p) => p[0]).join("").slice(0, 2).toUpperCase() || "QF";
+}
+
+export function FullscreenToggle({ className = "" }) {
+  const [activo, setActivo] = useState(false);
+  const [soportado, setSoportado] = useState(false);
+  useEffect(() => {
+    setSoportado(!!document.fullscreenEnabled);
+    const f = () => setActivo(!!document.fullscreenElement);
+    f();
+    document.addEventListener("fullscreenchange", f);
+    return () => document.removeEventListener("fullscreenchange", f);
+  }, []);
+  if (!soportado) return null;
+  const alternar = async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    } catch {}
+  };
+  const txt = activo ? "Salir de pantalla completa" : "Pantalla completa";
   return (
-    <button
-      onClick={alternar}
-      aria-label={tema === "light" ? "Cambiar a tema oscuro" : "Cambiar a tema claro"}
-      title={tema === "light" ? "Tema oscuro" : "Tema claro"}
-      className={`card flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg hover:bg-ink/5 ${className}`}
-    >
-      <span aria-hidden>{tema === "light" ? "🌙" : "☀"}</span>
+    <button onClick={alternar} aria-label={txt} title={txt} aria-pressed={activo}
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.07] text-soft transition hover:bg-white/[0.13] hover:text-fg ${className}`}>
+      {activo ? <Icon name="compress" size={18} /> : <span aria-hidden className="text-lg leading-none">⛶</span>}
     </button>
   );
 }
 
-export function Shell({ children, active, astronaut, astronauts = [], onAstronaut, astronautId, estadoGeneral, analisis }) {
-  const { hora, ventana } = useMissionClock();
+function Avatar({ astronaut, astronauts, onAstronaut, hora }) {
+  const puede = astronauts.length > 1 && onAstronaut;
+  return (
+    <div className="relative flex items-center gap-2.5" title={astronaut?.nombre}>
+      <div className="hidden text-right leading-tight xl:block">
+        <div className="text-[13px] font-semibold">{astronaut?.nombre ?? "…"}</div>
+        <div className="text-[11px] text-muted">Día {astronaut?.dia_mision ?? "…"} · {hora}</div>
+      </div>
+      <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#ffb477,#8b4734)] text-xs font-bold text-white shadow-[0_0_16px_#ff975d44]">
+        {iniciales(astronaut?.nombre)}
+      </span>
+      {puede && (
+        <select value={astronaut?.id ?? 1} onChange={(e) => onAstronaut(Number(e.target.value))} aria-label="Cambiar de astronauta"
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0">
+          {astronauts.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
+        </select>
+      )}
+    </div>
+  );
+}
+
+function useAtajosNav(q) {
+  const router = useRouter();
+  useEffect(() => {
+    const f = (e) => {
+      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.repeat) return;
+      const el = e.target;
+      if (el?.closest?.("input,textarea,select,[contenteditable='true']")) return;
+      const i = Number(e.key) - 1;
+      if (Number.isInteger(i) && NAV[i]) {
+        e.preventDefault();
+        router.push(NAV[i].href + q);
+      }
+    };
+    window.addEventListener("keydown", f);
+    return () => window.removeEventListener("keydown", f);
+  }, [q, router]);
+}
+
+export function EncabezadoPagina({ titulo, sub, derecha }) {
+  return (
+    <div className="mb-5 mt-2 flex flex-wrap items-end justify-between gap-4 px-0.5">
+      <div className="min-w-0">
+        <h1 className="titulo-pagina">{titulo}</h1>
+        {sub && <div className="mt-1.5 text-[13px] text-muted">{sub}</div>}
+      </div>
+      {derecha && <div className="flex flex-wrap items-center gap-2.5">{derecha}</div>}
+    </div>
+  );
+}
+
+export function Shell({ children, active, astronaut, astronauts = [], onAstronaut, astronautId, estadoGeneral, analisis, pie = true }) {
+  const { hora } = useMissionClock();
+  useAtajosDemo(astronautId);
   const q = astronautId ? `?a=${astronautId}` : "";
+  useAtajosNav(q);
   const egv = analisis?.general ?? estadoGeneral;
   const eg = egv && ESTADO[egv] ? egv : null;
   return (
-    <div className="min-h-screen">
-      <header className="flex flex-wrap items-center gap-3 px-4 py-4 sm:px-6">
-        <Link href={"/" + q} aria-label="QuickFix, ir a Inicio">
-          <Marca size={42} />
+    <div className="mx-auto min-h-screen max-w-[1540px] px-3 pb-6 pt-3 sm:px-7 sm:pt-[22px]">
+      <header className="glass flex min-h-[72px] flex-wrap items-center gap-3 px-4 py-3 sm:gap-[18px] sm:px-[18px]">
+        <Link href={"/" + q} aria-label="QuickFix, ir a Inicio" className="flex min-w-0 items-center gap-2.5 sm:min-w-[180px]">
+          <span className="grid h-[37px] w-[37px] shrink-0 place-items-center overflow-hidden rounded-xl border border-[#ffc09980] bg-[linear-gradient(145deg,#ff9c64,#a64d32)] shadow-[0_0_22px_#f97b4466]">
+            <img src="/logo-quickfix-icono.png" alt="" width={30} height={30} className="h-[30px] w-[30px] object-contain" />
+          </span>
+          <span className="font-display text-[21px] font-bold">Quick<span className="text-accent">Fix</span></span>
         </Link>
 
-        <nav className="card no-scrollbar order-last flex w-full items-center gap-1 overflow-x-auto rounded-2xl p-1.5 lg:order-none lg:mx-auto lg:w-auto">
-          {NAV.map((n) => (
-            <Link
-              key={n.href}
-              href={n.href + q}
-              className={`flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-sm transition ${
-                active === n.href ? "bg-accent/15 text-accent glow-accent" : "text-soft hover:bg-ink/5"
-              }`}
-            >
-              <Icon name={n.icon} size={18} />
-              {n.label}
-            </Link>
+        <nav aria-label="Secciones" className="nav-cyber order-last flex w-full flex-wrap justify-start gap-[3px] min-[1100px]:order-none min-[1100px]:w-auto min-[1100px]:flex-1 min-[1100px]:justify-center">
+          {NAV.map((n, i) => (
+            <CyberButton key={n.href} href={n.href + q} atajo={i + 1} activo={active === n.href} texto={n.label} tam="sm">
+              <span aria-hidden>{n.glifo}</span> {n.label}
+            </CyberButton>
           ))}
         </nav>
 
-        <div className="ml-auto flex flex-wrap items-center justify-end gap-2 lg:ml-0">
-          {eg && (
-            <div className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-semibold ${ESTADO[eg].border} ${ESTADO[eg].color}`}
-              style={{ background: `color-mix(in oklab, ${ESTADO[eg].hex} 10%, transparent)` }}>
-              <Dot estado={eg} /> {ESTADO_GENERAL[eg]}
-            </div>
-          )}
-          <div className="hidden items-center gap-2 rounded-full border border-ok/40 bg-ok/5 px-3 py-1.5 md:flex">
-            <span className="relative h-2 w-2 rounded-full bg-ok text-ok pulse-ring" />
-            <span className="text-xs text-soft">
-              <span className="font-semibold text-ok">Modo autónomo</span> · ventana con Tierra en <span className="font-semibold text-fg">{ventana}</span>
-            </span>
-          </div>
-          <div className="card flex items-center gap-2.5 rounded-2xl px-3 py-1.5">
-            <div className="h-8 w-8 shrink-0 rounded-full bg-[radial-gradient(circle_at_35%_35%,#f59e6b,#b4472b_55%,#5b1d12)]" />
-            <div className="leading-tight">
-              {astronauts.length > 1 && onAstronaut ? (
-                <select
-                  value={astronaut?.id ?? 1}
-                  onChange={(e) => onAstronaut(Number(e.target.value))}
-                  aria-label="Astronauta"
-                  className="cursor-pointer bg-transparent text-sm font-semibold outline-none"
-                >
-                  {astronauts.map((a) => (
-                    <option key={a.id} value={a.id} className="bg-panel text-fg">
-                      {a.nombre}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <div className="text-sm font-semibold">{astronaut?.nombre ?? "…"}</div>
-              )}
-              <div className="text-[11px] text-muted">
-                Día {astronaut?.dia_mision ?? "…"} / 500 · {hora}
-              </div>
-            </div>
-          </div>
-          <ThemeToggle />
+        <div className="ml-auto flex items-center gap-2 min-[1100px]:ml-0">
+          {eg && <ChipGeneral estado={eg} className="hidden sm:inline-flex">{ESTADO_GENERAL[eg]}</ChipGeneral>}
+          <FullscreenToggle />
+          <Avatar astronaut={astronaut} astronauts={astronauts} onAstronaut={onAstronaut} hora={hora} />
         </div>
       </header>
-      <main className="px-4 pb-8 sm:px-6">
+      <main className="pt-5">
         <AlarmaRadiacion radiacion={analisis?.radiacion} astronautId={astronautId} />
         {children}
       </main>
-      <footer className="flex flex-wrap items-center justify-center gap-2 px-4 pb-4 text-center text-xs text-muted">
-        <span className={`h-2 w-2 rounded-full ${MODO === "supabase" ? "bg-ok" : "bg-warn"}`} />
-        {MODO === "supabase" ? "Conectado a Supabase (tiempo real)" : "Datos simulados locales"} · QuickFix · NASA Space Apps 2026 ·
-        Medic no diagnostica; lo grave se escala al médico de tripulación. El índice de preparación es orientativo.
-      </footer>
+      {pie && (
+        <footer className="mt-8 flex flex-wrap items-center justify-center gap-2 px-1 text-center text-[11px] text-[#8f838a]">
+          <span className={`h-1.5 w-1.5 rounded-full ${MODO === "supabase" ? "bg-ok" : "bg-warn"}`} />
+          {typeof pie === "string" ? pie : "Datos simulados · Medic no diagnostica"}
+        </footer>
+      )}
     </div>
   );
 }
@@ -145,13 +188,13 @@ export function Toast({ msg, onClose }) {
   }, [msg, onClose]);
   if (!msg) return null;
   return (
-    <div role="status" className="fixed bottom-6 left-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 rounded-xl border border-accent/40 bg-panel px-5 py-3 text-sm shadow-2xl glow-accent">
+    <div role="status" className="glass fixed bottom-6 left-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 px-5 py-3 text-sm">
       {msg}
     </div>
   );
 }
 
-export function Sparkline({ data, color = "var(--color-violet)", w = 90, h = 28 }) {
+export function Sparkline({ data, color = "var(--color-accent)", w = 90, h = 28 }) {
   const d = data.filter((x) => x != null && !Number.isNaN(Number(x))).map(Number);
   if (d.length < 2) return null;
   const min = Math.min(...d);

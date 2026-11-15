@@ -45,7 +45,7 @@ export default function Bienvenida() {
         <h1 className="sr-only">QuickFix · Another successful procedure</h1>
         <LogoCompleto alto={110} />
         <p className="mt-6 max-w-md text-[15px] leading-relaxed text-soft">
-          Tu compañero de salud para misiones de larga duración. Funciona en modo autónomo, sin depender de la Tierra.
+          Tu compañero de salud para misiones de larga duración. Revisa tu cuerpo, actúa a tiempo y cuídate.
         </p>
       </div>
 

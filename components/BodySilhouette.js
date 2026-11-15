@@ -34,11 +34,13 @@ const CX = OX + 100;
 
 export const PUNTOS_CUERPO = {
   fc: [93, 74],
-  spo2: [84, 125],
-  temperatura: [42, 218],
-  pa: [147, 118],
-  fr: [114, 140],
-  estres: [158, 218],
+  pa: [54, 126],
+  fr: [86, 150],
+  spo2: [34, 246],
+  temp: [107, 24],
+  conciencia: [119, 42],
+  sueno: [123, 62],
+  animo: [114, 120],
 };
 
 function useGeometria(activo) {
