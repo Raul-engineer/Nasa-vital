@@ -340,7 +340,6 @@ export function ReactionTest({ onDone }) {
   );
 }
 
-const variar = (v, d, dec = 0) => (v == null ? "" : Math.round((Number(v) + (Math.random() * 2 - 1) * d) * 10 ** dec) / 10 ** dec);
 
 function CamposLectura({ valores, onChange, campos }) {
   return (
@@ -365,7 +364,7 @@ export function RemedicionTest({ hoy, onFinish }) {
   const [despues, setDespues] = useState(null);
   const antes = { fc: hoy.fc, spo2: hoy.spo2, sistolica: hoy.sistolica, diastolica: hoy.diastolica };
   function pasarALectura() {
-    setDespues({ fc: variar(hoy.fc, 3), spo2: Math.min(100, variar(hoy.spo2, 0.5, 1)), sistolica: variar(hoy.sistolica, 4), diastolica: variar(hoy.diastolica, 3) });
+    setDespues({ fc: hoy.fc ?? "", spo2: hoy.spo2 ?? "", sistolica: hoy.sistolica ?? "", diastolica: hoy.diastolica ?? "" });
     setFase("lectura");
   }
   useEffect(() => {

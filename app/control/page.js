@@ -192,7 +192,10 @@ export default function Control() {
   const val = (k) => (k in pendientes ? pendientes[k] : base[k]);
   const porK = Object.fromEntries(analisis.tarjetas.map((t) => [t.k, t]));
   const r = analisis.radiacion;
-  const enEjercicio = data.actividad?.estado === "ejercicio";
+  const estadoAct = analisis.actividad?.estado || "reposo";
+  const enEjercicio = estadoAct !== "reposo";
+  const conFiebre = !!analisis.actividad?.fiebre;
+  const r1 = (x) => Math.round(x * 10) / 10;
 
   const ejecutar = async (fn, txt) => {
     try {
@@ -216,8 +219,11 @@ export default function Control() {
         await borrarEnVivo(idsTrip, CLAVES_TRIPULACION);
         await terminarTormenta();
       },
-      Esfuerzo: () => setActividad(aid, "ejercicio"),
-      Fiebre: () => setEnVivoVarios(aid, { fiebre: true }),
+      Esfuerzo: async () => {
+        await setActividad(aid, "ejercicio");
+        await setEnVivoVarios(aid, { fc: Math.round((Number(base.fc) || 70) + 40), frec_resp: Math.round((Number(base.frec_resp) || 14) + 8), temperatura: r1((Number(base.temperatura) || 36.7) + 0.4) });
+      },
+      Fiebre: () => setEnVivoVarios(aid, { fiebre: true, temperatura: 38.4, fc: Math.round((Number(base.fc) || 70) + Math.max(0, 38.4 - (Number(base.temperatura) || 36.8)) * 10) }),
       Fatiga: () => setEnVivoVarios(aid, { horas_sueno: 4.8, reaccion: 385, vfc: 46, fatiga: 4, estres: 4 }),
       "Oxígeno bajo": () => setEnVivoVarios(aid, { spo2: 89, frec_resp: 23 }),
       "Presión baja": () => setEnVivoVarios(aid, { sistolica: 88, diastolica: 56, mareo_de_pie: true }),
@@ -314,7 +320,8 @@ export default function Control() {
               })}
             </div>
           </div>
-          <Interruptor etiqueta="Ejercicio en curso" activo={enEjercicio} onClick={() => ejecutar(() => setActividad(aid, enEjercicio ? "recuperacion" : "ejercicio"), enEjercicio ? "Ejercicio terminado" : "Ejercicio iniciado")} />
+          <Interruptor etiqueta={estadoAct === "recuperacion" ? "Ejercicio en curso · recuperación" : "Ejercicio en curso"} activo={enEjercicio} onClick={() => ejecutar(() => setActividad(aid, enEjercicio ? "reposo" : "ejercicio"), enEjercicio ? "Ejercicio apagado" : "Ejercicio iniciado")} />
+          <Interruptor etiqueta="Fiebre activa" activo={conFiebre} onClick={() => ejecutar(() => setEnVivoVarios(aid, { fiebre: !conFiebre }), conFiebre ? "Fiebre apagada" : "Fiebre activa")} />
           <Interruptor etiqueta="Tormenta solar activa" activo={!!r.activo} onClick={() => ejecutar(() => (r.activo ? terminarTormenta() : iniciarTormenta("S3")), r.activo ? "Tormenta terminada" : "Tormenta solar S3")} />
           <Interruptor etiqueta="Ya en refugio" activo={!!r.refugio} disabled={!r.activo || r.refugio} onClick={() => ejecutar(() => confirmarRefugio(aid), "Refugio confirmado")} />
           <Interruptor etiqueta="Pulso irregular" activo={val("pulso_irregular")} onClick={() => guardar("pulso_irregular", !val("pulso_irregular"))} />
