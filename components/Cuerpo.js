@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { estadoPersonaje } from "./Personaje";
 import { Metrica } from "./PanelTripulante";
 import { COLOR_GRAVEDAD, marcarFaltante, ORDEN_GRAVEDAD, POSES, poseFalta, PROPORCION, srcPose, ZONA_DE, ZONAS } from "@/lib/cuerpo";
@@ -75,7 +76,7 @@ function colocar(items, H, alto) {
   return orden;
 }
 
-export default function Cuerpo({ analisis, lista, todas = null, onVer, debug = false, conTarjetas = true, brillo = null, resaltado = null }) {
+export default function Cuerpo({ analisis, lista, todas = null, onVer, debug = false, conTarjetas = true, brillo = null, resaltado = null, masHref = null }) {
   const completas = todas || lista;
   const caja = useRef(null);
   const { W, H } = useTam(caja);
@@ -195,6 +196,11 @@ export default function Cuerpo({ analisis, lista, todas = null, onVer, debug = f
               <Metrica t={b.t} analisis={analisis} onClick={() => onVer(b.k)} className="h-full w-full" acento={colorDe(b.nivel)} />
             </div>
           ))}
+          {masHref && conTarjetas && lista.length > MAX_TARJETAS && (
+            <Link href={masHref} className="glass burbuja-entra absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full px-3 py-1.5 text-xs font-semibold text-soft hover:text-fg" data-burbuja="mas">
+              +{lista.length - MAX_TARJETAS}
+            </Link>
+          )}
           {todoBien && (
             <div role="status" data-burbuja="ok" className={`burbuja glass burbuja-entra absolute z-10 flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-xs font-semibold text-ok`}
               style={{ left: Math.min(W - 160, mano.px + 46), top: mano.py - 34, height: ALTO_OK, borderColor: "color-mix(in oklab, var(--color-ok) 45%, transparent)" }}>

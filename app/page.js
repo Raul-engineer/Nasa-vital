@@ -2,9 +2,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Shell } from "@/components/Shell";
-import Cuerpo from "@/components/Cuerpo";
+import Link from "next/link";
+import Cuerpo, { MAX_TARJETAS } from "@/components/Cuerpo";
+import { Metrica } from "@/components/PanelTripulante";
 import CyberButton from "@/components/CyberButton";
-import { BarraVida, FILTROS, FranjaAlertas, useAlertasActivas, valorCorto } from "@/components/ListaAlertas";
+import { BarraVida, BotonesGravedad, FILTROS, useAlertasActivas, valorCorto } from "@/components/ListaAlertas";
 import { COLOR_GRAVEDAD } from "@/lib/analysis";
 import { useAstronautId, useQuickFix } from "@/lib/useQuickFix";
 
@@ -76,7 +78,6 @@ export default function Inicio() {
   const idDatos = data?.astronaut?.id;
   const items = useAlertasActivas(analisis, idDatos);
   const [filtro, setFiltro] = useState(null);
-  const [resaltado, setResaltado] = useState(null);
   const urlLista = useRef(false);
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
@@ -111,7 +112,7 @@ export default function Inicio() {
     <Shell active="/" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis} pie={false}>
       <h1 className="sr-only">Inicio · {astronaut.nombre}</h1>
 
-      <FranjaAlertas items={items} filtro={filtro} onFiltro={setFiltro} onVer={ir} onHover={setResaltado} hrefMas={`/analisis?a=${aid}&tab=alertas`} />
+      <BotonesGravedad items={items} filtro={filtro} onFiltro={setFiltro} />
 
       <section aria-label="Cuerpo del astronauta" className="glass relative mt-[14px] flex h-[480px] flex-col overflow-hidden min-[1100px]:h-[min(calc(100vh-250px),780px)] min-[1100px]:min-h-[480px]"
         style={{ background: "radial-gradient(ellipse at 50% 40%, #3a2a2a66, transparent 70%), linear-gradient(160deg, #2b232499, #1b202a99), var(--glass)" }}>
@@ -119,10 +120,25 @@ export default function Inicio() {
           <BarraVida salud={salud} />
         </div>
         <div className="relative min-h-0 flex-1">
-          <Cuerpo analisis={analisis} lista={filtrados} todas={items} onVer={ir} debug={debug} conTarjetas={ancho} resaltado={resaltado}
+          <Cuerpo analisis={analisis} lista={filtrados} todas={items} onVer={ir} debug={debug} conTarjetas={ancho} masHref={filtro ? `/analisis?a=${aid}&tab=alertas` : null}
             brillo={{ color: salud.color, pulsa: salud.clave === "critico" }} />
         </div>
       </section>
+
+      {!ancho && filtrados.length > 0 && (
+        <section aria-label="Alertas" className="mt-[14px] grid grid-cols-2 gap-[9px] min-[640px]:gap-[14px]">
+          {filtrados.slice(0, MAX_TARJETAS).map((a) => (
+            <div key={`${a.k}-${a.nivel}`} className="burbuja-entra" data-tarjeta-movil={a.k} data-nivel={a.nivel}>
+              <Metrica t={a.t} analisis={analisis} onClick={() => ir(a.k)} className="h-full w-full" acento={COLOR_GRAVEDAD[a.nivel]} />
+            </div>
+          ))}
+          {filtro && filtrados.length > MAX_TARJETAS && (
+            <Link href={`/analisis?a=${aid}&tab=alertas`} className="glass col-span-2 rounded-full px-3 py-2 text-center text-xs font-semibold text-soft" data-burbuja="mas">
+              +{filtrados.length - MAX_TARJETAS}
+            </Link>
+          )}
+        </section>
+      )}
 
       <div className="mb-10 mt-5 flex justify-center">
         <CyberButton href={`/analisis?a=${aid}&tab=completo`} tam="sm" texto="Ver todos mis datos">Ver todos mis datos</CyberButton>
