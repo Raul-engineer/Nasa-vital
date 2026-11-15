@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-11-15T09:15:00Z",
+  "user_id": "ASTRO_001",
+  "fisiologia_estres": {
+    "hrv_rmssd": 42.5,
+    "resting_heart_rate": 62,
+    "sleep_efficiency_percentage": 84.2,
+    "skin_conductance_microsiemens": 1.2
+  },
+  "estado_animo_subjetivo": {
+    "stress_level_scale_0_10": 3,
+    "positive_affect_score": 38,
+    "negative_affect_score": 12,
+    "fatigue_score_0_10": 4
+  },
+  "lucidez_cognitiva": {
+    "pvt_mean_reaction_time_ms": 245.8,
+    "pvt_lapse_count": 1,
+    "digit_symbol_correct_responses": 45,
+    "ambient_co2_ppm": 650
+  },
+  "indicador_alerta_global": "VERDE" 
+}
