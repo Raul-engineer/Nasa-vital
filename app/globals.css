@@ -227,6 +227,16 @@ select option { background: #242026; }
 .cuerpo-aura { opacity: 0; transition: opacity .6s; background: radial-gradient(ellipse at center, rgba(211, 139, 255, .38), rgba(211, 139, 255, .12) 45%, transparent 70%); }
 .cuerpo[data-estado="radiacion"] .cuerpo-aura, .cuerpo[data-aura="radiacion"] .cuerpo-aura { opacity: 1; animation: cuerpo-aura 1.8s ease-in-out infinite; }
 @keyframes cuerpo-aura { 0%, 100% { transform: scale(.96); opacity: .65 } 50% { transform: scale(1.04); opacity: 1 } }
+.cuerpo[data-brillo] .cuerpo-poses { filter: drop-shadow(0 0 16px color-mix(in oklab, var(--brillo) 60%, transparent)); animation: none; }
+.cuerpo[data-brillo-pulsa] .cuerpo-poses { animation: cuerpo-pulso-brillo 1.6s ease-in-out infinite; }
+@keyframes cuerpo-pulso-brillo { 0%, 100% { filter: drop-shadow(0 0 10px color-mix(in oklab, var(--brillo) 40%, transparent)) } 50% { filter: drop-shadow(0 0 26px color-mix(in oklab, var(--brillo) 90%, transparent)) } }
+.vida-relleno { transition: width .6s ease, background .6s ease; }
+.vida-pulsa { animation: vida-pulsa 1.2s ease-in-out infinite; }
+@keyframes vida-pulsa { 0%, 100% { opacity: 1; filter: none } 50% { opacity: .65; filter: drop-shadow(0 0 8px var(--color-crit)) } }
+.fila-entra { animation: fila-entra .4s cubic-bezier(.2, .9, .3, 1.1) both; }
+.fila-sale { animation: fila-sale .3s ease both; }
+@keyframes fila-entra { from { opacity: 0; transform: translateY(-10px) } to { opacity: 1; transform: none } }
+@keyframes fila-sale { from { opacity: 1 } to { opacity: 0 } }
 .pose-entra { animation: pose-entra .4s ease both; }
 .pose-sale { animation: pose-sale .4s ease both; }
 @keyframes pose-entra { from { opacity: 0 } to { opacity: 1 } }
@@ -240,6 +250,8 @@ select option { background: #242026; }
 .burbuja-sale { animation: burbuja-sale .3s ease both; }
 @keyframes burbuja-entra { from { opacity: 0; transform: scale(.7) } to { opacity: 1; transform: scale(1) } }
 @keyframes burbuja-sale { from { opacity: 1 } to { opacity: 0; transform: scale(.92) } }
+.pulso-contador { display: inline-flex; animation: pulso-contador .9s ease-out 2; }
+@keyframes pulso-contador { 0% { transform: scale(1) } 35% { transform: scale(1.55); filter: drop-shadow(0 0 6px currentColor) } 100% { transform: scale(1) } }
 .aviso-entra { animation: aviso-entra .45s cubic-bezier(.2, .9, .3, 1.2) both; }
 @keyframes aviso-entra { from { opacity: 0; transform: translateY(14px) scale(.96) } to { opacity: 1; transform: none } }
 
@@ -248,7 +260,8 @@ select option { background: #242026; }
 
 @media (prefers-reduced-motion: reduce) {
   .beam { animation: none; opacity: 0; }
-  .cuerpo-fig, .cuerpo-poses, .cuerpo-aura, .cuerpo-punto-anillo, .pose-entra, .pose-sale, .burbuja-entra, .burbuja-sale, .aviso-entra { animation: none !important; }
+  .cuerpo-fig, .cuerpo-poses, .cuerpo-aura, .cuerpo-punto-anillo, .pose-entra, .pose-sale, .burbuja-entra, .burbuja-sale, .aviso-entra, .pulso-contador, .vida-pulsa, .fila-entra, .fila-sale { animation: none !important; }
+  .vida-relleno { transition: none; }
   .burbuja { transition: none; }
   .astro-float, .halo-pulso, .vibrate, .pulse-ring::after, .giro-lento, .trazo, .parpadeo { animation: none; }
   .glow-effect, .card-spotlight, .glass-hover { transition: none; }

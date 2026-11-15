@@ -1,49 +1,165 @@
 "use client";
-import { useEffect, useState } from "react";
-import { EncabezadoPagina, Shell } from "@/components/Shell";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { EncabezadoPagina, ESTADO, Shell } from "@/components/Shell";
+import CyberButton from "@/components/CyberButton";
 import { TablaResumen } from "@/components/analisis/Resumen";
 import { VistaVariable } from "@/components/analisis/Variable";
 import { ChipEstado } from "@/components/analisis/comun";
 import { useAstronautId, useQuickFix } from "@/lib/useQuickFix";
 import { VARIABLES } from "@/lib/analysis";
+import { ESTADO_DE_NIVEL, nivelAlerta, PRIORIDAD_NIVEL } from "@/lib/cuerpo";
 
 const PIE = "Datos simulados · Medic no diagnostica; lo grave se escala al médico de tripulación.";
 const ESTADO_TXT = { normal: "Bien", atencion: "Precaución", critico: "Actúa ahora" };
+const CATEGORIAS = {
+  vitales: { nombre: "Signos vitales", claves: ["fc", "pa", "fr", "temp", "spo2", "conciencia"] },
+  espacio: { nombre: "Salud en el espacio", claves: ["radiacion", "vision", "huesos", "cabina"] },
+  mente: { nombre: "Mente y bienestar", claves: ["sueno", "animo"] },
+};
+const PESTANAS = ["alertas", "vitales", "espacio", "mente", "completo"];
+const ORDEN = [...CATEGORIAS.vitales.claves, ...CATEGORIAS.espacio.claves, ...CATEGORIAS.mente.claves];
+const CORTO = { fc: "FC", pa: "Presión", fr: "FR", temp: "Temperatura", spo2: "SpO₂", conciencia: "Conciencia", radiacion: "Radiación", vision: "Visión", huesos: "Huesos", cabina: "Cabina", sueno: "Sueño", animo: "Ánimo" };
+const UNIDAD = { fc: "lpm", pa: "", fr: "rpm", temp: "°C", spo2: "%", conciencia: "", radiacion: "µSv/h", vision: "", huesos: "%", cabina: "ppm", sueno: "h", animo: "/100" };
+
+const categoriaDe = (k) => Object.keys(CATEGORIAS).find((c) => CATEGORIAS[c].claves.includes(k)) || "vitales";
+
+function alertasDe(analisis) {
+  const porK = Object.fromEntries(analisis.tarjetas.map((t) => [t.k, t]));
+  const niveles = Object.fromEntries(ORDEN.map((k) => [k, porK[k] ? nivelAlerta(porK[k], analisis) : "ok"]));
+  const lista = ORDEN.filter((k) => niveles[k] in PRIORIDAD_NIVEL).sort((a, b) => PRIORIDAD_NIVEL[niveles[a]] - PRIORIDAD_NIVEL[niveles[b]] || ORDEN.indexOf(a) - ORDEN.indexOf(b));
+  return { porK, niveles, lista };
+}
+
+const peorNivel = (ks, niveles) => ks.map((k) => niveles[k]).filter((n) => n in PRIORIDAD_NIVEL).sort((a, b) => PRIORIDAD_NIVEL[a] - PRIORIDAD_NIVEL[b])[0] || null;
+
+function Contador({ n, nivel, pulso, grande = false }) {
+  if (!n || !nivel) return null;
+  const E = ESTADO[ESTADO_DE_NIVEL[nivel]];
+  return (
+    <span key={pulso} className={`inline-flex items-center gap-1 font-bold normal-case ${grande ? "" : "text-[10px]"} ${pulso ? "pulso-contador" : ""}`} style={{ color: E.hex }} data-contador={nivel}>
+      {!grande && <span className="dot-estado" style={{ width: 6, height: 6 }} />}
+      {n}
+    </span>
+  );
+}
+
+function Chip({ t, nivel, activo, onClick }) {
+  const E = ESTADO[ESTADO_DE_NIVEL[nivel] || "normal"];
+  const alerta = nivel !== "ok";
+  return (
+    <button onClick={onClick} role="tab" aria-selected={activo} data-chip={t.k} data-nivel={nivel}
+      className={`glass flex items-center gap-2 rounded-full px-3.5 py-2 text-sm transition ${activo ? "bg-white/[0.14] font-semibold" : "hover:bg-white/[0.08]"}`}
+      style={{ borderRadius: 9999, borderColor: alerta ? `color-mix(in oklab, ${E.hex} ${activo ? 85 : 55}%, transparent)` : activo ? "rgba(168,255,240,0.7)" : undefined, boxShadow: activo ? `0 0 0 1px ${alerta ? E.hex : "rgba(168,255,240,0.6)"}, 0 0 18px color-mix(in oklab, ${alerta ? E.hex : "#a8fff0"} 25%, transparent)` : undefined }}>
+      <span className="dot-estado" style={{ color: E.hex }} />
+      <span>{CORTO[t.k]}</span>
+      <span className="font-display font-semibold">{t.texto}{UNIDAD[t.k] && <span className="ml-0.5 text-xs font-normal text-muted">{UNIDAD[t.k]}</span>}</span>
+    </button>
+  );
+}
 
 export default function Analisis() {
+  const router = useRouter();
   const [aid, setAid] = useAstronautId();
   const { data, analisis, loading, error } = useQuickFix(aid);
+  const [tab, setTab] = useState(null);
   const [vari, setVari] = useState(null);
+  const inicial = useRef(null);
+  const prevAlertas = useRef(null);
+  const [pulso, setPulso] = useState(0);
 
   useEffect(() => {
-    const p = new URLSearchParams(window.location.search).get("var");
-    if (p && VARIABLES[p]) setVari(p);
+    const p = new URLSearchParams(window.location.search);
+    inicial.current = { tab: p.get("tab"), var: p.get("var"), a: p.get("a") };
   }, []);
 
-  if (error) return <div className="p-10 text-crit">No se pudieron cargar los datos: {error}</div>;
-  if (loading || !analisis) return <div className="flex min-h-screen items-center justify-center text-muted">Cargando análisis…</div>;
+  const info = analisis ? alertasDe(analisis) : null;
+  const firmaAlertas = info ? info.lista.join(",") : "";
 
-  const { astronaut, astronauts } = data;
-  const cambiarVar = (k) => {
-    setVari(k);
+  useEffect(() => {
+    if (!info || tab || !inicial.current) return;
+    const i = inicial.current;
+    if (i.a && Number(i.a) !== data?.astronaut?.id) return;
+    const v = i.var && VARIABLES[i.var] ? i.var : null;
+    let t = PESTANAS.includes(i.tab) ? i.tab : null;
+    if (!t) t = v ? (info.lista.includes(v) ? "alertas" : categoriaDe(v)) : info.lista.length ? "alertas" : "vitales";
+    setTab(t);
+    setVari(v);
+  }, [info, tab]);
+
+  useEffect(() => {
+    if (!info) return;
+    const n = info.lista.length;
+    if (prevAlertas.current !== null && n > prevAlertas.current) setPulso((p) => p + 1);
+    prevAlertas.current = n;
+  }, [firmaAlertas]);
+
+  const visibles = !info || !tab || tab === "completo" ? [] : tab === "alertas" ? info.lista : CATEGORIAS[tab].claves;
+  const seleccion = visibles.includes(vari) ? vari : visibles[0] || null;
+
+  useEffect(() => {
+    if (!tab) return;
     const url = new URL(window.location.href);
-    if (k) url.searchParams.set("var", k);
+    url.searchParams.set("tab", tab);
+    if (seleccion) url.searchParams.set("var", seleccion);
     else url.searchParams.delete("var");
     ["s", "al", "m"].forEach((x) => url.searchParams.delete(x));
-    window.history.replaceState(null, "", url);
-    window.scrollTo({ top: 0 });
-  };
+    const nueva = `${url.pathname}?${url.searchParams.toString()}`;
+    if (nueva !== `${window.location.pathname}${window.location.search}`) router.replace(nueva, { scroll: false });
+  }, [tab, seleccion, router]);
+
+  if (error) return <div className="p-10 text-crit">No se pudieron cargar los datos: {error}</div>;
+  if (loading || !analisis || !tab) return <div className="flex min-h-screen items-center justify-center text-muted">Cargando análisis…</div>;
+
+  const { astronaut, astronauts } = data;
+  const { porK, niveles, lista } = info;
   const fuera = analisis.tarjetas.filter((t) => t.estado === "atencion" || t.estado === "critico").length;
+  const cambiarTab = (t) => {
+    setTab(t);
+    setVari(null);
+  };
+  const elegir = (k) => setVari(k);
+  const abrirDesdeTabla = (k) => {
+    setTab(categoriaDe(k));
+    setVari(k);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  const nivelAlertas = peorNivel(lista, niveles);
 
   return (
-    <Shell active="/analisis" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis} pie={PIE}>
-      {vari ? (
-        <VistaVariable k={vari} analisis={analisis} data={data} aid={aid} onCambiar={cambiarVar} onTodas={() => cambiarVar(null)} />
+    <Shell active="/analisis" astronaut={astronaut} astronauts={astronauts} onAstronaut={(id) => { setAid(id); setVari(null); }} astronautId={aid} analisis={analisis} pie={PIE}>
+      <EncabezadoPagina titulo="Análisis" sub={`${12 - fuera} de 12 signos en rango`} derecha={<ChipEstado estado={analisis.general}>{ESTADO_TXT[analisis.general]}</ChipEstado>} />
+
+      <nav aria-label="Pestañas de análisis" className="no-scrollbar -mx-1 mb-4 flex gap-1.5 overflow-x-auto px-1 pb-1 min-[900px]:flex-wrap" role="tablist">
+        {PESTANAS.map((p) => {
+          const nombre = p === "alertas" ? "⚠ Alertas" : p === "completo" ? "Completo" : CATEGORIAS[p].nombre;
+          const nCat = p in CATEGORIAS ? CATEGORIAS[p].claves.filter((k) => lista.includes(k)) : [];
+          return (
+            <CyberButton key={p} onClick={() => cambiarTab(p)} activo={tab === p} tam="sm" texto={nombre} role="tab" aria-selected={tab === p} data-tab={p} className="shrink-0">
+              {nombre}
+              {p === "alertas" && <> · <Contador n={lista.length || "0"} nivel={nivelAlertas || "ok"} pulso={pulso} grande /></>}
+              {p === "completo" && " · 12"}
+              {p in CATEGORIAS && <Contador n={nCat.length} nivel={peorNivel(nCat, niveles)} />}
+            </CyberButton>
+          );
+        })}
+      </nav>
+
+      {tab === "completo" ? (
+        <TablaResumen analisis={analisis} onVer={abrirDesdeTabla} />
+      ) : tab === "alertas" && lista.length === 0 ? (
+        <section className="glass flex flex-col items-center gap-4 px-6 py-10 text-center" data-todo-estable style={{ borderColor: "color-mix(in oklab, var(--color-ok) 45%, transparent)" }}>
+          <span className="grid h-14 w-14 place-items-center rounded-full border-2 border-ok/60 bg-ok/10 text-2xl text-ok">✓</span>
+          <div className="font-display text-xl font-semibold text-ok">Todo estable · tus 12 signos están en rango</div>
+          <CyberButton onClick={() => cambiarTab("completo")} texto="Ver análisis completo">Ver análisis completo</CyberButton>
+        </section>
       ) : (
-        <div className="flex flex-col">
-          <EncabezadoPagina titulo="Análisis" sub={`${12 - fuera} de 12 signos en rango`} derecha={<ChipEstado estado={analisis.general}>{ESTADO_TXT[analisis.general]}</ChipEstado>} />
-          <TablaResumen analisis={analisis} onVer={cambiarVar} />
-        </div>
+        <>
+          <div className="mb-5 flex flex-wrap gap-2" role="tablist" aria-label="Signos">
+            {visibles.map((k) => porK[k] && <Chip key={k} t={porK[k]} nivel={niveles[k]} activo={k === seleccion} onClick={() => elegir(k)} />)}
+          </div>
+          {seleccion && <VistaVariable key={`${aid}-${seleccion}`} k={seleccion} analisis={analisis} data={data} aid={aid} />}
+        </>
       )}
     </Shell>
   );

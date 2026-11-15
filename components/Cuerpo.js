@@ -1,16 +1,12 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { ESTADO } from "./Shell";
 import { estadoPersonaje } from "./Personaje";
 import { Metrica } from "./PanelTripulante";
-import { ESTADO_DE_NIVEL, marcarFaltante, nivelAlerta, POSES, poseFalta, PRIORIDAD_NIVEL, PROPORCION, srcPose, ZONA_DE, ZONAS } from "@/lib/cuerpo";
+import { COLOR_GRAVEDAD, marcarFaltante, ORDEN_GRAVEDAD, POSES, poseFalta, PROPORCION, srcPose, ZONA_DE, ZONAS } from "@/lib/cuerpo";
 
-const ORDEN_K = ["fc", "pa", "fr", "spo2", "temp", "conciencia", "radiacion", "vision", "huesos", "cabina", "sueno", "animo"];
 const ALTO_T = 154;
 const SEP = 14;
 const ALTO_OK = 34;
-const RECIENTE_MS = 20000;
 export const MAX_TARJETAS = 4;
 const POR_LADO = 2;
 
@@ -62,25 +58,6 @@ function usePose(estado) {
   return capas;
 }
 
-export function useAlertasCuerpo(analisis) {
-  const prev = useRef({});
-  const cambio = useRef({});
-  const niveles = {};
-  const lista = analisis?.tarjetas || [];
-  for (const t of lista) niveles[t.k] = nivelAlerta(t, analisis);
-  const ahora = Date.now();
-  for (const k of Object.keys(niveles)) if (prev.current[k] !== niveles[k]) cambio.current[k] = prev.current[k] === undefined ? 0 : ahora;
-  useEffect(() => {
-    prev.current = niveles;
-  });
-  const porK = Object.fromEntries(lista.map((t) => [t.k, t]));
-  const reciente = (k) => (cambio.current[k] && ahora - cambio.current[k] < RECIENTE_MS ? 1 : 0);
-  return Object.keys(niveles)
-    .filter((k) => niveles[k] in PRIORIDAD_NIVEL)
-    .sort((a, b) => PRIORIDAD_NIVEL[niveles[a]] - PRIORIDAD_NIVEL[niveles[b]] || reciente(b) - reciente(a) || ORDEN_K.indexOf(a) - ORDEN_K.indexOf(b))
-    .map((k) => ({ k, nivel: niveles[k], t: porK[k] }));
-}
-
 function colocar(items, H, alto) {
   const orden = [...items].sort((a, b) => a.py - b.py);
   let y = 8;
@@ -98,7 +75,7 @@ function colocar(items, H, alto) {
   return orden;
 }
 
-export default function Cuerpo({ analisis, lista, onVer, debug = false, hrefMas = "/analisis", conTarjetas = true }) {
+export default function Cuerpo({ analisis, lista, onVer, debug = false, conTarjetas = true, brillo = null }) {
   const caja = useRef(null);
   const { W, H } = useTam(caja);
   const estado = estadoPersonaje(analisis);
@@ -122,7 +99,6 @@ export default function Cuerpo({ analisis, lista, onVer, debug = false, hrefMas 
   const xDer = Math.min(W - 8 - cw, fx + fw + separacion);
 
   const visibles = lista.slice(0, MAX_TARJETAS);
-  const resto = lista.length - visibles.length;
   const izq = [];
   const der = [];
   if (conTarjetas)
@@ -153,19 +129,19 @@ export default function Cuerpo({ analisis, lista, onVer, debug = false, hrefMas 
   const zonasActivas = {};
   for (const v of lista) {
     const z = ZONA_DE[v.k];
-    if (!zonasActivas[z] || PRIORIDAD_NIVEL[v.nivel] < PRIORIDAD_NIVEL[zonasActivas[z].nivel]) zonasActivas[z] = v;
+    if (!zonasActivas[z] || ORDEN_GRAVEDAD[v.nivel] < ORDEN_GRAVEDAD[zonasActivas[z].nivel]) zonasActivas[z] = v;
   }
   const todoBien = lista.length === 0 && poseFalta(POSES.estable);
   const mano = punto("manoDer");
-  const colorDe = (nivel) => ESTADO[ESTADO_DE_NIVEL[nivel]]?.hex || ESTADO.normal.hex;
-  const claseDe = (nivel) => ESTADO[ESTADO_DE_NIVEL[nivel]]?.color || ESTADO.normal.color;
+  const colorDe = (nivel) => COLOR_GRAVEDAD[nivel] || COLOR_GRAVEDAD.ok;
   const xDe = (b) => (b.lado === "izq" ? xIzq : xDer);
   const finLinea = (b) => (b.lado === "izq" ? xIzq + cw : xDer);
   const fantasmas = saliendo.filter((s) => !actuales.has(`${s.k}-${s.nivel}`));
   const auraRad = lista.some((v) => v.k === "radiacion");
 
   return (
-    <div ref={caja} className="cuerpo relative h-full w-full" data-estado={estado} data-aura={auraRad ? "radiacion" : undefined}>
+    <div ref={caja} className="cuerpo relative h-full w-full" data-estado={estado} data-aura={auraRad ? "radiacion" : undefined}
+      data-brillo={brillo ? "" : undefined} data-brillo-pulsa={brillo?.pulsa ? "" : undefined} style={brillo ? { "--brillo": brillo.color } : undefined}>
       {W > 0 && (
         <>
           <div className="cuerpo-aura pointer-events-none absolute rounded-full" aria-hidden
@@ -188,8 +164,8 @@ export default function Cuerpo({ analisis, lista, onVer, debug = false, hrefMas 
           {Object.entries(zonasActivas).map(([z, v]) => {
             const p = punto(z);
             return (
-              <button key={z} onClick={() => onVer(v.k)} aria-label={`${v.t.nombre}: ver análisis`} className={`cuerpo-punto absolute ${claseDe(v.nivel)}`}
-                style={{ left: p.px - 7, top: p.py - 7 }} data-zona={z}>
+              <button key={z} onClick={() => onVer(v.k)} aria-label={`${v.t.nombre}: ver análisis`} className="cuerpo-punto absolute"
+                style={{ left: p.px - 7, top: p.py - 7, color: colorDe(v.nivel) }} data-zona={z} data-gravedad={v.nivel}>
                 <span className="cuerpo-punto-anillo" />
                 <span className="cuerpo-punto-centro" />
               </button>
@@ -207,19 +183,14 @@ export default function Cuerpo({ analisis, lista, onVer, debug = false, hrefMas 
           {[...tarjetas.map((b) => ({ ...b, sale: false })), ...fantasmas.map((b) => ({ ...b, sale: true }))].map((b) => (
             <div key={`t-${b.k}-${b.nivel}`} className={`absolute z-10 ${b.sale ? "burbuja-sale pointer-events-none" : "burbuja-entra"}`}
               style={{ left: xDe(b), top: b.y, width: cw, height: ALTO_T, transition: "top .35s ease, left .35s ease" }} data-tarjeta={b.k} data-nivel={b.nivel}>
-              <Metrica t={b.t} analisis={analisis} onClick={() => onVer(b.k)} className="h-full w-full" />
+              <Metrica t={b.t} analisis={analisis} onClick={() => onVer(b.k)} className="h-full w-full" acento={colorDe(b.nivel)} />
             </div>
           ))}
           {todoBien && (
-            <div role="status" data-burbuja="ok" className={`burbuja glass burbuja-entra absolute z-10 flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-xs font-semibold ${claseDe("ok")}`}
+            <div role="status" data-burbuja="ok" className={`burbuja glass burbuja-entra absolute z-10 flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-xs font-semibold text-ok`}
               style={{ left: Math.min(W - 160, mano.px + 46), top: mano.py - 34, height: ALTO_OK, borderColor: "color-mix(in oklab, var(--color-ok) 45%, transparent)" }}>
               <span aria-hidden>👍</span> Todo en orden
             </div>
-          )}
-          {resto > 0 && conTarjetas && (
-            <Link href={hrefMas} className="glass burbuja-entra absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full px-3 py-1.5 text-xs font-semibold text-soft hover:text-fg" data-burbuja="mas">
-              +{resto} {resto === 1 ? "alerta" : "alertas"}
-            </Link>
           )}
         </>
       )}
