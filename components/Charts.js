@@ -13,7 +13,7 @@ export function TrendChart({ datos, series, banda, bandaTxt, linea, lineaTxt, un
   const hi = Math.max(...vals, banda?.[1] ?? -Infinity, linea ?? -Infinity);
   const pad = (hi - lo) * 0.15 || 1;
   const barras = series.some((s) => s.tipo === "bar");
-  const dom = dominio || (Number.isFinite(lo) ? [barras ? 0 : Math.floor((lo - pad) * 10 ** dec) / 10 ** dec, Math.ceil((hi + pad) * 10 ** dec) / 10 ** dec] : [0, 1]);
+  const dom = dominio || (Number.isFinite(lo) ? [barras ? 0 : Math.max(lo >= 0 ? 0 : -Infinity, Math.floor((lo - pad) * 10 ** dec) / 10 ** dec), Math.ceil((hi + pad) * 10 ** dec) / 10 ** dec] : [0, 1]);
   const fmt = (v) => (v == null ? "—" : `${Number(v).toFixed(dec)} ${unidad}`.trim());
   return (
     <div style={{ height: alto }}>

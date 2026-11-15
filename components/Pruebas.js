@@ -16,14 +16,23 @@ const CARAS = [
 
 export const PREGUNTAS = [
   { k: "confusion", t: "¿Te sientes confundido o desorientado?" },
-  { k: "vision_cefalea", t: "¿Visión borrosa o dolor de cabeza?" },
-  { k: "mareo_de_pie", t: "¿Mareo al ponerte de pie?" },
+  { k: "mareo_de_pie", t: "¿Tienes mareo?" },
+  { k: "vision_borrosa", t: "¿Visión borrosa?" },
+  { k: "dolor_cabeza", t: "¿Dolor de cabeza?" },
+];
+
+export const SINTOMAS = [
+  { k: "garganta", t: "Garganta" },
+  { k: "llagas", t: "Llagas o herpes" },
+  { k: "ronchas", t: "Ronchas" },
+  { k: "heridas", t: "Heridas lentas" },
+  { k: "estomago", t: "Estómago" },
 ];
 
 export const INFO_PRUEBAS = {
   checkin: {
-    descripcion: "Ánimo, estrés y fatiga del 1 al 5, más tres preguntas de alarma: confusión, visión o cefalea y mareo de pie.",
-    para: "Detecta cambios de ánimo y síntomas de alarma que los sensores no ven.",
+    descripcion: "Ánimo, estrés, fatiga y relación con la tripulación; confusión, mareo, visión borrosa, dolor de cabeza y síntomas de infección.",
+    para: "Detecta lo que los sensores no ven. Cada guardado recalcula tus 12 tarjetas.",
   },
   remedicion: {
     descripcion: "Cinco minutos sentado y en silencio; después se toma una nueva lectura de FC, SpO₂ y presión.",
@@ -143,8 +152,10 @@ export function Cuestionario({ tipo, onFinish, enviarTexto = "Guardar respuestas
 
 function inicialCheckin(i = {}) {
   return {
-    animo: i.animo ?? 3, estres: i.estres ?? 3, fatiga: i.fatiga ?? 3,
-    confusion: !!i.confusion, vision_cefalea: !!i.vision_cefalea, mareo_de_pie: !!i.mareo_de_pie,
+    animo: i.animo ?? 3, estres: i.estres ?? 3, fatiga: i.fatiga ?? 3, tripulacion: i.tripulacion ?? 4,
+    confusion: !!i.confusion, mareo_de_pie: !!i.mareo_de_pie,
+    vision_borrosa: !!(i.vision_borrosa ?? i.vision_cefalea), dolor_cabeza: !!(i.dolor_cabeza ?? i.vision_cefalea),
+    sintomas: Array.isArray(i.sintomas) ? i.sintomas : [],
   };
 }
 
@@ -229,14 +240,29 @@ export function CheckinForm({ astronautId, inicial, onSaved, onResultado, who5Pe
           ))}
         </div>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-3">
         <Escala etiqueta="Estrés" valor={v.estres} onChange={set("estres")} bajo="1 bajo" alto="5 alto" />
         <Escala etiqueta="Fatiga" valor={v.fatiga} onChange={set("fatiga")} bajo="1 baja" alto="5 alta" />
+        <Escala etiqueta="Tripulación" valor={v.tripulacion} onChange={set("tripulacion")} bajo="1 mal" alto="5 muy bien" />
       </div>
       <div className="space-y-1.5">
         {PREGUNTAS.map((p) => (
           <SiNo key={p.k} texto={p.t} valor={v[p.k]} onChange={set(p.k)} />
         ))}
+      </div>
+      <div>
+        <div className="mb-1.5 text-sm font-medium">Síntomas de infección <span className="font-normal text-muted">(marca los que tengas)</span></div>
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Síntomas de infección">
+          {SINTOMAS.map((x) => {
+            const on = v.sintomas.includes(x.k);
+            return (
+              <button type="button" key={x.k} aria-pressed={on} onClick={() => set("sintomas")(on ? v.sintomas.filter((y) => y !== x.k) : [...v.sintomas, x.k])}
+                className={`rounded-full border px-3 py-1 text-sm transition ${on ? "border-warn bg-warn/15 font-semibold text-warn" : "border-line hover:bg-ink/5"}`}>
+                {on ? "✓ " : ""}{x.t}
+              </button>
+            );
+          })}
+        </div>
       </div>
       {who5Pendiente && (
         <details className="rounded-xl border border-violet/40 p-3" open>
