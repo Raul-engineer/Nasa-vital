@@ -465,7 +465,7 @@ export function PvtbTest({ onFinish, base }) {
     setEstimulo(false);
     setFase("fin");
     const dur = Math.round(P.duracionS - Math.max(0, (fin.current - Date.now()) / 1000));
-    onFinish({ ...resumenPvt(resp.current), duracion_s: dur });
+    onFinish({ ...resumenPvt(resp.current), duracion_s: dur, tiempos: resp.current.map((x) => (x.falsa ? "falsa" : x.ms)) });
   };
   const programar = () => {
     clearTimeout(timer.current);

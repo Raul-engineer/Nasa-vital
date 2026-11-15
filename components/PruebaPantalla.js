@@ -4,13 +4,12 @@ import Link from "next/link";
 import CyberButton from "./CyberButton";
 import { Icon } from "./Icons";
 import { CheckinForm, PvtbTest, RemedicionTest } from "./Pruebas";
-import { guardarResultado, saveCheckin, savePrueba, setEnVivo, setEnVivoVarios } from "@/lib/data";
-import { evaluarPrueba } from "@/lib/analysis";
 import { COLOR_NIVEL, ETIQUETA_NIVEL } from "@/lib/fichas";
-import { baseDe, calificarPrueba, CATEGORIAS_PRUEBA, comparar, pasosVisibles, PRUEBAS_POR_ID, ZONAS_DOLOR } from "@/lib/pruebas";
-import { LIMITES, validarCampo, validarLectura } from "@/lib/validar";
+import { baseParaPrueba, calificarPrueba, CATEGORIAS_PRUEBA, comparar, contextoDisponibilidad, disponibilidad, errorDePaso, pasosVisibles, PRUEBAS_POR_ID, ZONAS_DOLOR } from "@/lib/pruebas";
+import { respuestasComoObjeto } from "@/lib/respuestas";
+import { guardarPrueba } from "@/lib/guardarPrueba";
 import { partesFuente } from "@/lib/fuentes";
-import { useHistorialPruebas } from "@/lib/useFichas";
+import { useFichas, useHistorialPruebas } from "@/lib/useFichas";
 import { useQuickFix } from "@/lib/useQuickFix";
 
 const SIGUIENTES = {
@@ -45,7 +44,7 @@ function Temporizador({ segundos, onFin }) {
   );
 }
 
-function Amsler({ valor, onChange }) {
+export function Amsler({ valor, onChange }) {
   const [ojo, setOjo] = useState("od");
   const v = valor || { od: [], oi: [] };
   const marcar = (c) => onChange({ ...v, [ojo]: v[ojo].includes(c) ? v[ojo].filter((x) => x !== c) : [...v[ojo], c] });
@@ -74,7 +73,7 @@ function Amsler({ valor, onChange }) {
 }
 
 const LETRAS = "EFPTOZLDCNHRKSV";
-function Agudeza({ valor, onChange }) {
+export function Agudeza({ valor, onChange }) {
   const v = valor || { distancia: 1, od: null, oi: null, cerca: null };
   const [fase, setFase] = useState("od");
   const filas = Array.from({ length: 10 }, (_, i) => 1.0 - i * 0.1);
@@ -103,7 +102,7 @@ function Agudeza({ valor, onChange }) {
   );
 }
 
-function MapaDolor({ valor, onChange }) {
+export function MapaDolor({ valor, onChange }) {
   const v = Array.isArray(valor) ? valor : [];
   return (
     <div className="grid w-full max-w-xl grid-cols-2 gap-2" data-mapa-dolor>
@@ -115,7 +114,7 @@ function MapaDolor({ valor, onChange }) {
   );
 }
 
-function CabinaTripulacion({ valor, onChange, tripulacion = [], cabina = {} }) {
+export function CabinaTripulacion({ valor, onChange, tripulacion = [], cabina = {} }) {
   const v = valor || {};
   const set = (id, k) => onChange({ ...v, [id]: { ...(v[id] || {}), [k]: !v[id]?.[k] } });
   return (
@@ -135,50 +134,23 @@ function CabinaTripulacion({ valor, onChange, tripulacion = [], cabina = {} }) {
   );
 }
 
-function errorDePaso(paso, r) {
-  if (paso.tipo === "numero") {
-    if (r[paso.id] == null || r[paso.id] === "") return paso.obligatorio ? "Falta este dato." : null;
-    const v = validarLectura({ [paso.campo]: r[paso.id] });
-    if (LIMITES[paso.campo] && !v.ok) return v.errores[0].texto;
-    return validarCampo(paso.campo, r[paso.id], { obligatorio: paso.obligatorio });
-  }
-  if (paso.tipo === "lectura") {
-    const val = r[paso.id] || {};
-    for (const c of paso.campos) {
-      const e = validarCampo(c.rango, val[c.id]);
-      if (e) return `${c.etiqueta}: ${e}`;
-    }
-    const v = validarLectura(val);
-    return v.ok ? null : v.errores[0].texto;
-  }
-  if (paso.tipo === "escala") return validarCampo(paso.campo || "dolor", r[paso.id]) ? "Elige una opción." : null;
-  if (["opciones", "sino", "hora"].includes(paso.tipo)) return r[paso.id] == null || r[paso.id] === "" ? "Elige una opción." : null;
-  if (paso.tipo === "especial" && paso.componente === "agudeza") return r.agudeza?.od == null || r.agudeza?.oi == null || r.agudeza?.cerca == null ? "Marca los tres: ojo derecho, izquierdo y cerca." : null;
-  return null;
-}
-
 export default function PruebaPantalla({ id, astronautId, desde = null }) {
   const prueba = PRUEBAS_POR_ID[id];
   const { data, analisis } = useQuickFix(astronautId);
   const { historial } = useHistorialPruebas(data?.astronaut?.id, data);
+  const fichas = useFichas(data?.astronaut?.id);
   const [fase, setFase] = useState("intro");
   const [i, setI] = useState(0);
   const [r, setR] = useState({});
+  const [horas, setHoras] = useState({});
+  const [editar, setEditar] = useState(null);
   const [salir, setSalir] = useState(false);
   const [guardado, setGuardado] = useState(null);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState(null);
   const principal = useRef(null);
 
-  const base = useMemo(() => {
-    if (!data || !analisis) return {};
-    const porK = Object.fromEntries(analisis.tarjetas.map((t) => [t.k, t]));
-    const previos = historial.filter((x) => !guardado || x.id !== guardado.id);
-    return baseDe(id, previos, {
-      tareaCritica: !!data.enVivo?.tarea_critica, sistolica: analisis.hoy?.sistolica, news2: analisis.news2?.total, confusion: !!analisis.checkinHoy?.confusion,
-      rangoTemp: porK.temp?.rangoPersonal, ejercicioMeta: Number(data.profile?.ejercicio_prescrito_min) || 120,
-    });
-  }, [data, analisis, historial, id, guardado]);
+  const base = useMemo(() => baseParaPrueba(id, { data, analisis, historial, excluir: guardado?.id || editar?.id }), [data, analisis, historial, id, guardado, editar]);
 
   useEffect(() => {
     principal.current?.focus?.();
@@ -190,7 +162,19 @@ export default function PruebaPantalla({ id, astronautId, desde = null }) {
   const aid = data.astronaut.id;
   const pasos = pasosVisibles(prueba, r);
   const paso = pasos[Math.min(i, pasos.length - 1)];
-  const set = (k, v) => setR((x) => ({ ...x, [k]: v }));
+  const set = (k, v) => {
+    setR((x) => ({ ...x, [k]: v }));
+    setHoras((h) => ({ ...h, [k]: new Date().toISOString() }));
+  };
+  const disp = disponibilidad(prueba, contextoDisponibilidad({ data, analisis, eventosFicha: fichas.eventos, historial }));
+  const comenzar = () => {
+    if (disp.editar) {
+      setEditar(disp.editar);
+      setR(respuestasComoObjeto(disp.editar.valor));
+    }
+    setFase("pasos");
+    setI(0);
+  };
   const volverA = desde ? `/?a=${aid}&ficha=${desde}` : `/pruebas?a=${aid}`;
   const res = fase === "resultado" ? calificarPrueba(id, r, base) : null;
 
@@ -208,6 +192,7 @@ export default function PruebaPantalla({ id, astronautId, desde = null }) {
   const terminarEspecial = (k, v) => {
     const nuevo = { ...r, [k]: v };
     setR(nuevo);
+    setHoras((h) => ({ ...h, [k]: new Date().toISOString() }));
     setError(null);
     const vis = pasosVisibles(prueba, nuevo);
     if (i + 1 >= vis.length) setFase("resultado");
@@ -222,33 +207,7 @@ export default function PruebaPantalla({ id, astronautId, desde = null }) {
   const guardar = async () => {
     setGuardando(true);
     try {
-      const { causas, ...resultado } = res;
-      const fila = await guardarResultado({ astronaut_id: aid, prueba_id: id, valor: { respuestas: r, resultado, causas: causas || {} }, nivel: res.nivel, desde_ficha: desde });
-      const leg = prueba.legado;
-      if (leg === "who5" || leg === "phq9" || leg === "gad7") {
-        const resp = Array.from({ length: { who5: 5, phq9: 9, gad7: 7 }[leg] }, (_, k) => Number(r[`i${k + 1}`] || 0));
-        const suma = resp.reduce((a, b) => a + b, 0);
-        const rr = leg === "who5" ? { respuestas: resp, bruto: suma, puntaje: suma * 4, rp: fila.id } : { respuestas: resp, puntaje: suma, item9: leg === "phq9" ? resp[8] : undefined, rp: fila.id };
-        await savePrueba({ astronaut_id: aid, tipo: leg, resultado: rr, interpretacion: res.texto });
-      } else if (leg === "reaccion") {
-        await savePrueba({ astronaut_id: aid, tipo: "reaccion", resultado: { ...r.pvt, rp: fila.id }, interpretacion: res.texto, desenlace: evaluarPrueba("reaccion", r.pvt, analisis).desenlace });
-        if (r.pvt?.mediana_ms) await saveCheckin({ astronaut_id: aid, tiempo_reaccion_ms: r.pvt.mediana_ms });
-      } else if (leg === "amsler") {
-        await savePrueba({ astronaut_id: aid, tipo: "amsler", resultado: { od: !!r.amsler?.od?.length, oi: !!r.amsler?.oi?.length, celdas: r.amsler, rp: fila.id }, interpretacion: res.texto });
-      } else if (leg === "ortostatica") {
-        const rr = { acostado: r.acostado, min1: r.min1, min3: r.min3, rp: fila.id };
-        await savePrueba({ astronaut_id: aid, tipo: "ortostatica", resultado: rr, interpretacion: res.texto, desenlace: evaluarPrueba("ortostatica", rr, analisis).desenlace });
-      } else if (leg === "remedicion") {
-        const rr = { ...r.remedicion, rp: fila.id };
-        await savePrueba({ astronaut_id: aid, tipo: "remedicion", resultado: rr, interpretacion: res.texto, desenlace: evaluarPrueba("remedicion", rr, analisis).desenlace });
-      }
-      if (id === "presion_pronam" && res.detalles?.promedio) await savePrueba({ astronaut_id: aid, tipo: "presion", resultado: { ...res.detalles.promedio, rp: fila.id }, interpretacion: res.texto });
-      if (id === "spo2_confirmacion" && r.oximetro != null) await setEnVivo(aid, "spo2", Number(r.oximetro));
-      if (id === "diario_sueno" && res.valor != null) await setEnVivo(aid, "horas_sueno", res.valor);
-      if (id === "amt4" && res.detalles?.confusion) await saveCheckin({ astronaut_id: aid, confusion: true });
-      if (id === "cabina_tripulacion") for (const x of res.detalles?.conDolor || []) await setEnVivo(x, "dolor_cabeza", true);
-      const vivo = prueba.aVivo?.(r, base);
-      if (vivo && Object.values(vivo).every((x) => x != null && Number.isFinite(x))) await setEnVivoVarios(aid, vivo);
+      const { fila } = await guardarPrueba({ prueba, respuestas: r, horas, base, analisis, astronautId: aid, desde, origen: "laptop", editar });
       setGuardado(fila);
     } catch (e) {
       setError(`No se pudo guardar: ${e?.message || e}`);
@@ -282,7 +241,15 @@ export default function PruebaPantalla({ id, astronautId, desde = null }) {
             <p className="text-lg text-soft">{prueba.paraQue}</p>
             {desde && <p className="text-base text-cyan">La pidió tu ficha. El resultado regresa a la ficha.</p>}
             <p className="text-sm text-muted">{comparar(id, base.mediana, base) === "Primera vez: esta será tu base." ? "Primera vez: esta será tu base." : `Última vez: ${base.ultimo ? new Date(base.ultimo.hecho_en).toLocaleDateString("es-MX", { day: "numeric", month: "short" }) : "—"} · ${ETIQUETA_NIVEL[base.ultimo?.nivel] || "—"}`}</p>
-            <button type="button" onClick={() => { setFase("pasos"); setI(0); }} className={`${BTN} w-full max-w-sm border-cyan bg-cyan/20 text-fg`} data-accion="comenzar">Comenzar</button>
+            {disp.motivo && <p className="text-base font-semibold text-cyan" data-motivo-disponible>{disp.motivo}</p>}
+            {disp.permitido ? (
+              <button type="button" onClick={comenzar} className={`${BTN} w-full max-w-sm border-cyan bg-cyan/20 text-fg`} data-accion="comenzar">{disp.editar ? "Editar el de hoy" : "Comenzar"}</button>
+            ) : (
+              <>
+                <p className="text-lg font-semibold text-warn" data-bloqueada>{disp.texto}</p>
+                <a href={volverA} className={`${BTN} flex w-full max-w-sm items-center justify-center border-white/15 text-soft`}>Volver</a>
+              </>
+            )}
           </div>
         )}
 

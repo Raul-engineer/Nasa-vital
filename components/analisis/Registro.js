@@ -5,6 +5,7 @@ import { COLOR_NIVEL, ETIQUETA_NIVEL, limpiarRespuestas, obtenerFicha, preguntas
 import { useFichas, useResultados } from "@/lib/useFichas";
 import { leerNota, textoMotivo } from "@/lib/motivos";
 import { PRUEBAS_POR_ID } from "@/lib/pruebas";
+import DetalleRespuestas from "@/components/DetalleRespuestas";
 
 const CIERRE = { resuelto: "Resuelto", escalado: "Escalado", cancelado: "Cancelado" };
 const fecha = (iso) => (iso ? new Date(iso).toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—");
@@ -23,7 +24,7 @@ function armar(e, pasos, medicamentos, resultados = []) {
     const alt = String(p.paso_id).includes("~") ? notasAlt(pasos, e.id, base) : null;
     return { texto: alt || textoPaso(e.clave, base), hora: hora(p.marcado_en), por: p.marcado_por, nota: p.nota, motivo: n ? `${textoMotivo(n.motivo)}${n.alt ? ` → ${n.alt.texto}` : ""}${n.posponer ? ` · pospuesto ${n.posponer} min` : ""}${n.hora ? ` · tomado a las ${n.hora}` : ""}` : null };
   });
-  const pruebas = resultados.filter((r) => r.desde_ficha === e.clave && r.hecho_en >= e.abierto_en && (!e.cerrado_en || r.hecho_en <= e.cerrado_en)).map((r) => ({ nombre: PRUEBAS_POR_ID[r.prueba_id]?.nombre || r.prueba_id, texto: r.valor?.resultado?.texto || "", nivel: r.nivel, hora: hora(r.hecho_en) }));
+  const pruebas = resultados.filter((r) => r.desde_ficha === e.clave && r.hecho_en >= e.abierto_en && (!e.cerrado_en || r.hecho_en <= e.cerrado_en)).map((r) => ({ nombre: PRUEBAS_POR_ID[r.prueba_id]?.nombre || r.prueba_id, texto: r.valor?.resultado?.texto || "", nivel: r.nivel, hora: hora(r.hecho_en), fila: r }));
   const fin = e.cerrado_en ? Date.parse(e.cerrado_en) : Date.now();
   const meds = medicamentos.filter((x) => Date.parse(x.tomado_en) >= Date.parse(e.abierto_en) && Date.parse(x.tomado_en) <= fin).map((x) => ({ nombre: x.nombre, hora: hora(x.tomado_en) }));
   const estado = e.cerrado_en ? CIERRE[e.cierre] || e.cierre : (m.escalados || []).length ? "Escalado · abierto" : "Abierto";
@@ -48,6 +49,18 @@ function comoTexto(items, nombre) {
     out.push("");
   }
   return out.join("\n");
+}
+
+function PruebaRegistro({ p }) {
+  const [abierto, setAbierto] = useState(false);
+  return (
+    <div className="text-xs">
+      <button type="button" onClick={() => setAbierto((x) => !x)} aria-expanded={abierto} className="text-left hover:text-fg" data-abrir-detalle={p.fila.prueba_id}>
+        <span className="tabular-nums text-muted">{p.hora}</span> {p.nombre}: {p.texto} <span className="text-cyan">{abierto ? "· ocultar respuestas" : "· ver respuestas"}</span>
+      </button>
+      {abierto && <div className="mt-1.5"><DetalleRespuestas fila={p.fila} /></div>}
+    </div>
+  );
 }
 
 export function Registro({ aid, nombre }) {
@@ -94,7 +107,7 @@ export function Registro({ aid, nombre }) {
                 {x.respuestas.length > 0 && <><dt className="text-muted">Encuesta</dt><dd className="space-y-0.5">{x.respuestas.map((r) => <div key={r.texto} className="text-xs"><span className="text-soft">{r.texto}</span> <b>{r.valor}</b></div>)}</dd></>}
                 {x.combinaciones.length > 0 && <><dt className="text-muted">Combinaciones</dt><dd className="text-xs">{x.combinaciones.map((c) => c.titulo).join(" · ")}</dd></>}
                 {x.pasos.length > 0 && <><dt className="text-muted">Pasos</dt><dd className="space-y-0.5">{x.pasos.map((p, i) => <div key={i} className="text-xs"><span className="tabular-nums text-muted">{p.hora}</span> {p.texto}{p.motivo ? <span className="text-warn"> · no pudo: {p.motivo}</span> : ""}{p.por === "control" ? <span className="text-muted"> · desde el celular</span> : ""}</div>)}</dd></>}
-                {x.pruebas.length > 0 && <><dt className="text-muted">Pruebas</dt><dd className="space-y-0.5">{x.pruebas.map((p, i) => <div key={i} className="text-xs"><span className="tabular-nums text-muted">{p.hora}</span> {p.nombre}: {p.texto}</div>)}</dd></>}
+                {x.pruebas.length > 0 && <><dt className="text-muted">Pruebas</dt><dd className="space-y-0.5">{x.pruebas.map((p, i) => <PruebaRegistro key={i} p={p} />)}</dd></>}
                 {x.meds.length > 0 && <><dt className="text-muted">Medicamentos</dt><dd className="text-xs">{x.meds.map((m) => `${m.hora} ${m.nombre}`).join(" · ")}</dd></>}
               </dl>
             </li>

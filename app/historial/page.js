@@ -112,13 +112,7 @@ export default function Historial() {
   const [mes, setMes] = useState(null);
   const [diaSel, setDiaSel] = useState(null);
   const [toast, setToast] = useState(null);
-  const [vista, setVista] = useState("estadisticas");
   const closeToast = useCallback(() => setToast(null), []);
-
-  useEffect(() => {
-    const v = new URLSearchParams(window.location.search).get("vista");
-    if (v === "calendario" || v === "estadisticas") setVista(v);
-  }, []);
 
   const porDia = useMemo(() => {
     if (!data) return null;
@@ -184,17 +178,9 @@ export default function Historial() {
 
   return (
     <Shell active="/historial" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis} pie="Medic no diagnostica; lo grave se escala al médico de tripulación.">
-      <EncabezadoPagina titulo="Historial" sub={`${vitals.length} días de misión · estadísticas, calendario e historia clínica`} />
+      <EncabezadoPagina titulo="Historial" sub={`${vitals.length} días de misión · por categoría, prueba e historia clínica`} />
 
-      <nav className="mb-4 flex gap-1.5" role="tablist" aria-label="Vistas del historial">
-        {[["estadisticas", "Estadísticas"], ["calendario", "Calendario e historia clínica"]].map(([k, t]) => (
-          <CyberButton key={k} onClick={() => setVista(k)} activo={vista === k} tam="sm" texto={t} role="tab" aria-selected={vista === k} data-vista={k}>{t}</CyberButton>
-        ))}
-      </nav>
-
-      {vista === "estadisticas" ? (
-        <Estadisticas data={data} porDia={porDia} aid={aid} astronauts={astronauts} onAstronaut={setAid} />
-      ) : (
+      <Estadisticas data={data} porDia={porDia} aid={aid} astronauts={astronauts} onAstronaut={setAid}>
       <>
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
         <section className="card p-5">
@@ -359,7 +345,7 @@ export default function Historial() {
         <HistoriaClinica astronautId={aid} historia={data.historia} onToast={setToast} />
       </div>
       </>
-      )}
+      </Estadisticas>
       <Toast msg={toast} onClose={closeToast} />
     </Shell>
   );

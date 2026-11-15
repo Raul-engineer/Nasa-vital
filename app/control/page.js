@@ -10,6 +10,7 @@ import { pasosHechos } from "@/lib/escalamiento";
 import Ficha from "@/components/Ficha";
 import VigiaFichas from "@/components/VigiaFichas";
 import AlarmaCritica from "@/components/AlarmaCritica";
+import PruebasControl from "@/components/PruebasControl";
 
 const GRUPOS = [
   ["Signos vitales", [
@@ -330,6 +331,8 @@ export default function Control() {
           </div>
         </div>
       </section>
+
+      <PruebasControl key={data.astronaut.id} data={data} analisis={analisis} />
 
       <button onClick={() => { setPendientes({}); ejecutar(async () => { await resetEnVivo(aid); await borrarEnVivo(idsTrip, CLAVES_TRIPULACION); await terminarTormenta(); }, "Cambios en vivo borrados"); }}
         className="mt-6 min-h-12 w-full rounded-2xl border border-crit/60 bg-crit/10 px-4 py-3 font-semibold text-crit active:scale-[0.99]" data-accion="restablecer">
