@@ -75,6 +75,10 @@ export function Icon({ name, size = 22, className = "" }) {
       return <svg {...p}><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z" /></svg>;
     case "pill":
       return <svg {...p}><rect x="3" y="8.5" width="18" height="7" rx="3.5" transform="rotate(-35 12 12)" /><path d="M9.2 8l5.6 8" /></svg>;
+    case "cabina":
+      return <svg {...p}><rect x="3" y="5" width="18" height="14" rx="4" /><circle cx="12" cy="12" r="3.2" /><path d="M12 8.8v-1.6M12 16.8v-1.6M8.8 12H7.2M16.8 12h-1.6" /></svg>;
+    case "compress":
+      return <svg {...p}><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" /></svg>;
     case "x":
       return <svg {...p}><path d="M6 6l12 12M18 6L6 18" /></svg>;
     case "standing":

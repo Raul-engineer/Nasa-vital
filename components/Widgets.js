@@ -23,11 +23,11 @@ export function Ring({ value, max = 100, size = 150, stroke = 12, color = "var(-
   );
 }
 
-export function Fuente({ ids, extra, children, className = "" }) {
-  const partes = partesFuente(ids ?? (typeof children === "string" ? children : null));
+export function Fuente({ ids, extra, children, className = "", corto = false }) {
+  const partes = partesFuente(ids ?? (typeof children === "string" ? children : null)).map((p) => (corto && p.corto ? { ...p, texto: p.corto } : p));
   if (!partes.length && !extra) return null;
   return (
-    <div className={`text-[10.5px] leading-snug text-muted ${className}`}>
+    <div className={`${corto ? "truncate text-xs" : "text-[10.5px] leading-snug"} text-muted ${className}`}>
       Basado en:{" "}
       {partes.map((p, i) => (
         <span key={i}>
@@ -133,4 +133,74 @@ export function colorIndice(total, hayCritico) {
 export function fmtNum(v, dec = 0) {
   if (v == null || !Number.isFinite(Number(v))) return "—";
   return Number(v).toLocaleString("es-MX", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+}
+
+export function TarjetaCompacta({ t, onClick, ancha = false }) {
+  if (!t) return null;
+  const E = ESTADO[t.estado] || ESTADO.normal;
+  const eventos7 = t.categorica ? t.serie7.filter((x) => x > 0).length : null;
+  const pie = t.categorica ? <span className="text-[11px] text-muted">{eventos7} de 7 días</span> : <Cambio valor={t.cambio7} texto="vs 7 d" />;
+  if (ancha)
+    return (
+      <button
+        onClick={onClick}
+        aria-label={`${t.nombre}: ${t.texto} ${t.unidad}. ${t.estado === "normal" ? "Normal" : t.etiqueta}. Ver análisis`}
+        className={`card relative flex w-full items-stretch justify-between gap-3 px-3 py-2 text-left transition hover:bg-ink/[0.04] ${
+          t.estado === "critico" ? "glow-crit" : t.estado === "atencion" ? "glow-warn" : ""
+        }`}
+      >
+        <GlowingEffect />
+        <div className="flex min-w-0 flex-col justify-between gap-0.5">
+          <span className="flex min-w-0 items-center gap-1.5 text-[13px] font-medium">
+            <span className={t.estado === "normal" ? "text-violet" : E.color}><Icon name={t.icono} size={16} /></span>
+            <span className="truncate">{t.nombre}</span>
+          </span>
+          <div className="whitespace-nowrap leading-tight">
+            <span className={`text-xl font-semibold tabular-nums ${t.estado !== "normal" ? E.color : ""}`}>{t.texto}</span>
+            {t.unidad && <span className="ml-1 text-[11px] text-muted">{t.unidad}</span>}
+          </div>
+          <div className="truncate text-[10.5px] text-muted">{t.secundario}</div>
+        </div>
+        <div className="flex shrink-0 flex-col items-end justify-between gap-0.5">
+          <span className="text-[10px] text-muted">{t.rango}</span>
+          <Sparkline data={t.serie7} color={E.hex} w={60} h={20} />
+          <div className="flex items-center gap-2">
+            {pie}
+            <EstadoPill estado={t.estado}>{t.etiqueta}</EstadoPill>
+          </div>
+        </div>
+      </button>
+    );
+  return (
+    <button
+      onClick={onClick}
+      aria-label={`${t.nombre}: ${t.texto} ${t.unidad}. ${t.estado === "normal" ? "Normal" : t.etiqueta}. Ver análisis`}
+      className={`card relative flex h-full w-full flex-col justify-between gap-0.5 px-3 py-2 text-left transition hover:bg-ink/[0.04] ${
+        t.estado === "critico" ? "glow-crit" : t.estado === "atencion" ? "glow-warn" : ""
+      }`}
+    >
+      <GlowingEffect />
+      <div className="flex items-center justify-between gap-2">
+        <span className="flex min-w-0 items-center gap-1.5 text-[13px] font-medium">
+          <span className={t.estado === "normal" ? "text-violet" : E.color}><Icon name={t.icono} size={16} /></span>
+          <span className="truncate">{t.nombre}</span>
+        </span>
+        <span className="shrink-0 text-[10px] text-muted">{t.rango}</span>
+      </div>
+      <div className="flex items-end justify-between gap-2">
+        <div className="min-w-0 leading-tight">
+          <div className="whitespace-nowrap">
+            <span className={`text-xl font-semibold tabular-nums ${t.estado !== "normal" ? E.color : ""}`}>{t.texto}</span>
+            {t.unidad && <span className="ml-1 text-[11px] text-muted">{t.unidad}</span>}
+          </div>
+          <div className="truncate text-[10.5px] text-muted">{t.secundario}</div>
+        </div>
+        <Sparkline data={t.serie7} color={E.hex} w={54} h={22} />
+      </div>
+      <div className="flex items-center justify-between gap-1">
+        <EstadoPill estado={t.estado}>{t.etiqueta}</EstadoPill>
+        {pie}
+      </div>
+    </button>
+  );
 }

@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { Shell, Toast } from "@/components/Shell";
+import { EncabezadoPagina, Shell, Toast } from "@/components/Shell";
+import CyberButton from "@/components/CyberButton";
 import { Icon } from "@/components/Icons";
 import { GlowingEffect } from "@/components/Effects";
 import { EstadoPill, Fuente } from "@/components/Widgets";
@@ -36,10 +37,7 @@ export default function Pruebas() {
 
   return (
     <Shell active="/pruebas" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis}>
-      <div className="mb-5">
-        <h1 className="text-2xl font-semibold">Pruebas</h1>
-        <p className="text-sm text-muted">Pruebas cortas que puedes hacer tú mismo. Sus resultados alimentan el motor de reglas y Medic actualiza su consejo.</p>
-      </div>
+      <EncabezadoPagina titulo="Pruebas" sub={`${ORDEN.length} pruebas · check-in diario primero`} />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {ORDEN.map((t) => (
@@ -57,9 +55,9 @@ export default function Pruebas() {
             </div>
             <Fuente className="mt-2" ids={PRUEBAS[t].fuente} />
             <div className="mt-auto pt-4">
-              <button onClick={() => abrir(t)} className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-2.5 font-semibold text-onaccent hover:brightness-110">
-                {abierta === t ? "Prueba abierta" : "Hacer prueba"} <Icon name="chev" size={16} />
-              </button>
+              <CyberButton onClick={() => abrir(t)} activo={abierta === t} atajo="↵" className="w-full" texto={abierta === t ? "Prueba abierta" : "Hacer la prueba"}>
+                {abierta === t ? "Prueba abierta" : "Hacer la prueba"}
+              </CyberButton>
             </div>
           </article>
         ))}

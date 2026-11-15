@@ -1,7 +1,8 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { Shell, Toast } from "@/components/Shell";
+import { EncabezadoPagina, Shell, Toast } from "@/components/Shell";
 import { Icon } from "@/components/Icons";
+import CyberButton from "@/components/CyberButton";
 import AstronautCard from "@/components/AstronautCard";
 import { Barra, Fuente, fmtNum } from "@/components/Widgets";
 import { useAstronautId, useQuickFix } from "@/lib/useQuickFix";
@@ -13,7 +14,7 @@ const SEXO = ["Femenino", "Masculino", "Otro"];
 const RIESGOS = ["bajo", "moderado", "alto"];
 const NUM = {
   edad: [18, 80, "años"], peso_kg: [30, 200, "kg"], estatura_cm: [120, 220, "cm"], fc_basal: [30, 120, "lpm"], spo2_basal: [80, 100, "%"],
-  dosis_carrera_previa_msv: [0, 600, "mSv"], misiones_previas: [0, 20, ""], dias_espacio_previos: [0, 2000, "días"],
+  dosis_carrera_previa_msv: [0, 600, "mSv"], misiones_previas: [0, 20, ""], dias_espacio_previos: [0, 2000, "días"], ejercicio_prescrito_min: [30, 300, "min"],
 };
 
 function aForm(p = {}) {
@@ -23,7 +24,7 @@ function aForm(p = {}) {
     medicamentos: (p.medicamentos || []).join("\n"), condiciones_cronicas: (p.condiciones_cronicas || []).join("\n"),
     fc_basal: p.fc_basal ?? "", pa_basal: p.pa_basal ?? "", spo2_basal: p.spo2_basal ?? "",
     dosis_carrera_previa_msv: p.dosis_carrera_previa_msv ?? 0, misiones_previas: p.misiones_previas ?? 0, dias_espacio_previos: p.dias_espacio_previos ?? 0,
-    usa_lentes: !!p.usa_lentes,
+    usa_lentes: !!p.usa_lentes, ejercicio_prescrito_min: p.ejercicio_prescrito_min ?? 120,
     contacto_emergencia: { nombre: p.contacto_emergencia?.nombre || "", relacion: p.contacto_emergencia?.relacion || "", telefono: p.contacto_emergencia?.telefono || "" },
   };
 }
@@ -57,7 +58,7 @@ function aPerfil(f) {
     condiciones_cronicas: f.condiciones_cronicas.split("\n").map((x) => x.trim()).filter(Boolean),
     fc_basal: n(f.fc_basal), pa_basal: String(f.pa_basal).trim() || null, spo2_basal: n(f.spo2_basal),
     dosis_carrera_previa_msv: n(f.dosis_carrera_previa_msv) || 0, misiones_previas: n(f.misiones_previas) || 0, dias_espacio_previos: n(f.dias_espacio_previos) || 0,
-    usa_lentes: !!f.usa_lentes,
+    usa_lentes: !!f.usa_lentes, ejercicio_prescrito_min: n(f.ejercicio_prescrito_min) || 120,
     contacto_emergencia: { ...f.contacto_emergencia },
   };
 }
@@ -142,10 +143,8 @@ export default function Perfil() {
 
   return (
     <Shell active="/perfil" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis}>
-      <div role="note" className="mb-5 flex items-start gap-3 rounded-2xl border border-violet/40 bg-violet/10 px-4 py-3 text-sm">
-        <Icon name="shield" className="mt-0.5 shrink-0 text-violet" size={20} />
-        <span><strong>Información médica confidencial.</strong> Solo la ven el astronauta y su médico de tripulación. Datos de demostración ficticios.</span>
-      </div>
+      <EncabezadoPagina titulo="Perfil" sub={`${astronaut.nombre} · ${astronaut.rol}`}
+        derecha={<span role="note" className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3.5 py-2 text-xs text-[#f4c9ac]"><Icon name="shield" size={15} /> Confidencial · solo tú y tu médico de tripulación</span>} />
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)]">
         <div className="flex flex-col gap-5">
@@ -191,6 +190,9 @@ export default function Perfil() {
               <Campo label="IMC">
                 <div className="campo bg-transparent font-semibold">{imc ? fmtNum(imc, 1) : "—"}</div>
               </Campo>
+            </div>
+            <div className="mt-3">
+              <Campo label="Ejercicio prescrito (min/día)" error={err("ejercicio_prescrito_min")} hint="Fuerza + cardio. Se usa en la tarjeta Huesos y músculos">{num("ejercicio_prescrito_min")}</Campo>
             </div>
           </Grupo>
 
@@ -287,9 +289,9 @@ export default function Perfil() {
                   Descartar
                 </button>
               )}
-              <button type="submit" disabled={guardando || !sucio} className="rounded-xl bg-accent px-6 py-2.5 font-semibold text-onaccent hover:brightness-110 disabled:opacity-50">
+              <CyberButton type="submit" disabled={guardando || !sucio} atajo="↵" texto={guardando ? "Guardando…" : "Guardar perfil"}>
                 {guardando ? "Guardando…" : "Guardar perfil"}
-              </button>
+              </CyberButton>
             </div>
           </div>
         </form>

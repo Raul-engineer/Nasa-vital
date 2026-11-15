@@ -4,9 +4,9 @@ import Link from "next/link";
 import { Icon } from "@/components/Icons";
 import { LogoIcono } from "@/components/Marca";
 import { ESTADO, Toast } from "@/components/Shell";
-import { useAstronautId, useQuickFix } from "@/lib/useQuickFix";
+import { useAstronautId, useAtajosDemo, useQuickFix } from "@/lib/useQuickFix";
 import { protocoloPara, SISTEMAS } from "@/lib/analysis";
-import { confirmarRefugio, iniciarTormenta, resolveAlert, saveCheckin, terminarTormenta, MODO, resetLocal } from "@/lib/data";
+import { alternarEjercicio, alternarFiebre, confirmarRefugio, iniciarTormenta, resolveAlert, saveCheckin, terminarTormenta, MODO, resetLocal } from "@/lib/data";
 
 const PANTALLAS = ["inicio", "vitales", "checkin"];
 const CARAS = ["😣", "🙁", "😐", "🙂", "😄"];
@@ -54,6 +54,7 @@ export default function Reloj() {
   const hora = useHora();
   const fc = useFcVivo(analisis?.hoy?.fc);
   const closeToast = useCallback(() => setToast(null), []);
+  useAtajosDemo(aid);
 
   if (loading || !analisis) return <div className="flex min-h-screen items-center justify-center text-muted">Conectando reloj…</div>;
 
@@ -230,10 +231,19 @@ export default function Reloj() {
             className="flex-1 rounded-xl border border-line px-4 py-2.5 text-sm font-semibold hover:bg-ink/5 disabled:opacity-40">
             Terminar tormenta
           </button>
+          <button onClick={() => alternarEjercicio(aid)} aria-pressed={data.actividad?.estado === "ejercicio"}
+            className={`flex-1 rounded-xl border px-4 py-2.5 text-sm font-semibold ${data.actividad?.estado === "ejercicio" ? "border-info bg-info/20 text-info" : "border-line hover:bg-ink/5"}`}>
+            {data.actividad?.estado === "ejercicio" ? "⚡ Terminar ejercicio" : "⚡ Iniciar ejercicio"}
+          </button>
+          <button onClick={() => alternarFiebre(aid)} aria-pressed={!!data.actividad?.fiebre}
+            className={`flex-1 rounded-xl border px-4 py-2.5 text-sm font-semibold ${data.actividad?.fiebre ? "border-warn bg-warn/20 text-warn" : "border-line hover:bg-ink/5"}`}>
+            {data.actividad?.fiebre ? "🌡 Quitar fiebre" : "🌡 Simular fiebre"}
+          </button>
           <Link href={`/?a=${aid}`} target="_blank" className="flex-1 rounded-xl border border-line px-4 py-2.5 text-center text-sm hover:bg-ink/5">
             Abrir tablet en otra pestaña
           </Link>
         </div>
+        <div className="mt-2 text-[11px] text-muted">Atajos: Shift + E ejercicio · Shift + F fiebre</div>
         {MODO === "local" && (
           <button onClick={resetLocal} className="mt-2 w-full text-xs text-muted underline">Reiniciar datos de la demo</button>
         )}
