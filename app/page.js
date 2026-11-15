@@ -2,15 +2,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChipGeneral, ESTADO, ESTADO_GENERAL, Shell } from "@/components/Shell";
-import Cuerpo from "@/components/Cuerpo";
-import { GRUPOS, ORDEN_ESPACIO, ORDEN_MENTAL } from "@/components/Personaje";
-import { Metrica, Mini, motivoGeneral, ORDEN_VISUAL, Seccion, Urgencia } from "@/components/PanelTripulante";
-import { PRIORIDAD_NIVEL } from "@/lib/cuerpo";
+import Link from "next/link";
+import Cuerpo, { MAX_TARJETAS, useAlertasCuerpo } from "@/components/Cuerpo";
+import CyberButton from "@/components/CyberButton";
+import { Metrica, motivoGeneral, ORDEN_VISUAL, Urgencia } from "@/components/PanelTripulante";
+import { nivelAlerta, PRIORIDAD_NIVEL } from "@/lib/cuerpo";
 import { useAstronautId, useQuickFix } from "@/lib/useQuickFix";
-
-const IZQ = ["fc", "pa", "fr"];
-const DER = ["spo2", "temp", "conciencia"];
-const FILA = ["min-[1100px]:row-start-1", "min-[1100px]:row-start-2", "min-[1100px]:row-start-3"];
 
 function useMedia(q) {
   const [ok, setOk] = useState(true);
@@ -26,7 +23,7 @@ function useMedia(q) {
 
 function resumen(analisis) {
   const porK = Object.fromEntries(analisis.tarjetas.map((t) => [t.k, t]));
-  const niv = (k) => analisis.interpretaciones?.[k]?.nivel || "ok";
+  const niv = (k) => (porK[k] ? nivelAlerta(porK[k], analisis) : "ok");
   const alertas = ORDEN_VISUAL.filter((k) => niv(k) === "bad" || niv(k) === "warn").sort((a, b) => PRIORIDAD_NIVEL[niv(a)] - PRIORIDAD_NIVEL[niv(b)]);
   const infos = ORDEN_VISUAL.filter((k) => niv(k) === "info");
   if (alertas.length) {
@@ -68,8 +65,9 @@ export default function Inicio() {
   const router = useRouter();
   const [aid, setAid] = useAstronautId();
   const { data, analisis, loading, error } = useQuickFix(aid);
-  const ancho = useMedia("(min-width: 640px)");
+  const ancho = useMedia("(min-width: 1100px)");
   const [debug, setDebug] = useState(false);
+  const lista = useAlertasCuerpo(analisis);
   useEffect(() => {
     setDebug(new URLSearchParams(window.location.search).get("debug") === "cuerpo");
   }, []);
@@ -97,26 +95,29 @@ export default function Inicio() {
         </div>
       </div>
 
-      <section aria-label={GRUPOS.vitales}
-        className="grid grid-cols-2 gap-[9px] min-[640px]:grid-cols-3 min-[640px]:gap-[14px] min-[1100px]:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)] min-[1100px]:grid-rows-3">
-        <article aria-label="Cuerpo del astronauta"
-          className="glass relative col-span-2 h-[380px] overflow-hidden min-[640px]:col-span-3 min-[640px]:h-[440px] min-[1100px]:col-span-1 min-[1100px]:col-start-2 min-[1100px]:row-span-3 min-[1100px]:row-start-1 min-[1100px]:h-auto min-[1100px]:min-h-[490px]"
-          style={{ background: "radial-gradient(ellipse at 50% 40%, #3a2a2a66, transparent 70%), linear-gradient(160deg, #2b232499, #1b202a99), var(--glass)" }}>
-          <Cuerpo analisis={analisis} onVer={ir} maxBurbujas={ancho ? 3 : 2} debug={debug} hrefMas={`/analisis?a=${aid}`} />
-        </article>
-        {IZQ.map((k, i) => <Metrica key={k} t={porK[k]} analisis={analisis} onClick={() => ir(k)} className={`min-[1100px]:col-start-1 ${FILA[i]}`} />)}
-        {DER.map((k, i) => <Metrica key={k} t={porK[k]} analisis={analisis} onClick={() => ir(k)} className={`min-[1100px]:col-start-3 ${FILA[i]}`} />)}
+      <section aria-label="Cuerpo del astronauta" className="glass relative h-[min(calc(100vh-292px),760px)] min-h-[420px] overflow-hidden max-[1099px]:h-[460px]"
+        style={{ background: "radial-gradient(ellipse at 50% 40%, #3a2a2a66, transparent 70%), linear-gradient(160deg, #2b232499, #1b202a99), var(--glass)" }}>
+        <Cuerpo analisis={analisis} lista={lista} onVer={ir} debug={debug} hrefMas={`/analisis?a=${aid}`} conTarjetas={ancho} />
       </section>
 
-      <Seccion glifo="✦" titulo={GRUPOS.espacio} n={ORDEN_ESPACIO.length} />
-      <section aria-label={GRUPOS.espacio} className="grid grid-cols-2 gap-[9px] min-[640px]:gap-[14px] min-[1100px]:grid-cols-4">
-        {ORDEN_ESPACIO.map((k) => <Mini key={k} t={porK[k]} analisis={analisis} onClick={() => ir(k)} />)}
-      </section>
+      {!ancho && lista.length > 0 && (
+        <section aria-label="Alertas" className="mt-[14px] grid grid-cols-2 gap-[9px] min-[640px]:gap-[14px]">
+          {lista.slice(0, MAX_TARJETAS).map((v) => (
+            <div key={`${v.k}-${v.nivel}`} className="burbuja-entra" data-tarjeta={v.k} data-nivel={v.nivel}>
+              <Metrica t={v.t} analisis={analisis} onClick={() => ir(v.k)} className="h-full w-full" />
+            </div>
+          ))}
+          {lista.length > MAX_TARJETAS && (
+            <Link href={`/analisis?a=${aid}`} className="glass col-span-2 rounded-full px-3 py-2 text-center text-xs font-semibold text-soft" data-burbuja="mas">
+              +{lista.length - MAX_TARJETAS} {lista.length - MAX_TARJETAS === 1 ? "alerta" : "alertas"}
+            </Link>
+          )}
+        </section>
+      )}
 
-      <Seccion glifo="◈" titulo={GRUPOS.mental} n={ORDEN_MENTAL.length} />
-      <section aria-label={GRUPOS.mental} className="grid grid-cols-2 gap-[9px] pb-16 min-[640px]:gap-[14px] min-[1100px]:grid-cols-4">
-        {ORDEN_MENTAL.map((k) => <Mini key={k} t={porK[k]} analisis={analisis} onClick={() => ir(k)} ancha />)}
-      </section>
+      <div className="mb-16 mt-5 flex justify-center">
+        <CyberButton href={`/analisis?a=${aid}`} tam="sm" atajo="2" texto="Ver todos mis datos">Ver todos mis datos</CyberButton>
+      </div>
 
       <Aviso analisis={analisis} onVer={ir} />
     </Shell>
