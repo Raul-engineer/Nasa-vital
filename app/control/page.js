@@ -9,6 +9,7 @@ import { COLOR_NIVEL, ETIQUETA_NIVEL, pasosDeEvento, TITULOS } from "@/lib/ficha
 import { pasosHechos } from "@/lib/escalamiento";
 import Ficha from "@/components/Ficha";
 import VigiaFichas from "@/components/VigiaFichas";
+import AlarmaCritica from "@/components/AlarmaCritica";
 
 const GRUPOS = [
   ["Signos vitales", [
@@ -259,6 +260,12 @@ export default function Control() {
         </div>
       </section>
 
+      {data.sensor?.length > 0 && (
+        <div role="status" data-revisa-sensor className="mt-5 rounded-2xl border border-warn/50 bg-warn/10 px-4 py-3 text-sm font-semibold text-warn">
+          {data.sensor.map((e) => <div key={e.campo}>{e.texto}</div>)}
+        </div>
+      )}
+
       <section className="mt-5" aria-label="Fichas abiertas">
         <h2 className="etiqueta mb-2 px-1">Fichas abiertas</h2>
         <FichasAbiertas fichas={fichas} onAbrir={setFicha} />
@@ -330,6 +337,7 @@ export default function Control() {
       </button>
 
       <VigiaFichas astronautId={data.astronaut.id} ejecutar={false} fichas={fichas} onAbrir={setFicha} />
+      <AlarmaCritica astronautId={data.astronaut.id} quien="Celular de control" esOficial control />
       {ficha && <Ficha clave={ficha} astronautId={data.astronaut.id} data={data} analisis={analisis} onClose={() => setFicha(null)} onAbrir={setFicha} quien="control" />}
 
       {aviso && (

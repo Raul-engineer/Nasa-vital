@@ -276,6 +276,8 @@ select option { background: #242026; }
 .ficha-peligro { animation: ficha-peligro 1.6s ease-in-out 3; }
 @keyframes ficha-peligro { 50% { box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-crit) 30%, transparent) } }
 .ficha-seccion:first-of-type { border-top: 0; }
+.alarma-pulso { animation: alarma-pulso 1.8s ease-in-out infinite; }
+@keyframes alarma-pulso { 50% { background-color: #ff5a62; box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.18); } }
 
 @media (prefers-reduced-transparency: reduce) {
   .ficha-panel, .ficha-panel header { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: #17141a !important; }
@@ -284,7 +286,7 @@ select option { background: #242026; }
 
 @media (prefers-reduced-motion: reduce) {
   .beam { animation: none; opacity: 0; }
-  .cuerpo-fig, .cuerpo-poses, .cuerpo-aura, .cuerpo-punto-anillo, .pose-entra, .pose-sale, .burbuja-entra, .burbuja-sale, .aviso-entra, .pulso-contador, .vida-pulsa, .fila-entra, .fila-sale, .ficha-panel, .ficha-peligro { animation: none !important; }
+  .cuerpo-fig, .cuerpo-poses, .cuerpo-aura, .cuerpo-punto-anillo, .pose-entra, .pose-sale, .burbuja-entra, .burbuja-sale, .aviso-entra, .pulso-contador, .vida-pulsa, .fila-entra, .fila-sale, .ficha-panel, .ficha-peligro, .alarma-pulso { animation: none !important; }
   .ficha-panel * { transition: none !important; }
   .vida-relleno { transition: none; }
   .burbuja { transition: none; }

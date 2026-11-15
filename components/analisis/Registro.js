@@ -2,24 +2,37 @@
 import { useState } from "react";
 import CyberButton from "@/components/CyberButton";
 import { COLOR_NIVEL, ETIQUETA_NIVEL, limpiarRespuestas, obtenerFicha, preguntasDe, RESPUESTAS, textoPaso, TITULOS } from "@/lib/fichas";
-import { useFichas } from "@/lib/useFichas";
+import { useFichas, useResultados } from "@/lib/useFichas";
+import { leerNota, textoMotivo } from "@/lib/motivos";
+import { PRUEBAS_POR_ID } from "@/lib/pruebas";
 
 const CIERRE = { resuelto: "Resuelto", escalado: "Escalado", cancelado: "Cancelado" };
 const fecha = (iso) => (iso ? new Date(iso).toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—");
 const hora = (iso) => (iso ? new Date(iso).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }) : "—");
 
-function armar(e, pasos, medicamentos) {
+function armar(e, pasos, medicamentos, resultados = []) {
   const m = e.respuestas?._m || {};
   const ficha = obtenerFicha(e.clave, { rama: m.rama });
   const preguntas = preguntasDe(e.clave);
   const r = limpiarRespuestas(e.respuestas);
   const respuestas = Object.entries(r).map(([id, v]) => ({ texto: preguntas.find((p) => p.id === id)?.texto || id, valor: RESPUESTAS[v] }));
   const causas = String(e.causa || "").split(",").filter(Boolean).map((id) => ficha?.causas.find((c) => c.id === id)?.nombre || id);
-  const propios = pasos.filter((p) => p.evento_id === e.id).map((p) => ({ texto: textoPaso(e.clave, p.paso_id), hora: hora(p.marcado_en), por: p.marcado_por, nota: p.nota }));
+  const propios = pasos.filter((p) => p.evento_id === e.id).map((p) => {
+    const n = leerNota(p.nota);
+    const base = String(p.paso_id).split("~")[0];
+    const alt = String(p.paso_id).includes("~") ? notasAlt(pasos, e.id, base) : null;
+    return { texto: alt || textoPaso(e.clave, base), hora: hora(p.marcado_en), por: p.marcado_por, nota: p.nota, motivo: n ? `${textoMotivo(n.motivo)}${n.alt ? ` → ${n.alt.texto}` : ""}${n.posponer ? ` · pospuesto ${n.posponer} min` : ""}${n.hora ? ` · tomado a las ${n.hora}` : ""}` : null };
+  });
+  const pruebas = resultados.filter((r) => r.desde_ficha === e.clave && r.hecho_en >= e.abierto_en && (!e.cerrado_en || r.hecho_en <= e.cerrado_en)).map((r) => ({ nombre: PRUEBAS_POR_ID[r.prueba_id]?.nombre || r.prueba_id, texto: r.valor?.resultado?.texto || "", nivel: r.nivel, hora: hora(r.hecho_en) }));
   const fin = e.cerrado_en ? Date.parse(e.cerrado_en) : Date.now();
   const meds = medicamentos.filter((x) => Date.parse(x.tomado_en) >= Date.parse(e.abierto_en) && Date.parse(x.tomado_en) <= fin).map((x) => ({ nombre: x.nombre, hora: hora(x.tomado_en) }));
   const estado = e.cerrado_en ? CIERRE[e.cierre] || e.cierre : (m.escalados || []).length ? "Escalado · abierto" : "Abierto";
-  return { e, m, titulo: ficha?.titulo || TITULOS[e.clave] || e.clave, respuestas, causas, pasos: propios, meds, estado, combinaciones: e.combinaciones || [] };
+  return { e, m, titulo: ficha?.titulo || TITULOS[e.clave] || e.clave, respuestas, causas, pasos: propios, meds, estado, combinaciones: e.combinaciones || [], pruebas };
+}
+
+function notasAlt(pasos, eventoId, base) {
+  const n = pasos.filter((p) => p.evento_id === eventoId && p.paso_id === base).map((p) => leerNota(p.nota)).filter((x) => x?.alt).at(-1);
+  return n?.alt?.texto || null;
 }
 
 function comoTexto(items, nombre) {
@@ -29,7 +42,8 @@ function comoTexto(items, nombre) {
     if (x.causas.length) out.push(`  Causa principal: ${x.causas.join(" y ")}`);
     if (x.respuestas.length) out.push(`  Encuesta: ${x.respuestas.map((r) => `${r.texto} ${r.valor}`).join(" | ")}`);
     if (x.combinaciones.length) out.push(`  Combinaciones: ${x.combinaciones.map((c) => c.titulo).join(", ")}`);
-    if (x.pasos.length) out.push(`  Pasos: ${x.pasos.map((p) => `${p.hora} ${p.texto}${p.nota?.startsWith("no:") ? " (no pudo)" : ""}`).join(" | ")}`);
+    if (x.pasos.length) out.push(`  Pasos: ${x.pasos.map((p) => `${p.hora} ${p.texto}${p.motivo ? ` (no pudo: ${p.motivo})` : ""}`).join(" | ")}`);
+    if (x.pruebas.length) out.push(`  Pruebas: ${x.pruebas.map((p) => `${p.hora} ${p.nombre}: ${p.texto}`).join(" | ")}`);
     if (x.meds.length) out.push(`  Medicamentos: ${x.meds.map((m) => `${m.hora} ${m.nombre}`).join(", ")}`);
     out.push("");
   }
@@ -38,8 +52,9 @@ function comoTexto(items, nombre) {
 
 export function Registro({ aid, nombre }) {
   const db = useFichas(aid);
+  const res = useResultados(aid);
   const [copiado, setCopiado] = useState(false);
-  const items = db.eventos.map((e) => armar(e, db.pasos, db.medicamentos));
+  const items = db.eventos.map((e) => armar(e, db.pasos, db.medicamentos, res.lista));
   const copiar = async () => {
     const txt = comoTexto(items, nombre);
     try {
@@ -78,7 +93,8 @@ export function Registro({ aid, nombre }) {
                 {x.causas.length > 0 && <><dt className="text-muted">Causa principal</dt><dd>{x.causas.join(" y ")}</dd></>}
                 {x.respuestas.length > 0 && <><dt className="text-muted">Encuesta</dt><dd className="space-y-0.5">{x.respuestas.map((r) => <div key={r.texto} className="text-xs"><span className="text-soft">{r.texto}</span> <b>{r.valor}</b></div>)}</dd></>}
                 {x.combinaciones.length > 0 && <><dt className="text-muted">Combinaciones</dt><dd className="text-xs">{x.combinaciones.map((c) => c.titulo).join(" · ")}</dd></>}
-                {x.pasos.length > 0 && <><dt className="text-muted">Pasos</dt><dd className="space-y-0.5">{x.pasos.map((p, i) => <div key={i} className="text-xs"><span className="tabular-nums text-muted">{p.hora}</span> {p.texto}{p.nota?.startsWith("no:") ? <span className="text-warn"> · no pudo</span> : ""}{p.por === "control" ? <span className="text-muted"> · desde el celular</span> : ""}</div>)}</dd></>}
+                {x.pasos.length > 0 && <><dt className="text-muted">Pasos</dt><dd className="space-y-0.5">{x.pasos.map((p, i) => <div key={i} className="text-xs"><span className="tabular-nums text-muted">{p.hora}</span> {p.texto}{p.motivo ? <span className="text-warn"> · no pudo: {p.motivo}</span> : ""}{p.por === "control" ? <span className="text-muted"> · desde el celular</span> : ""}</div>)}</dd></>}
+                {x.pruebas.length > 0 && <><dt className="text-muted">Pruebas</dt><dd className="space-y-0.5">{x.pruebas.map((p, i) => <div key={i} className="text-xs"><span className="tabular-nums text-muted">{p.hora}</span> {p.nombre}: {p.texto}</div>)}</dd></>}
                 {x.meds.length > 0 && <><dt className="text-muted">Medicamentos</dt><dd className="text-xs">{x.meds.map((m) => `${m.hora} ${m.nombre}`).join(" · ")}</dd></>}
               </dl>
             </li>

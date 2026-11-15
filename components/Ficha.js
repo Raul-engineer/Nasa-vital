@@ -5,12 +5,15 @@ import CyberButton from "./CyberButton";
 import { abrirEventoFicha, actualizarEventoFicha, cerrarEventoFicha, desmarcarPaso, guardarRespuestas, marcarPaso, medirPresion, registrarMedicamento, setEnVivo, setEnVivoTripulacion, setEnVivoVarios } from "@/lib/data";
 import {
   CAMPOS_REMEDIR, CATEGORIA_FICHA, COLOR_NIVEL, contextoFicha, ETIQUETA_NIVEL, evaluarRemedicion, lecturaDeContexto, limpiarRespuestas, mayorNivel,
-  MOTIVOS_NO_PUEDO, NOTA_BOTIQUIN, preguntasDe, RESPUESTAS, subirNivel, TEXTO_NO_LIBRE, TITULOS,
+  mostrarPruebaCompleta, notasDeEvento, NOTA_BOTIQUIN, preguntasDe, RESPUESTAS, subirNivel, TEXTO_NO_LIBRE, TITULOS,
 } from "@/lib/fichas";
+import { contarMotivo, motivosDe, notaMotivo, resolverMotivo, textoMotivo } from "@/lib/motivos";
+import { PRUEBAS_POR_ID } from "@/lib/pruebas";
+import { validarLectura } from "@/lib/validar";
 import { entradaCombinaciones, evaluarConCombinaciones } from "@/lib/combinaciones";
 import { pasosHechos } from "@/lib/escalamiento";
 import { partesFuente } from "@/lib/fuentes";
-import { useFichas, useTripulacion } from "@/lib/useFichas";
+import { useFichas, useResultados, useTripulacion } from "@/lib/useFichas";
 import { useQuickFix } from "@/lib/useQuickFix";
 
 const REUSO_MIN = 30;
@@ -162,8 +165,10 @@ function Causas({ ev }) {
   );
 }
 
-function Paso({ paso, hecho, noPuede, limite, ahora, onToggle, onNoPuedo, onAbrir, deshabilitado }) {
+function Paso({ paso, hecho, nota, alt, limite, ahora, onToggle, onToggleAlt, onNoPuedo, onAbrir, deshabilitado }) {
   const [menu, setMenu] = useState(false);
+  const [pidiendoHora, setPidiendoHora] = useState(false);
+  const [horaTome, setHoraTome] = useState("");
   if (paso.abrir)
     return (
       <li className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
@@ -171,31 +176,40 @@ function Paso({ paso, hecho, noPuede, limite, ahora, onToggle, onNoPuedo, onAbri
         <button type="button" onClick={() => onAbrir?.(paso.abrir)} className="min-h-11 shrink-0 rounded-xl border border-cyan/50 px-3 text-sm font-semibold text-cyan hover:bg-cyan/10">Abrir</button>
       </li>
     );
+  const visible = alt || paso;
+  const bloqueado = nota?.motivo === "ya_tome";
   return (
-    <li className={`rounded-xl border px-3 py-2 ${hecho ? "border-ok/40 bg-ok/[0.07]" : noPuede ? "border-warn/40 bg-warn/[0.06]" : "border-white/10 bg-white/[0.03]"}`} data-paso={paso.id}>
+    <li className={`rounded-xl border px-3 py-2 ${hecho ? "border-ok/40 bg-ok/[0.07]" : nota ? "border-warn/40 bg-warn/[0.06]" : "border-white/10 bg-white/[0.03]"}`} data-paso={paso.id} data-tipo={paso.tipo} data-alterno={alt ? alt.id : undefined}>
       <div className="flex items-start gap-3">
-        <button type="button" role="checkbox" aria-checked={!!hecho} disabled={deshabilitado} onClick={onToggle} aria-label={paso.texto}
+        <button type="button" role="checkbox" aria-checked={!!hecho} disabled={deshabilitado || bloqueado} onClick={alt ? onToggleAlt : onToggle} aria-label={visible.texto}
           className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg border-2 text-sm font-bold transition disabled:opacity-40 ${hecho ? "border-ok bg-ok text-[#10241a]" : "border-white/35 hover:border-white/60"}`}>
           {hecho ? "✓" : ""}
         </button>
         <div className="min-w-0 flex-1">
           <div className={`text-sm leading-snug ${hecho ? "text-muted line-through decoration-white/30" : ""}`}>
-            {paso.obligatorio && <span className="mr-1.5 inline-block h-2 w-2 rounded-full bg-crit align-middle" title="Obligatorio" aria-label="Obligatorio" />}
-            {paso.texto}
+            {visible.obligatorio && <span className="mr-1.5 inline-block h-2 w-2 rounded-full bg-crit align-middle" title="Obligatorio" aria-label="Obligatorio" />}
+            {visible.texto}
           </div>
+          {alt && <div className="mt-0.5 text-xs text-muted line-through decoration-white/20">{paso.texto}</div>}
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-            {paso.minutos != null && !hecho && limite && <span className="text-muted">Tiempo: <Cuenta limite={limite} ahora={ahora} /></span>}
-            {paso.href && <Link href={paso.href} className="font-semibold text-cyan hover:underline">Ir a la prueba</Link>}
-            {noPuede && <span className="text-warn">No pudiste: {MOTIVOS_NO_PUEDO.find((m) => m.id === noPuede)?.texto || noPuede}</span>}
-            {!hecho && !deshabilitado && (
+            {(alt ? alt.minutos : paso.minutos) != null && !hecho && limite && <span className="text-muted">Tiempo: <Cuenta limite={limite} ahora={ahora} /></span>}
+            {paso.href && !alt && <Link href={paso.href} className="font-semibold text-cyan hover:underline">Ir a la prueba</Link>}
+            {nota && <span className="text-warn" data-motivo={nota.motivo}>{textoMotivo(nota.motivo)}{nota.posponer ? ` · pospuesto ${nota.posponer} min` : ""}{nota.hora ? ` · tomado a las ${nota.hora}: no repetir` : ""}{nota.cola ? " · reporte en cola" : ""}</span>}
+            {!hecho && !deshabilitado && !bloqueado && (
               <button type="button" onClick={() => setMenu((x) => !x)} className="text-muted underline decoration-dotted hover:text-soft">No puedo hacer este paso</button>
             )}
           </div>
           {menu && (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {MOTIVOS_NO_PUEDO.map((m) => (
-                <button key={m.id} type="button" onClick={() => { setMenu(false); onNoPuedo(m.id); }} className="min-h-11 rounded-xl border border-white/15 px-3 text-xs font-semibold text-soft hover:bg-white/10">{m.texto}</button>
+            <div className="mt-2 flex flex-wrap gap-2" data-motivos>
+              {motivosDe(paso).map((m) => (
+                <button key={m.id} type="button" data-motivo-opcion={m.id} onClick={() => { setMenu(false); if (m.id === "ya_tome") setPidiendoHora(true); else onNoPuedo(m.id); }} className="min-h-11 rounded-xl border border-white/15 px-3 text-xs font-semibold text-soft hover:bg-white/10">{m.texto}</button>
               ))}
+            </div>
+          )}
+          {pidiendoHora && (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <label className="text-xs text-muted">¿A qué hora lo tomaste? <input type="time" value={horaTome} onChange={(e) => setHoraTome(e.target.value)} className="campo ml-1 min-h-11" /></label>
+              <button type="button" disabled={!horaTome} onClick={() => { setPidiendoHora(false); onNoPuedo("ya_tome", { hora: horaTome }); }} className="min-h-11 rounded-xl border border-white/15 px-3 text-xs font-semibold text-soft hover:bg-white/10 disabled:opacity-40">Guardar hora</button>
             </div>
           )}
         </div>
@@ -219,8 +233,16 @@ function Remedir({ clave, ev, contexto, inicial, onResultado, deshabilitado }) {
   const actual = lecturaDeContexto(contexto);
   const [vals, setVals] = useState({});
   const [res, setRes] = useState(null);
+  const [error, setError] = useState(null);
   const comparar = (usarActual) => {
     const nueva = usarActual ? actual : Object.fromEntries(campos.map((c) => [c.campo, vals[c.campo] === "" || vals[c.campo] == null ? null : Number(String(vals[c.campo]).replace(",", "."))]));
+    const v = validarLectura(nueva);
+    if (!usarActual && !v.ok) {
+      setError(v.errores[0].texto);
+      setRes(null);
+      return;
+    }
+    setError(null);
     const r = evaluarRemedicion(clave, contexto, nueva, inicial);
     setRes(r.resultado);
     onResultado(r, nueva, usarActual);
@@ -244,6 +266,7 @@ function Remedir({ clave, ev, contexto, inicial, onResultado, deshabilitado }) {
         {campos.length > 0 && <CyberButton onClick={() => comparar(false)} disabled={deshabilitado || campos.every((c) => vals[c.campo] == null || vals[c.campo] === "")} texto="Comparar">Comparar</CyberButton>}
         <CyberButton onClick={() => comparar(true)} disabled={deshabilitado} tam="sm" texto="Usar la lectura más reciente">Usar la lectura más reciente</CyberButton>
       </div>
+      {error && <p className="mt-3 text-sm font-semibold text-warn" data-revisa-sensor>{error}</p>}
       {res && (
         <p className={`mt-3 text-sm font-semibold ${res === "resuelto" ? "text-ok" : res === "peor" ? "text-crit" : "text-warn"}`} data-resultado-remedir={res}>
           {res === "resuelto" ? "Regresó a tu rango: resuelto." : res === "peor" ? "Empeoró: sube un nivel. Revisa las señales de peligro." : "Sigue igual: continúa el plan."}
@@ -264,6 +287,7 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
   const analisis = anExt || propio.analisis;
   const aid = data?.astronaut?.id ?? astronautId;
   const db = useFichas(aid);
+  const resultados = useResultados(aid);
   const ids = useMemo(() => (data?.astronauts || []).map((a) => a.id), [data?.astronauts]);
   const trip = useTripulacion(ids, !!clave);
   const ahora = useReloj(!!clave);
@@ -297,13 +321,13 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
 
   const calc = useMemo(() => {
     if (!clave || !analisis || !data) return null;
-    const contexto = contextoFicha(clave, analisis, data, { oximetro: m.oximetro, nivelMinimo: evento ? mayorNivel(evento.nivel, m.nivelMin || "ok") : null, rama: m.rama });
+    const contexto = contextoFicha(clave, analisis, data, { oximetro: m.oximetro, nivelMinimo: evento ? mayorNivel(evento.nivel, m.nivelMin || "ok") : null, rama: m.rama, resultados: resultados.lista, desde: evento?.abierto_en });
     const todas = Object.fromEntries(abiertos.filter((e) => e.clave !== clave).map((e) => [e.clave, e.respuestas || {}]));
     const causas = Object.fromEntries(abiertos.map((e) => [e.clave, String(e.causa || "").split(",")[0] || null]));
     const entrada = entradaCombinaciones({ analisis, data, tripulacion: trip, medicamentos: db.medicamentos, medicamentosTripulacion: db.medicamentosTripulacion, respuestas: todas, causas, oximetro: m.oximetro });
     const { ficha, combinaciones } = evaluarConCombinaciones(clave, { contexto, respuestas, todas, entrada });
     return { contexto, ficha, combinaciones };
-  }, [clave, analisis, data, respuestas, abiertos, evento?.nivel, trip, db.medicamentos, db.medicamentosTripulacion]);
+  }, [clave, analisis, data, respuestas, abiertos, evento?.nivel, trip, db.medicamentos, db.medicamentosTripulacion, resultados.lista]);
 
   const ev = calc?.ficha;
   const causaTxt = ev ? ev.principales.map((c) => c.id).join(",") : "";
@@ -318,7 +342,7 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
     const base = Object.keys(propias).length || !reciente ? { ...borrador } : reusar(reciente.respuestas, clave);
     abrirEventoFicha({
       astronaut_id: aid, clave, nivel: ev.nivel, causa: causaTxt || null,
-      respuestas: { ...base, _m: { rama: ev.rama, modo: ev.modo, toque: new Date().toISOString(), lecturaInicial: lecturaDeContexto(calc.contexto), reusado: reciente ? reciente.id : null, alerta: !!calc.contexto.tormentaActiva, peligroActivo: ev.peligros.length > 0 } },
+      respuestas: { ...base, _m: { nivelInicial: ev.nivel, rama: ev.rama, modo: ev.modo, toque: new Date().toISOString(), lecturaInicial: lecturaDeContexto(calc.contexto), reusado: reciente ? reciente.id : null, alerta: !!calc.contexto.tormentaActiva, peligroActivo: ev.peligros.length > 0 } },
       combinaciones: ev.combinaciones,
     })
       .then(() => db.refresh())
@@ -365,8 +389,17 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
 
   const pasosEv = evento ? db.pasos.filter((p) => p.evento_id === evento.id) : [];
   const hechos = pasosHechos(pasosEv);
-  const noPuede = Object.fromEntries(pasosEv.filter((p) => String(p.nota || "").startsWith("no:")).map((p) => [p.paso_id, p.nota.slice(3)]));
+  const notas = notasDeEvento(pasosEv);
+  const notaDe = (id) => notas.filter((n) => n.paso === id).at(-1) || null;
+  const altDe = (id) => notas.filter((n) => n.paso === id && n.alt).at(-1)?.alt || null;
   const inicio = evento ? Date.parse(evento.abierto_en) : ahora;
+  const limiteDe = (p) => {
+    const a = altDe(p.id);
+    if (a?.minutos) return Date.parse(notas.filter((n) => n.paso === p.id && n.alt).at(-1).t) + a.minutos * 6e4;
+    if (p.minutos == null) return null;
+    const pos = notas.filter((n) => n.paso === p.id && n.posponer).reduce((x, n) => x + n.posponer, 0);
+    return inicio + (p.minutos + pos) * 6e4;
+  };
   const alternar = async (paso) => {
     if (!evento) return;
     const filas = pasosEv.filter((p) => p.paso_id === paso.id);
@@ -379,12 +412,38 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
       setMensaje(`No se pudo marcar: ${e?.message || e}`);
     }
   };
-  const noPuedo = async (paso, motivo) => {
-    if (!evento) return;
+  const alternarAlt = async (paso) => {
+    const a = altDe(paso.id);
+    if (!evento || !a) return;
     try {
-      await marcarPaso(evento.id, paso.id, { nota: `no:${motivo}`, marcado_por: quien });
-      if (motivo === "peor") await guardarRespuestas(evento.id, toque({ ...(evento.respuestas || {}), _m: { ...(evento.respuestas?._m || {}), peor: true } }));
+      const filas = pasosEv.filter((p) => p.paso_id === a.id);
+      if (filas.length) await Promise.all(filas.map((f) => desmarcarPaso(f.id)));
+      else await marcarPaso(evento.id, a.id, { marcado_por: quien });
+      await guardarRespuestas(evento.id, toque(evento.respuestas || {}));
       await db.refresh();
+    } catch (e) {
+      setMensaje(`No se pudo marcar: ${e?.message || e}`);
+    }
+  };
+  const noPuedo = async (paso, motivo, extra = {}) => {
+    if (!evento) return;
+    const res = resolverMotivo(paso, motivo, { previos: contarMotivo(notas, paso.id, motivo), alternativaBotiquin: ev.botiquin.find((b) => b.libre)?.nombre || null });
+    try {
+      await marcarPaso(evento.id, paso.id, { nota: notaMotivo(paso, res, extra), marcado_por: quien });
+      const mm = { ...(evento.respuestas?._m || {}) };
+      const t = new Date().toISOString();
+      let nivelNuevo = null;
+      if (res.mostrarPeligro) mm.peor = true;
+      if (res.escalar) {
+        const actual = mayorNivel(ev.nivel, mm.nivelMin || "ok");
+        nivelNuevo = res.escalar === "subir" ? subirNivel(actual) : mayorNivel(actual, res.escalar);
+        mm.nivelMin = nivelNuevo;
+      }
+      if (res.escalar || res.avisoOficial) mm.avisos = [...(mm.avisos || []), { id: `motivo.${paso.id}.${Date.now()}`, t, nivel: nivelNuevo || ev.nivel, sonar: !!res.escalar, texto: `${TITULOS[clave]}: ${textoMotivo(motivo).toLowerCase()} en "${paso.texto}". ${res.avisoOficial ? "Aviso al oficial médico." : ""}${nivelNuevo ? ` Sube a ${ETIQUETA_NIVEL[nivelNuevo]}.` : ""}` }].slice(-30);
+      await actualizarEventoFicha(evento.id, { ...(nivelNuevo ? { nivel: nivelNuevo } : {}), respuestas: toque({ ...(evento.respuestas || {}), _m: mm }) });
+      await db.refresh();
+      setMensaje(res.texto);
+      if (res.abrir && onAbrir) setTimeout(() => onAbrir(res.abrir), 600);
     } catch (e) {
       setMensaje(`No se pudo guardar: ${e?.message || e}`);
     }
@@ -445,6 +504,8 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
   const pasosPlan = ev ? ev.planes.flatMap((p) => p.pasos.filter((x) => !x.abrir)) : [];
   const unicos = [...new Map(pasosPlan.map((p) => [p.id, p])).values()];
   const nHechos = unicos.filter((p) => hechos.has(p.id)).length;
+  const completa = ev ? mostrarPruebaCompleta({ ev: { ...ev, nivel }, evento, notas }) : null;
+  const deLaFicha = evento ? resultados.lista.filter((r) => r.desde_ficha === clave && r.hecho_en >= evento.abierto_en) : [];
   const fuentes = ev ? [...(ev.ficha.fuentes || []), ...(ev.ficha.contextoFuente ? ev.ficha.contextoFuente.split(",") : []), ...ev.causas.flatMap((c) => c.fuente.split(",")), ...ev.combinaciones.flatMap((c) => c.fuente.split(","))] : [];
   const sinEvento = !evento;
   const salvo = (x) => {
@@ -525,7 +586,7 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
                 <p className="mb-4 font-display text-lg leading-snug">Vamos a conectarte ahora con el equipo de salud conductual.</p>
                 <ul className="space-y-2">
                   {ev.planes[0].pasos.map((p) => (
-                    <Paso key={p.id} paso={p} hecho={hechos.has(p.id)} noPuede={noPuede[p.id]} limite={p.minutos != null ? inicio + p.minutos * 6e4 : null} ahora={ahora} onToggle={() => alternar(p)} onNoPuedo={(mo) => noPuedo(p, mo)} deshabilitado={sinEvento} />
+                    <Paso key={p.id} paso={p} hecho={hechos.has(p.id)} nota={notaDe(p.id)} alt={altDe(p.id)} limite={limiteDe(p)} ahora={ahora} onToggle={() => alternar(p)} onToggleAlt={() => alternarAlt(p)} onNoPuedo={(mo, ex) => noPuedo(p, mo, ex)} deshabilitado={sinEvento} />
                   ))}
                 </ul>
               </Seccion>
@@ -543,6 +604,31 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
                     </div>
                   )}
                 </Seccion>
+
+                {deLaFicha.length > 0 && (
+                  <Seccion titulo="Resultado de la prueba">
+                    <ul className="space-y-2" data-resultados-ficha>
+                      {deLaFicha.map((r) => (
+                        <li key={r.id} className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm" data-resultado-prueba={r.prueba_id}>
+                          <div className="flex flex-wrap items-center gap-2"><span className="font-semibold">{PRUEBAS_POR_ID[r.prueba_id]?.nombre || r.prueba_id}</span><Nivel nivel={r.nivel} /><span className="text-xs text-muted">{hora(r.hecho_en)}</span></div>
+                          <p className="mt-0.5 text-soft">Resultado de la prueba: {r.valor?.resultado?.texto}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </Seccion>
+                )}
+
+                {completa?.mostrar && evento && ev.modo !== "conductual" && (
+                  <div className="mx-5 my-4 rounded-2xl border border-cyan/50 bg-cyan/[0.07] px-4 py-3" data-prueba-completa>
+                    <div className="text-sm font-semibold text-fg">Hacer prueba completa</div>
+                    <p className="mt-0.5 text-xs text-muted">{completa.motivos.join(" · ")}</p>
+                    <div className="mt-2.5 flex flex-wrap gap-2">
+                      {completa.pruebas.map((id) => PRUEBAS_POR_ID[id] && (
+                        <CyberButton key={id} href={`/pruebas/${id}?desde=${clave}&a=${aid}`} tam="sm" texto={PRUEBAS_POR_ID[id].nombre} data-abrir-prueba={id}>{PRUEBAS_POR_ID[id].nombre}</CyberButton>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {ev.modo === "alarma" && (
                   <Seccion titulo="Alarma de la nave">
@@ -599,8 +685,8 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
                         {ev.planes.length > 1 && <div className="mb-1.5 text-xs font-semibold text-soft">{pl.causa.nombre}</div>}
                         <ul className="space-y-2">
                           {pl.pasos.map((p) => (
-                            <Paso key={p.id} paso={p} hecho={hechos.has(p.id)} noPuede={noPuede[p.id]} limite={p.minutos != null ? inicio + p.minutos * 6e4 : null} ahora={ahora}
-                              onToggle={() => alternar(p)} onNoPuedo={(mo) => noPuedo(p, mo)} onAbrir={onAbrir} deshabilitado={sinEvento} />
+                            <Paso key={p.id} paso={p} hecho={hechos.has(p.id)} nota={notaDe(p.id)} alt={altDe(p.id)} limite={limiteDe(p)} ahora={ahora}
+                              onToggle={() => alternar(p)} onToggleAlt={() => alternarAlt(p)} onNoPuedo={(mo, ex) => noPuedo(p, mo, ex)} onAbrir={onAbrir} deshabilitado={sinEvento} />
                           ))}
                         </ul>
                       </div>

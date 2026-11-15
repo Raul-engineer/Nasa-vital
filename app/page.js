@@ -127,6 +127,11 @@ export default function Inicio() {
       <h1 className="sr-only">Inicio · {astronaut.nombre}</h1>
 
       <BotonesGravedad items={items} filtro={filtro} onFiltro={setFiltro} />
+      {data.sensor?.length > 0 && (
+        <div role="status" data-revisa-sensor className="mt-3 flex flex-col gap-1 rounded-2xl border border-warn/50 bg-warn/10 px-4 py-2 text-sm font-semibold text-warn">
+          {data.sensor.map((e) => <span key={e.campo}>{e.texto}</span>)}
+        </div>
+      )}
 
       <section aria-label="Cuerpo del astronauta" className="glass relative mt-[14px] flex h-[480px] flex-col overflow-hidden min-[1100px]:h-[clamp(600px,calc(100vh-288px),980px)] min-[1100px]:py-5"
         style={{ background: "radial-gradient(ellipse at 50% 40%, #3a2a2a66, transparent 70%), linear-gradient(160deg, #2b232499, #1b202a99), var(--glass)" }}>
