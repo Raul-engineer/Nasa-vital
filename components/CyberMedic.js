@@ -69,7 +69,7 @@ function Texto({ titulo, parrafos, detalle, copia = false }) {
   );
 }
 
-export default function CyberMedic({ ref, t, it, dia, onProceder, detalle, textoProceder = "Ver análisis", pregunta = "¿Quieres ver el análisis completo?" }) {
+export default function CyberMedic({ ref, t, it, dia, onProceder, detalle, textoProceder = "View analysis", pregunta = "Do you want to see the full analysis?" }) {
   const id = `medic-${useId().replace(/:/g, "")}`;
   const modal = useRef(null);
   const glitch = useRef(null);
@@ -181,7 +181,7 @@ export default function CyberMedic({ ref, t, it, dia, onProceder, detalle, texto
   const titulo = t.nombre;
   const parrafos = [
     it?.conclusion ? `Medic: ${it.conclusion}` : null,
-    it?.acciones?.length ? `Qué hacer: ${it.acciones.slice(0, 2).join(" · ")}.` : null,
+    it?.acciones?.length ? `What to do: ${it.acciones.slice(0, 2).join(" · ")}.` : null,
     pregunta,
   ].filter(Boolean);
 
@@ -196,7 +196,7 @@ export default function CyberMedic({ ref, t, it, dia, onProceder, detalle, texto
         </div>
         <div className="cm-content">
           <Texto titulo={titulo} parrafos={parrafos} detalle={detalle} />
-          {t.fuente && <Fuente corto ids={t.fuente} extra={t.k === "cabina" ? "umbrales de demo" : null} className="cm-fuente" />}
+          {t.fuente && <Fuente corto ids={t.fuente} extra={t.k === "cabina" ? "demo thresholds" : null} className="cm-fuente" />}
           <div ref={glitch} className="cm-modal-glitch" aria-hidden>
             <Texto titulo={titulo} parrafos={parrafos} detalle={detalle} copia />
           </div>
@@ -206,7 +206,7 @@ export default function CyberMedic({ ref, t, it, dia, onProceder, detalle, texto
         <button type="button" className="cm-btn" data-action="Cancel" onClick={cerrarCon("Cancel")}>
           <Esquina />
           <kbd>esc</kbd>
-          <span>Cerrar</span>
+          <span>Close</span>
         </button>
         <button ref={proceder} type="button" className="cm-btn" data-action="Proceed" onClick={cerrarCon("Proceed")}>
           <Esquina />

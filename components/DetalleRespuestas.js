@@ -3,13 +3,13 @@ import { ETIQUETA_NIVEL, COLOR_NIVEL } from "@/lib/fichas";
 import { PRUEBAS_POR_ID, respuestasDeResultado } from "@/lib/pruebas";
 import { textoRespuesta } from "@/lib/respuestas";
 
-const hora = (iso) => (iso ? new Date(iso).toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—");
+const hora = (iso) => (iso ? new Date(iso).toLocaleString("en-US", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—");
 
 export default function DetalleRespuestas({ fila }) {
   if (!fila) return null;
   const lista = respuestasDeResultado(fila);
   const res = fila.valor?.resultado || {};
-  const origen = fila.valor?.origen === "control" ? "Celular" : "Laptop";
+  const origen = fila.valor?.origen === "control" ? "Phone" : "Laptop";
   return (
     <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-sm" data-detalle-respuestas={fila.prueba_id}>
       <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -23,13 +23,13 @@ export default function DetalleRespuestas({ fila }) {
         <ol className="space-y-1" data-lista-respuestas>
           {lista.map((x, i) => (
             <li key={`${x.id}-${i}`} className="flex flex-wrap items-baseline gap-x-2 border-t border-white/[0.06] pt-1 first:border-0 first:pt-0" data-respuesta-id={x.id}>
-              <span className="min-w-0 flex-1 text-xs text-soft">{x.pregunta}{x.minuto != null ? ` (minuto ${x.minuto})` : ""}</span>
+              <span className="min-w-0 flex-1 text-xs text-soft">{x.pregunta}{x.minuto != null ? ` (minute ${x.minuto})` : ""}</span>
               <span className="text-xs font-semibold">{textoRespuesta(x.respuesta)}</span>
-              <span className="text-[11px] tabular-nums text-muted">{new Date(x.hora).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}</span>
+              <span className="text-[11px] tabular-nums text-muted">{new Date(x.hora).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</span>
             </li>
           ))}
         </ol>
-      ) : <p className="text-xs text-muted">Sin respuestas guardadas.</p>}
+      ) : <p className="text-xs text-muted">No saved answers.</p>}
     </div>
   );
 }

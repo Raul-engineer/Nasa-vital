@@ -26,7 +26,7 @@ export default function BotonVital({ t, onClick, extra, className = "" }) {
   return (
     <div data-tarjeta className={`cm-vital-caja ${className}`}>
       <button type="button" className="cm-btn cm-vital" data-estado={estado} style={{ "--accent": ACENTO[estado] }} onClick={onClick}
-        aria-label={`${t.nombre}: ${t.texto} ${t.unidad}. ${palabraEstado(t)}. Ver detalle`} aria-haspopup="dialog" aria-keyshortcuts="M">
+        aria-label={`${t.nombre}: ${t.texto} ${t.unidad}. ${palabraEstado(t)}. View detail`} aria-haspopup="dialog" aria-keyshortcuts="M">
         <Esquina />
         <kbd>{GLIFO[estado]}</kbd>
         <span className="cm-vital-nombre">{t.nombre}</span>

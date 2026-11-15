@@ -7,9 +7,9 @@ import { leerNota, textoMotivo } from "@/lib/motivos";
 import { PRUEBAS_POR_ID } from "@/lib/pruebas";
 import DetalleRespuestas from "@/components/DetalleRespuestas";
 
-const CIERRE = { resuelto: "Resuelto", escalado: "Escalado", cancelado: "Cancelado" };
-const fecha = (iso) => (iso ? new Date(iso).toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—");
-const hora = (iso) => (iso ? new Date(iso).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }) : "—");
+const CIERRE = { resuelto: "Resolved", escalado: "Escalated", cancelado: "Cancelled" };
+const fecha = (iso) => (iso ? new Date(iso).toLocaleString("en-US", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—");
+const hora = (iso) => (iso ? new Date(iso).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "—");
 
 function armar(e, pasos, medicamentos, resultados = []) {
   const m = e.respuestas?._m || {};
@@ -22,12 +22,12 @@ function armar(e, pasos, medicamentos, resultados = []) {
     const n = leerNota(p.nota);
     const base = String(p.paso_id).split("~")[0];
     const alt = String(p.paso_id).includes("~") ? notasAlt(pasos, e.id, base) : null;
-    return { texto: alt || textoPaso(e.clave, base), hora: hora(p.marcado_en), por: p.marcado_por, nota: p.nota, motivo: n ? `${textoMotivo(n.motivo)}${n.alt ? ` → ${n.alt.texto}` : ""}${n.posponer ? ` · pospuesto ${n.posponer} min` : ""}${n.hora ? ` · tomado a las ${n.hora}` : ""}` : null };
+    return { texto: alt || textoPaso(e.clave, base), hora: hora(p.marcado_en), por: p.marcado_por, nota: p.nota, motivo: n ? `${textoMotivo(n.motivo)}${n.alt ? ` → ${n.alt.texto}` : ""}${n.posponer ? ` · postponed ${n.posponer} min` : ""}${n.hora ? ` · taken at ${n.hora}` : ""}` : null };
   });
   const pruebas = resultados.filter((r) => r.desde_ficha === e.clave && r.hecho_en >= e.abierto_en && (!e.cerrado_en || r.hecho_en <= e.cerrado_en)).map((r) => ({ nombre: PRUEBAS_POR_ID[r.prueba_id]?.nombre || r.prueba_id, texto: r.valor?.resultado?.texto || "", nivel: r.nivel, hora: hora(r.hecho_en), fila: r }));
   const fin = e.cerrado_en ? Date.parse(e.cerrado_en) : Date.now();
   const meds = medicamentos.filter((x) => Date.parse(x.tomado_en) >= Date.parse(e.abierto_en) && Date.parse(x.tomado_en) <= fin).map((x) => ({ nombre: x.nombre, hora: hora(x.tomado_en) }));
-  const estado = e.cerrado_en ? CIERRE[e.cierre] || e.cierre : (m.escalados || []).length ? "Escalado · abierto" : "Abierto";
+  const estado = e.cerrado_en ? CIERRE[e.cierre] || e.cierre : (m.escalados || []).length ? "Escalated · open" : "Open";
   return { e, m, titulo: ficha?.titulo || TITULOS[e.clave] || e.clave, respuestas, causas, pasos: propios, meds, estado, combinaciones: e.combinaciones || [], pruebas };
 }
 
@@ -37,15 +37,15 @@ function notasAlt(pasos, eventoId, base) {
 }
 
 function comoTexto(items, nombre) {
-  const out = [`Registro de fichas · ${nombre}`, ""];
+  const out = [`Card log · ${nombre}`, ""];
   for (const x of items) {
     out.push(`${fecha(x.e.abierto_en)} · ${x.titulo} · ${ETIQUETA_NIVEL[x.e.nivel] || x.e.nivel} · ${x.estado}${x.e.cerrado_en ? ` (${hora(x.e.cerrado_en)})` : ""}`);
-    if (x.causas.length) out.push(`  Causa principal: ${x.causas.join(" y ")}`);
-    if (x.respuestas.length) out.push(`  Encuesta: ${x.respuestas.map((r) => `${r.texto} ${r.valor}`).join(" | ")}`);
-    if (x.combinaciones.length) out.push(`  Combinaciones: ${x.combinaciones.map((c) => c.titulo).join(", ")}`);
-    if (x.pasos.length) out.push(`  Pasos: ${x.pasos.map((p) => `${p.hora} ${p.texto}${p.motivo ? ` (no pudo: ${p.motivo})` : ""}`).join(" | ")}`);
-    if (x.pruebas.length) out.push(`  Pruebas: ${x.pruebas.map((p) => `${p.hora} ${p.nombre}: ${p.texto}`).join(" | ")}`);
-    if (x.meds.length) out.push(`  Medicamentos: ${x.meds.map((m) => `${m.hora} ${m.nombre}`).join(", ")}`);
+    if (x.causas.length) out.push(`  Main cause: ${x.causas.join(" and ")}`);
+    if (x.respuestas.length) out.push(`  Survey: ${x.respuestas.map((r) => `${r.texto} ${r.valor}`).join(" | ")}`);
+    if (x.combinaciones.length) out.push(`  Combinations: ${x.combinaciones.map((c) => c.titulo).join(", ")}`);
+    if (x.pasos.length) out.push(`  Steps: ${x.pasos.map((p) => `${p.hora} ${p.texto}${p.motivo ? ` (could not: ${p.motivo})` : ""}`).join(" | ")}`);
+    if (x.pruebas.length) out.push(`  Tests: ${x.pruebas.map((p) => `${p.hora} ${p.nombre}: ${p.texto}`).join(" | ")}`);
+    if (x.meds.length) out.push(`  Medications: ${x.meds.map((m) => `${m.hora} ${m.nombre}`).join(", ")}`);
     out.push("");
   }
   return out.join("\n");
@@ -56,7 +56,7 @@ function PruebaRegistro({ p }) {
   return (
     <div className="text-xs">
       <button type="button" onClick={() => setAbierto((x) => !x)} aria-expanded={abierto} className="text-left hover:text-fg" data-abrir-detalle={p.fila.prueba_id}>
-        <span className="tabular-nums text-muted">{p.hora}</span> {p.nombre}: {p.texto} <span className="text-cyan">{abierto ? "· ocultar respuestas" : "· ver respuestas"}</span>
+        <span className="tabular-nums text-muted">{p.hora}</span> {p.nombre}: {p.texto} <span className="text-cyan">{abierto ? "· hide answers" : "· show answers"}</span>
       </button>
       {abierto && <div className="mt-1.5"><DetalleRespuestas fila={p.fila} /></div>}
     </div>
@@ -83,12 +83,12 @@ export function Registro({ aid, nombre }) {
     setCopiado(true);
     setTimeout(() => setCopiado(false), 2000);
   };
-  if (!db.listo) return <div className="py-10 text-center text-muted">Cargando registro…</div>;
+  if (!db.listo) return <div className="py-10 text-center text-muted">Loading log…</div>;
   return (
-    <section aria-label="Registro" data-registro>
+    <section aria-label="Log" data-registro>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted">{items.length ? `${items.length} ${items.length === 1 ? "ficha" : "fichas"} en el registro` : "Todavía no hay fichas abiertas."}</p>
-        {items.length > 0 && <CyberButton onClick={copiar} tam="sm" texto={copiado ? "Copiado" : "Copiar reporte"} data-accion="copiar-registro">{copiado ? "✓ Copiado" : "Copiar reporte"}</CyberButton>}
+        <p className="text-sm text-muted">{items.length ? `${items.length} ${items.length === 1 ? "card" : "cards"} in the log` : "No cards opened yet."}</p>
+        {items.length > 0 && <CyberButton onClick={copiar} tam="sm" texto={copiado ? "Copied" : "Copy report"} data-accion="copiar-registro">{copiado ? "✓ Copied" : "Copy report"}</CyberButton>}
       </div>
       <ol className="relative space-y-3 border-l border-white/12 pl-5">
         {items.map((x) => {
@@ -103,12 +103,12 @@ export function Registro({ aid, nombre }) {
                 <span className={`ml-auto text-xs font-semibold ${x.e.cierre === "resuelto" ? "text-ok" : x.e.cerrado_en ? "text-muted" : "text-warn"}`}>{x.estado}{x.e.cerrado_en ? ` · ${hora(x.e.cerrado_en)}` : ""}</span>
               </div>
               <dl className="mt-2 grid gap-1.5 text-sm min-[900px]:grid-cols-[150px_1fr]">
-                {x.causas.length > 0 && <><dt className="text-muted">Causa principal</dt><dd>{x.causas.join(" y ")}</dd></>}
-                {x.respuestas.length > 0 && <><dt className="text-muted">Encuesta</dt><dd className="space-y-0.5">{x.respuestas.map((r) => <div key={r.texto} className="text-xs"><span className="text-soft">{r.texto}</span> <b>{r.valor}</b></div>)}</dd></>}
-                {x.combinaciones.length > 0 && <><dt className="text-muted">Combinaciones</dt><dd className="text-xs">{x.combinaciones.map((c) => c.titulo).join(" · ")}</dd></>}
-                {x.pasos.length > 0 && <><dt className="text-muted">Pasos</dt><dd className="space-y-0.5">{x.pasos.map((p, i) => <div key={i} className="text-xs"><span className="tabular-nums text-muted">{p.hora}</span> {p.texto}{p.motivo ? <span className="text-warn"> · no pudo: {p.motivo}</span> : ""}{p.por === "control" ? <span className="text-muted"> · desde el celular</span> : ""}</div>)}</dd></>}
-                {x.pruebas.length > 0 && <><dt className="text-muted">Pruebas</dt><dd className="space-y-0.5">{x.pruebas.map((p, i) => <PruebaRegistro key={i} p={p} />)}</dd></>}
-                {x.meds.length > 0 && <><dt className="text-muted">Medicamentos</dt><dd className="text-xs">{x.meds.map((m) => `${m.hora} ${m.nombre}`).join(" · ")}</dd></>}
+                {x.causas.length > 0 && <><dt className="text-muted">Main cause</dt><dd>{x.causas.join(" and ")}</dd></>}
+                {x.respuestas.length > 0 && <><dt className="text-muted">Survey</dt><dd className="space-y-0.5">{x.respuestas.map((r) => <div key={r.texto} className="text-xs"><span className="text-soft">{r.texto}</span> <b>{r.valor}</b></div>)}</dd></>}
+                {x.combinaciones.length > 0 && <><dt className="text-muted">Combinations</dt><dd className="text-xs">{x.combinaciones.map((c) => c.titulo).join(" · ")}</dd></>}
+                {x.pasos.length > 0 && <><dt className="text-muted">Steps</dt><dd className="space-y-0.5">{x.pasos.map((p, i) => <div key={i} className="text-xs"><span className="tabular-nums text-muted">{p.hora}</span> {p.texto}{p.motivo ? <span className="text-warn"> · could not: {p.motivo}</span> : ""}{p.por === "control" ? <span className="text-muted"> · from the phone</span> : ""}</div>)}</dd></>}
+                {x.pruebas.length > 0 && <><dt className="text-muted">Tests</dt><dd className="space-y-0.5">{x.pruebas.map((p, i) => <PruebaRegistro key={i} p={p} />)}</dd></>}
+                {x.meds.length > 0 && <><dt className="text-muted">Medications</dt><dd className="text-xs">{x.meds.map((m) => `${m.hora} ${m.nombre}`).join(" · ")}</dd></>}
               </dl>
             </li>
           );

@@ -6,7 +6,7 @@ import { analizar } from "@/lib/analysis";
 import { aplicarAccion, estadoAlarma, evaluarAlarmas, MENSAJE_RECIBIDO, visibleParaQuien } from "@/lib/alarma";
 import { sonarAviso, usePestanaVisible } from "@/lib/useFichas";
 
-const hora = (iso) => (iso ? new Date(iso).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }) : "—");
+const hora = (iso) => (iso ? new Date(iso).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "—");
 
 export function useAlarmasTripulacion(astronautId) {
   const [st, setSt] = useState({ alarmas: [], acks: {}, listo: false });
@@ -24,7 +24,7 @@ export function useAlarmasTripulacion(astronautId) {
       const acks = Object.fromEntries(filas.map((x) => [x.a.id, x.data.enVivo?.alarmas && typeof x.data.enVivo.alarmas === "object" ? x.data.enVivo.alarmas : {}]));
       if (vivo.current) setSt({ alarmas, acks, listo: true, ids: filas.map((x) => x.a.id) });
     } catch (e) {
-      console.warn("QuickFix: alarmas", e?.message || e);
+      console.warn("QuickFix: alarms", e?.message || e);
     }
   }, [astronautId]);
   const idsKey = (st.ids || []).join(",");
@@ -50,7 +50,7 @@ export function useAlarmasTripulacion(astronautId) {
   return { ...st, refrescar: cargar };
 }
 
-export default function AlarmaCritica({ astronautId, quien = "Tripulante", esOficial = false, control = false }) {
+export default function AlarmaCritica({ astronautId, quien = "Crew member", esOficial = false, control = false }) {
   const { alarmas, acks, listo, refrescar } = useAlarmasTripulacion(astronautId);
   const visible = usePestanaVisible();
   const [enviando, setEnviando] = useState(false);
@@ -103,17 +103,17 @@ export default function AlarmaCritica({ astronautId, quien = "Tripulante", esOfi
             const r = ackDe(a)[a.id]?.recibido;
             return (
               <div key={a.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-[#ff7278] px-4 py-2 text-sm font-semibold text-[#2a0b0d]">
-                <span className="min-w-0 flex-1">{a.nombre}: {a.titulo} · {a.valor} · Recibido por {r?.por || "—"} a las {hora(r?.t)}</span>
-                <Link href={`/?a=${a.astronautId}&ficha=${a.clave}`} className="rounded-lg bg-black/15 px-3 py-1.5 hover:bg-black/25">Abrir ficha</Link>
-                {esOficial && <button type="button" disabled={enviando} onClick={() => accion(a, "cerrar")} className="rounded-lg bg-black/15 px-3 py-1.5 hover:bg-black/25" data-accion="cerrar-alarma">Cerrar (oficial médico)</button>}
+                <span className="min-w-0 flex-1">{a.nombre}: {a.titulo} · {a.valor} · Received by {r?.por || "—"} at {hora(r?.t)}</span>
+                <Link href={`/?a=${a.astronautId}&ficha=${a.clave}`} className="rounded-lg bg-black/15 px-3 py-1.5 hover:bg-black/25">Open card</Link>
+                {esOficial && <button type="button" disabled={enviando} onClick={() => accion(a, "cerrar")} className="rounded-lg bg-black/15 px-3 py-1.5 hover:bg-black/25" data-accion="cerrar-alarma">Close (medical officer)</button>}
               </div>
             );
           })}
         </div>
       )}
       {actual && (
-        <div className="alarma-pulso fixed inset-0 z-[70] flex flex-col items-center justify-center gap-6 overflow-y-auto bg-[#ff7278] px-6 py-10 text-center text-[#2a0b0d]" role="alertdialog" aria-modal="true" aria-label={`Alarma crítica: ${actual.titulo}`} data-alarma-critica={actual.tipo}>
-          <div className="text-base font-bold uppercase tracking-[0.2em]">Alarma crítica{pantalla.length > 1 ? ` · 1 de ${pantalla.length}` : ""}</div>
+        <div className="alarma-pulso fixed inset-0 z-[70] flex flex-col items-center justify-center gap-6 overflow-y-auto bg-[#ff7278] px-6 py-10 text-center text-[#2a0b0d]" role="alertdialog" aria-modal="true" aria-label={`Critical alarm: ${actual.titulo}`} data-alarma-critica={actual.tipo}>
+          <div className="text-base font-bold uppercase tracking-[0.2em]">Critical alarm{pantalla.length > 1 ? ` · 1 of ${pantalla.length}` : ""}</div>
           <div className="font-display text-3xl font-bold sm:text-4xl">{actual.nombre}</div>
           <div className="max-w-3xl font-display text-2xl font-semibold leading-tight sm:text-3xl">{actual.titulo}</div>
           <div className="font-display text-7xl font-bold leading-none sm:text-8xl" data-valor-alarma>{actual.valor}</div>
@@ -125,7 +125,7 @@ export default function AlarmaCritica({ astronautId, quien = "Tripulante", esOfi
           <button type="button" disabled={enviando} onClick={() => accion(actual, "recibido")} className="min-h-16 w-full max-w-xl rounded-2xl bg-[#2a0b0d] px-6 text-2xl font-bold text-white shadow-lg active:scale-[0.99] disabled:opacity-60" data-accion="recibido">
             {MENSAJE_RECIBIDO}
           </button>
-          <div className="text-sm font-semibold opacity-80">Responde como: {quien}</div>
+          <div className="text-sm font-semibold opacity-80">Responding as: {quien}</div>
         </div>
       )}
     </>

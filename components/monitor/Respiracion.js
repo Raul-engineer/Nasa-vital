@@ -13,7 +13,7 @@ export default function MonitorRespiracion({ fr }) {
     return 0.5 - 0.5 * Math.cos(2 * Math.PI * x);
   }, []);
   return (
-    <Marco titulo="Respiración · impedancia" color={MON.amarillo} valor={fr ?? "—"} unidad="rpm" sub="Un ciclo por respiración">
+    <Marco titulo="Respiration · impedance" color={MON.amarillo} valor={fr ?? "—"} unidad="br/min" sub="One cycle per breath">
       <OndaCanvas generar={generar} color={MON.amarillo} pxPorSeg={45} rango={[-0.1, 1.1]} />
     </Marco>
   );

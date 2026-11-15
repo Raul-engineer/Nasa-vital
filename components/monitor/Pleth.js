@@ -26,7 +26,7 @@ export default function MonitorPleth({ spo2, fc }) {
     return s.amp * forma(s.tb / s.periodo);
   }, []);
   return (
-    <Marco titulo="Pletismografía · SpO₂" color={MON.cian} valor={spo2 ?? "—"} unidad="%" sub={fc != null ? `Pulso ${fc} lpm` : null}>
+    <Marco titulo="Plethysmography · SpO₂" color={MON.cian} valor={spo2 ?? "—"} unidad="%" sub={fc != null ? `Pulse ${fc} bpm` : null}>
       <OndaCanvas generar={generar} color={MON.cian} pxPorSeg={110} rango={[-0.1, 1.15]} />
     </Marco>
   );

@@ -25,7 +25,7 @@ export default function MonitorSueno({ analisis, data, aid }) {
     d += `L${X(i + 1).toFixed(1)},${y}`;
   });
   return (
-    <Marco titulo="Hipnograma · anoche" color={MON.azul} etiquetaVivo="ANOCHE" valor={horas ?? "—"} unidad="h" sub={`${hora(hip.inicio)} → ${hora(hip.fin)}`}>
+    <Marco titulo="Hypnogram · last night" color={MON.azul} etiquetaVivo="LAST NIGHT" valor={horas ?? "—"} unidad="h" sub={`${hora(hip.inicio)} → ${hora(hip.fin)}`}>
       <div ref={caja} className="absolute inset-0">
         <svg width={w} height={h} aria-hidden>
           {FASES.map((f) => (

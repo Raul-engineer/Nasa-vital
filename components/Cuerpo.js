@@ -148,7 +148,7 @@ export default function Cuerpo({ analisis, lista, onTarjeta = null, extraDe = nu
           <div className="cuerpo-fig absolute" style={{ left: fx, top: fy, width: fw, height: fh }}>
             <div className="cuerpo-poses relative h-full w-full">
               {capas.anterior && <img key={`a-${capas.anterior}`} src={capas.anterior} alt="" className="pose-sale absolute inset-0 h-full w-full object-contain" draggable={false} />}
-              <img key={`b-${capas.actual}`} src={capas.actual} alt="Cuerpo del astronauta" className={`absolute inset-0 h-full w-full object-contain ${capas.anterior ? "pose-entra" : ""}`} draggable={false} data-pose={capas.actual} />
+              <img key={`b-${capas.actual}`} src={capas.actual} alt="Astronaut body" className={`absolute inset-0 h-full w-full object-contain ${capas.anterior ? "pose-entra" : ""}`} draggable={false} data-pose={capas.actual} />
             </div>
           </div>
           {conTarjetas && (
@@ -165,7 +165,7 @@ export default function Cuerpo({ analisis, lista, onTarjeta = null, extraDe = nu
             const visible = enFiltro.has(v.k);
             const grande = zonaResaltada === z;
             return (
-              <button key={z} onClick={() => onVer(v.k)} aria-label={`${v.t.nombre}: ver análisis`} className="cuerpo-punto absolute" tabIndex={visible ? 0 : -1} aria-hidden={!visible}
+              <button key={z} onClick={() => onVer(v.k)} aria-label={`${v.t.nombre}: view analysis`} className="cuerpo-punto absolute" tabIndex={visible ? 0 : -1} aria-hidden={!visible}
                 style={{ left: p.px - 7, top: p.py - 7, color: colorDe(v.nivel), opacity: visible ? 1 : 0, pointerEvents: visible ? "auto" : "none", transform: `scale(${grande ? 1.7 : 1})`, transition: "opacity .35s ease, transform .25s ease, color .4s ease" }}
                 data-zona={z} data-gravedad={v.nivel} data-visible={visible ? "si" : "no"} data-resaltado={grande ? "si" : undefined}>
                 <span className="cuerpo-punto-anillo" />
@@ -197,7 +197,7 @@ export default function Cuerpo({ analisis, lista, onTarjeta = null, extraDe = nu
           {todoBien && (
             <div role="status" data-burbuja="ok" className={`burbuja glass burbuja-entra absolute z-10 flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-xs font-semibold text-ok`}
               style={{ left: Math.min(W - 160, mano.px + 46), top: mano.py - 34, height: ALTO_OK, borderColor: "color-mix(in oklab, var(--color-ok) 45%, transparent)" }}>
-              <span aria-hidden>👍</span> Todo en orden
+              <span aria-hidden>👍</span> All good
             </div>
           )}
         </>

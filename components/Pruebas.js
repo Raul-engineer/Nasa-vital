@@ -7,108 +7,108 @@ import { puntuarCuestionario } from "@/lib/mockData";
 import { MENSAJE_DESENLACE } from "@/lib/medic";
 
 const CARAS = [
-  { v: 1, e: "😣", t: "Muy mal" },
-  { v: 2, e: "🙁", t: "Mal" },
-  { v: 3, e: "😐", t: "Regular" },
-  { v: 4, e: "🙂", t: "Bien" },
-  { v: 5, e: "😄", t: "Muy bien" },
+  { v: 1, e: "😣", t: "Very bad" },
+  { v: 2, e: "🙁", t: "Bad" },
+  { v: 3, e: "😐", t: "Okay" },
+  { v: 4, e: "🙂", t: "Good" },
+  { v: 5, e: "😄", t: "Very good" },
 ];
 
 export const PREGUNTAS = [
-  { k: "confusion", t: "¿Te sientes confundido o desorientado?" },
-  { k: "mareo_de_pie", t: "¿Tienes mareo?" },
-  { k: "vision_borrosa", t: "¿Visión borrosa?" },
-  { k: "dolor_cabeza", t: "¿Dolor de cabeza?" },
+  { k: "confusion", t: "Do you feel confused or disoriented?" },
+  { k: "mareo_de_pie", t: "Are you dizzy?" },
+  { k: "vision_borrosa", t: "Blurred vision?" },
+  { k: "dolor_cabeza", t: "Headache?" },
 ];
 
 export const SINTOMAS = [
-  { k: "garganta", t: "Garganta" },
-  { k: "llagas", t: "Llagas o herpes" },
-  { k: "ronchas", t: "Ronchas" },
-  { k: "heridas", t: "Heridas lentas" },
-  { k: "estomago", t: "Estómago" },
+  { k: "garganta", t: "Throat" },
+  { k: "llagas", t: "Sores or herpes" },
+  { k: "ronchas", t: "Rash" },
+  { k: "heridas", t: "Slow-healing wounds" },
+  { k: "estomago", t: "Stomach" },
 ];
 
 export const INFO_PRUEBAS = {
   checkin: {
-    descripcion: "Ánimo, estrés, fatiga y relación con la tripulación; confusión, mareo, visión borrosa, dolor de cabeza y síntomas de infección.",
-    para: "Detecta lo que los sensores no ven. Cada guardado recalcula tus 12 tarjetas.",
+    descripcion: "Mood, stress, fatigue and relationship with the crew; confusion, dizziness, blurred vision, headache and signs of infection.",
+    para: "Catches what the sensors do not see. Each save recalculates your 12 cards.",
   },
   remedicion: {
-    descripcion: "Cinco minutos sentado y en silencio; después se toma una nueva lectura de FC, SpO₂ y presión.",
-    para: "Confirma si un valor alterado fue pasajero o se mantiene en reposo.",
+    descripcion: "Five minutes seated and silent; then a new HR, SpO₂ and blood pressure reading is taken.",
+    para: "Confirms whether an abnormal value was brief or persists at rest.",
   },
   ortostatica: {
-    descripcion: "Presión y pulso acostado, al minuto y a los 3 minutos de estar de pie.",
-    para: "Detecta hipotensión ortostática: caída ≥ 20 mmHg sistólica o ≥ 10 mmHg diastólica.",
+    descripcion: "Blood pressure and pulse lying down, at 1 minute and at 3 minutes of standing.",
+    para: "Detects orthostatic hypotension: a drop ≥ 20 mmHg systolic or ≥ 10 mmHg diastolic.",
   },
   reaccion: {
-    descripcion: "PVT-B de 3 minutos: toca en cuanto aparezca el estímulo (cada 1 a 4 s). Cuenta lapsos (≥ 355 ms), falsas alarmas y tu mediana.",
-    para: "Mide tu estado de alerta; empeora con falta de sueño o fatiga.",
+    descripcion: "3-minute PVT-B: tap as soon as the stimulus appears (every 1 to 4 s). Counts lapses (≥ 355 ms), false alarms and your median.",
+    para: "Measures your alertness; it worsens with lack of sleep or fatigue.",
   },
   who5: {
-    descripcion: "Cinco preguntas sobre las últimas dos semanas, de 0 a 5. El puntaje va de 0 a 100. Se pide cada 7 días en el check-in.",
-    para: "Detecta bienestar bajo: 50 o menos sugiere el PHQ-9; 28 o menos avisa al médico. Tamizaje, no diagnóstico.",
+    descripcion: "Five questions about the last two weeks, from 0 to 5. The score goes from 0 to 100. Asked every 7 days in the check-in.",
+    para: "Detects low well-being: 50 or less suggests the PHQ-9; 28 or less notifies the physician. Screening, not diagnosis.",
   },
   phq9: {
-    descripcion: "Nueve preguntas sobre ánimo en las últimas dos semanas, de 0 a 3. Semanal o cuando lo pide el WHO-5.",
-    para: "Tamizaje de depresión: 10 o más avisa al médico de tripulación. Tamizaje, no diagnóstico.",
+    descripcion: "Nine questions about mood over the last two weeks, from 0 to 3. Weekly or when the WHO-5 asks for it.",
+    para: "Depression screening: 10 or more notifies the crew physician. Screening, not diagnosis.",
   },
   gad7: {
-    descripcion: "Siete preguntas sobre ansiedad en las últimas dos semanas, de 0 a 3. Semanal.",
-    para: "Tamizaje de ansiedad: 10 o más avisa al médico de tripulación. Tamizaje, no diagnóstico.",
+    descripcion: "Seven questions about anxiety over the last two weeks, from 0 to 3. Weekly.",
+    para: "Anxiety screening: 10 or more notifies the crew physician. Screening, not diagnosis.",
   },
   amsler: {
-    descripcion: "Mira el punto central de la rejilla con un ojo a la vez y reporta si ves líneas onduladas o zonas faltantes.",
-    para: "Complemento para vigilar la visión (SANS). Nunca da alerta roja por sí sola.",
+    descripcion: "Look at the center dot of the grid with one eye at a time and report any wavy lines or missing areas.",
+    para: "A complement for monitoring vision (SANS). It never raises a red alert on its own.",
   },
 };
 
-const OPC_WHO5 = [[5, "Todo el tiempo"], [4, "La mayor parte del tiempo"], [3, "Más de la mitad del tiempo"], [2, "Menos de la mitad del tiempo"], [1, "De vez en cuando"], [0, "Nunca"]];
-const OPC_PHQ = [[0, "Ningún día"], [1, "Varios días"], [2, "Más de la mitad de los días"], [3, "Casi todos los días"]];
+const OPC_WHO5 = [[5, "All of the time"], [4, "Most of the time"], [3, "More than half of the time"], [2, "Less than half of the time"], [1, "Some of the time"], [0, "At no time"]];
+const OPC_PHQ = [[0, "Not at all"], [1, "Several days"], [2, "More than half the days"], [3, "Nearly every day"]];
 export const CUESTIONARIOS = {
   who5: {
-    intro: "En las últimas dos semanas…",
+    intro: "Over the last two weeks…",
     opciones: OPC_WHO5,
     items: [
-      "Me he sentido alegre y de buen ánimo",
-      "Me he sentido tranquilo(a) y relajado(a)",
-      "Me he sentido activo(a) y con energía",
-      "Me he despertado sintiéndome fresco(a) y descansado(a)",
-      "Mi vida diaria ha estado llena de cosas que me interesan",
+      "I have felt cheerful and in good spirits",
+      "I have felt calm and relaxed",
+      "I have felt active and vigorous",
+      "I woke up feeling fresh and rested",
+      "My daily life has been filled with things that interest me",
     ],
   },
   phq9: {
-    intro: "Durante las últimas dos semanas, ¿qué tan seguido te han molestado los siguientes problemas?",
+    intro: "Over the last two weeks, how often have you been bothered by the following problems?",
     opciones: OPC_PHQ,
     items: [
-      "Poco interés o placer en hacer las cosas",
-      "Sentirte decaído(a), deprimido(a) o sin esperanza",
-      "Dificultad para dormir o permanecer dormido(a), o dormir demasiado",
-      "Sentirte cansado(a) o con poca energía",
-      "Poco apetito o comer en exceso",
-      "Sentirte mal contigo mismo(a), o que eres un fracaso o que has quedado mal contigo o con tu familia",
-      "Dificultad para concentrarte en cosas como leer o ver videos",
-      "Moverte o hablar tan lento que otros lo notan, o lo contrario: estar tan inquieto(a) que te mueves mucho más de lo normal",
-      "Pensamientos de que estarías mejor muerto(a) o de lastimarte de alguna manera",
+      "Little interest or pleasure in doing things",
+      "Feeling down, depressed or hopeless",
+      "Trouble falling or staying asleep, or sleeping too much",
+      "Feeling tired or having little energy",
+      "Poor appetite or overeating",
+      "Feeling bad about yourself, or that you are a failure or have let yourself or your family down",
+      "Trouble concentrating on things, such as reading or watching videos",
+      "Moving or speaking so slowly that other people could have noticed, or the opposite: being so fidgety or restless that you move around a lot more than usual",
+      "Thoughts that you would be better off dead or of hurting yourself in some way",
     ],
   },
   gad7: {
-    intro: "Durante las últimas dos semanas, ¿qué tan seguido te han molestado los siguientes problemas?",
+    intro: "Over the last two weeks, how often have you been bothered by the following problems?",
     opciones: OPC_PHQ,
     items: [
-      "Sentirte nervioso(a), ansioso(a) o con los nervios de punta",
-      "No poder dejar de preocuparte o no poder controlar la preocupación",
-      "Preocuparte demasiado por diferentes cosas",
-      "Dificultad para relajarte",
-      "Estar tan inquieto(a) que es difícil quedarte quieto(a)",
-      "Molestarte o irritarte fácilmente",
-      "Sentir miedo, como si algo terrible fuera a pasar",
+      "Feeling nervous, anxious or on edge",
+      "Not being able to stop or control worrying",
+      "Worrying too much about different things",
+      "Trouble relaxing",
+      "Being so restless that it is hard to sit still",
+      "Becoming easily annoyed or irritable",
+      "Feeling afraid, as if something awful might happen",
     ],
   },
 };
 
-export function Cuestionario({ tipo, onFinish, enviarTexto = "Guardar respuestas", compacto = false, onCambio }) {
+export function Cuestionario({ tipo, onFinish, enviarTexto = "Save answers", compacto = false, onCambio }) {
   const def = CUESTIONARIOS[tipo];
   const [r, setR] = useState(() => def.items.map(() => null));
   const completo = r.every((x) => x != null);
@@ -118,7 +118,7 @@ export function Cuestionario({ tipo, onFinish, enviarTexto = "Guardar respuestas
   }, [r, onCambio]);
   return (
     <div className="space-y-3">
-      <div className="rounded-xl border border-violet/40 bg-violet/10 px-3 py-2 text-xs text-soft">Tamizaje, no diagnóstico. Tus respuestas solo las ven tú y el médico de tripulación.</div>
+      <div className="rounded-xl border border-violet/40 bg-violet/10 px-3 py-2 text-xs text-soft">Screening, not diagnosis. Only you and the crew physician see your answers.</div>
       <div className="text-sm font-medium">{def.intro}</div>
       <ol className="space-y-2.5">
         {def.items.map((t, i) => (
@@ -137,13 +137,13 @@ export function Cuestionario({ tipo, onFinish, enviarTexto = "Guardar respuestas
       </ol>
       {tipo === "phq9" && r[8] > 0 && (
         <div role="alert" className="rounded-xl border border-crit/60 bg-crit/10 p-3 text-sm">
-          Gracias por decirlo. Al guardar, Medic avisará de inmediato al médico de tripulación. No tienes que enfrentarlo solo(a): busca ahora a un compañero de confianza.
+          Thank you for saying it. When you save, Medic will notify the crew physician right away. You do not have to face this alone: find a crewmate you trust now.
         </div>
       )}
       {onFinish && (
         <button type="button" disabled={!completo} onClick={() => onFinish({ respuestas: r, ...puntuarCuestionario(tipo, r) })}
           className="w-full rounded-xl bg-accent py-2.5 font-semibold text-onaccent hover:brightness-110 disabled:opacity-50">
-          {completo ? enviarTexto : `Responde las ${def.items.length} preguntas`}
+          {completo ? enviarTexto : `Answer the ${def.items.length} questions`}
         </button>
       )}
     </div>
@@ -183,7 +183,7 @@ export function SiNo({ valor, onChange, texto }) {
     <div className="flex items-center justify-between gap-3 rounded-xl border border-line px-3 py-2">
       <span className="text-sm">{texto}</span>
       <div className="flex shrink-0 overflow-hidden rounded-lg border border-line text-sm" role="radiogroup" aria-label={texto}>
-        {[["No", false], ["Sí", true]].map(([t, b]) => (
+        {[["No", false], ["Yes", true]].map(([t, b]) => (
           <button key={t} role="radio" aria-checked={valor === b} onClick={() => onChange(b)}
             className={`px-3 py-1 font-medium transition ${valor === b ? (b ? "bg-warn/20 text-warn" : "bg-ok/15 text-ok") : "hover:bg-ink/5"}`}>
             {t}
@@ -218,9 +218,9 @@ export function CheckinForm({ astronautId, inicial, onSaved, onResultado, who5Pe
       }
       const alarma = PREGUNTAS.some((p) => v[p.k]);
       onResultado?.({ tipo: "checkin", ...ev, valores: v });
-      onSaved?.(alarma ? "Check-in guardado. Medic revisó tus respuestas y abrió alertas nuevas en Análisis." : "Check-in guardado. Medic actualizó tu estado del día.");
+      onSaved?.(alarma ? "Check-in saved. Medic reviewed your answers and opened new alerts in Analysis." : "Check-in saved. Medic updated your status for the day.");
     } catch (e) {
-      onSaved?.("No se pudo guardar: " + (e.message || e));
+      onSaved?.("Could not save: " + (e.message || e));
     } finally {
       setGuardando(false);
     }
@@ -229,8 +229,8 @@ export function CheckinForm({ astronautId, inicial, onSaved, onResultado, who5Pe
   return (
     <div className="space-y-3">
       <div>
-        <div className="mb-1.5 text-sm font-medium">Ánimo</div>
-        <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label="Ánimo">
+        <div className="mb-1.5 text-sm font-medium">Mood</div>
+        <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label="Mood">
           {CARAS.map((c) => (
             <button key={c.v} role="radio" aria-checked={v.animo === c.v} aria-label={c.t} title={c.t} onClick={() => set("animo")(c.v)}
               className={`flex flex-col items-center rounded-xl border py-1.5 transition ${v.animo === c.v ? "border-accent bg-accent/15" : "border-line hover:bg-ink/5"}`}>
@@ -241,9 +241,9 @@ export function CheckinForm({ astronautId, inicial, onSaved, onResultado, who5Pe
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
-        <Escala etiqueta="Estrés" valor={v.estres} onChange={set("estres")} bajo="1 bajo" alto="5 alto" />
-        <Escala etiqueta="Fatiga" valor={v.fatiga} onChange={set("fatiga")} bajo="1 baja" alto="5 alta" />
-        <Escala etiqueta="Tripulación" valor={v.tripulacion} onChange={set("tripulacion")} bajo="1 mal" alto="5 muy bien" />
+        <Escala etiqueta="Stress" valor={v.estres} onChange={set("estres")} bajo="1 low" alto="5 high" />
+        <Escala etiqueta="Fatigue" valor={v.fatiga} onChange={set("fatiga")} bajo="1 low" alto="5 high" />
+        <Escala etiqueta="Crew" valor={v.tripulacion} onChange={set("tripulacion")} bajo="1 bad" alto="5 very good" />
       </div>
       <div className="space-y-1.5">
         {PREGUNTAS.map((p) => (
@@ -251,8 +251,8 @@ export function CheckinForm({ astronautId, inicial, onSaved, onResultado, who5Pe
         ))}
       </div>
       <div>
-        <div className="mb-1.5 text-sm font-medium">Síntomas de infección <span className="font-normal text-muted">(marca los que tengas)</span></div>
-        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Síntomas de infección">
+        <div className="mb-1.5 text-sm font-medium">Signs of infection <span className="font-normal text-muted">(mark any you have)</span></div>
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Signs of infection">
           {SINTOMAS.map((x) => {
             const on = v.sintomas.includes(x.k);
             return (
@@ -266,20 +266,20 @@ export function CheckinForm({ astronautId, inicial, onSaved, onResultado, who5Pe
       </div>
       {who5Pendiente && (
         <details className="rounded-xl border border-violet/40 p-3" open>
-          <summary className="cursor-pointer text-sm font-semibold">Bienestar WHO-5 · toca esta semana <span className="font-normal text-muted">(0 nunca · 5 todo el tiempo)</span></summary>
+          <summary className="cursor-pointer text-sm font-semibold">WHO-5 well-being · due this week <span className="font-normal text-muted">(0 at no time · 5 all of the time)</span></summary>
           <div className="mt-2"><Cuestionario tipo="who5" compacto onCambio={setWho5} /></div>
         </details>
       )}
       <div className="rounded-xl border border-line p-3">
         <label className="flex cursor-pointer items-center gap-2 text-sm">
           <input type="checkbox" checked={conReaccion} onChange={(e) => setConReaccion(e.target.checked)} className="h-4 w-4" />
-          Agregar prueba de reacción rápida (5 intentos){reaccion ? ` · ${reaccion} ms` : ""}
+          Add quick reaction test (5 tries){reaccion ? ` · ${reaccion} ms` : ""}
         </label>
         {conReaccion && !reaccion && <ReactionTest onDone={(prom) => setReaccion(prom)} />}
       </div>
       <button onClick={guardar} disabled={guardando}
         className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-2.5 font-semibold text-onaccent hover:brightness-110 disabled:opacity-60">
-        <Icon name="check" size={18} /> {guardando ? "Guardando…" : "Guardar check-in"}
+        <Icon name="check" size={18} /> {guardando ? "Saving…" : "Save check-in"}
       </button>
     </div>
   );
@@ -318,8 +318,8 @@ export function ReactionTest({ onDone }) {
     }
   }
   const prom = tiempos.length ? Math.round(tiempos.reduce((a, b) => a + b, 0) / tiempos.length) : null;
-  const txt = { listo: "Toca para empezar", espera: "Espera…", ya: "¡Toca ahora!", pronto: "Muy pronto. Toca para repetir", fin: "¡Listo!" }[fase];
-  const celdas = [["Intento", `${Math.min(tiempos.length + (fase === "fin" ? 0 : 1), INTENTOS)} de ${INTENTOS}`], ["Último", `${tiempos.at(-1) ?? "—"} ms`], ["Promedio", `${prom ?? "—"} ms`]];
+  const txt = { listo: "Tap to start", espera: "Wait…", ya: "Tap now!", pronto: "Too soon. Tap to repeat", fin: "Done!" }[fase];
+  const celdas = [["Try", `${Math.min(tiempos.length + (fase === "fin" ? 0 : 1), INTENTOS)} of ${INTENTOS}`], ["Last", `${tiempos.at(-1) ?? "—"} ms`], ["Average", `${prom ?? "—"} ms`]];
   return (
     <div className="flex flex-col items-center">
       <button onPointerDown={tocar} disabled={fase === "fin"}
@@ -356,7 +356,7 @@ function CamposLectura({ valores, onChange, campos }) {
   );
 }
 
-const CAMPOS_REMED = [["fc", "FC", "lpm"], ["spo2", "SpO₂", "%", 0.1], ["sistolica", "Sistólica", "mmHg"], ["diastolica", "Diastólica", "mmHg"]];
+const CAMPOS_REMED = [["fc", "HR", "bpm"], ["spo2", "SpO₂", "%", 0.1], ["sistolica", "Systolic", "mmHg"], ["diastolica", "Diastolic", "mmHg"]];
 
 export function RemedicionTest({ hoy, onFinish }) {
   const [fase, setFase] = useState("inicio");
@@ -379,8 +379,8 @@ export function RemedicionTest({ hoy, onFinish }) {
   if (fase === "inicio")
     return (
       <div className="space-y-3">
-        <p className="text-sm text-soft">Siéntate con la espalda apoyada, pies en el piso y sin hablar. Al terminar la cuenta tomamos una nueva lectura.</p>
-        <button onClick={() => setFase("cuenta")} className="w-full rounded-xl bg-accent py-2.5 font-semibold text-onaccent hover:brightness-110">Iniciar remedición (5 min)</button>
+        <p className="text-sm text-soft">Sit with your back supported, feet on the floor and without talking. When the countdown ends we take a new reading.</p>
+        <button onClick={() => setFase("cuenta")} className="w-full rounded-xl bg-accent py-2.5 font-semibold text-onaccent hover:brightness-110">Start re-measurement (5 min)</button>
       </div>
     );
   if (fase === "cuenta")
@@ -388,27 +388,27 @@ export function RemedicionTest({ hoy, onFinish }) {
       <div className="flex flex-col items-center gap-3">
         <div className="text-5xl font-semibold tabular-nums" aria-live="polite">{Math.floor(seg / 60)}:{String(seg % 60).padStart(2, "0")}</div>
         <div className="h-2 w-full rounded-full bg-ink/10"><div className="h-full rounded-full bg-accent transition-all" style={{ width: `${(1 - seg / 300) * 100}%` }} /></div>
-        <p className="text-sm text-muted">Respira tranquilo. Medic toma la lectura al terminar.</p>
-        <button onClick={pasarALectura} className="rounded-xl border border-line px-4 py-2 text-sm hover:bg-ink/5">Saltar espera</button>
+        <p className="text-sm text-muted">Breathe calmly. Medic takes the reading at the end.</p>
+        <button onClick={pasarALectura} className="rounded-xl border border-line px-4 py-2 text-sm hover:bg-ink/5">Skip wait</button>
       </div>
     );
   return (
     <div className="space-y-3">
       <div className="text-xs text-muted">
-        Lectura anterior: FC {antes.fc} · SpO₂ {antes.spo2} % · PA {antes.sistolica}/{antes.diastolica}. Valores precargados; puedes editarlos.
+        Previous reading: HR {antes.fc} · SpO₂ {antes.spo2} % · BP {antes.sistolica}/{antes.diastolica}. Values prefilled; you can edit them.
       </div>
       <CamposLectura valores={despues} onChange={setDespues} campos={CAMPOS_REMED} />
-      <button onClick={() => onFinish({ antes, despues })} className="w-full rounded-xl bg-accent py-2.5 font-semibold text-onaccent hover:brightness-110">Guardar lectura</button>
+      <button onClick={() => onFinish({ antes, despues })} className="w-full rounded-xl bg-accent py-2.5 font-semibold text-onaccent hover:brightness-110">Save reading</button>
     </div>
   );
 }
 
 const PASOS_ORTO = [
-  { k: "acostado", t: "Acostado", d: "Acuéstate 5 min y toma presión y pulso." },
-  { k: "min1", t: "De pie · 1 min", d: "Ponte de pie y mide al minuto." },
-  { k: "min3", t: "De pie · 3 min", d: "Sigue de pie y mide a los 3 minutos." },
+  { k: "acostado", t: "Lying down", d: "Lie down for 5 min and take blood pressure and pulse." },
+  { k: "min1", t: "Standing · 1 min", d: "Stand up and measure at 1 minute." },
+  { k: "min3", t: "Standing · 3 min", d: "Stay standing and measure at 3 minutes." },
 ];
-const CAMPOS_ORTO = [["sistolica", "Sistólica", "mmHg"], ["diastolica", "Diastólica", "mmHg"], ["fc", "FC", "lpm"]];
+const CAMPOS_ORTO = [["sistolica", "Systolic", "mmHg"], ["diastolica", "Diastolic", "mmHg"], ["fc", "HR", "bpm"]];
 
 export function OrtostaticaTest({ hoy, onFinish }) {
   const [paso, setPaso] = useState(0);
@@ -420,7 +420,7 @@ export function OrtostaticaTest({ hoy, onFinish }) {
   const P = PASOS_ORTO[paso];
   return (
     <div className="space-y-3">
-      <ol className="flex gap-1.5" aria-label="Pasos de la prueba">
+      <ol className="flex gap-1.5" aria-label="Test steps">
         {PASOS_ORTO.map((s, i) => (
           <li key={s.k} className={`flex-1 rounded-lg border px-2 py-1.5 text-center text-xs ${i === paso ? "border-accent bg-accent/10 font-semibold text-accent" : i < paso ? "border-ok/50 text-ok" : "border-line text-muted"}`}>
             {i < paso ? "✓ " : `${i + 1}. `}{s.t}
@@ -429,13 +429,13 @@ export function OrtostaticaTest({ hoy, onFinish }) {
       </ol>
       <div className="flex items-center gap-2 text-sm text-soft"><Icon name="standing" size={18} className="text-accent" /> {P.d}</div>
       <CamposLectura valores={r[P.k]} onChange={(v) => setR((x) => ({ ...x, [P.k]: v }))} campos={CAMPOS_ORTO} />
-      <div className="text-[11px] text-muted">Valores precargados; puedes editarlos.</div>
+      <div className="text-[11px] text-muted">Values prefilled; you can edit them.</div>
       <div className="flex gap-2">
-        {paso > 0 && <button onClick={() => setPaso(paso - 1)} className="flex-1 rounded-xl border border-line py-2.5 hover:bg-ink/5">Atrás</button>}
+        {paso > 0 && <button onClick={() => setPaso(paso - 1)} className="flex-1 rounded-xl border border-line py-2.5 hover:bg-ink/5">Back</button>}
         {paso < 2 ? (
-          <button onClick={() => setPaso(paso + 1)} className="flex-1 rounded-xl bg-accent py-2.5 font-semibold text-onaccent hover:brightness-110">Siguiente</button>
+          <button onClick={() => setPaso(paso + 1)} className="flex-1 rounded-xl bg-accent py-2.5 font-semibold text-onaccent hover:brightness-110">Next</button>
         ) : (
-          <button onClick={() => onFinish(r)} className="flex-1 rounded-xl bg-accent py-2.5 font-semibold text-onaccent hover:brightness-110">Ver resultado</button>
+          <button onClick={() => onFinish(r)} className="flex-1 rounded-xl bg-accent py-2.5 font-semibold text-onaccent hover:brightness-110">See result</button>
         )}
       </div>
     </div>
@@ -512,25 +512,25 @@ export function PvtbTest({ onFinish, base }) {
   if (fase === "inicio")
     return (
       <div className="space-y-3">
-        <p className="text-sm text-soft">Durante 3 minutos aparecerá un estímulo cada 1 a 4 segundos. Toca el recuadro (o la barra espaciadora) en cuanto lo veas, sin adelantarte.</p>
-        {base ? <div className="text-xs text-muted">Tu línea base: mediana de {Math.round(base)} ms.</div> : null}
-        <button onClick={iniciar} className="w-full rounded-xl bg-accent py-2.5 font-semibold text-onaccent hover:brightness-110">Iniciar PVT-B (3 min)</button>
+        <p className="text-sm text-soft">For 3 minutes a stimulus will appear every 1 to 4 seconds. Tap the box (or press the space bar) as soon as you see it, without jumping ahead.</p>
+        {base ? <div className="text-xs text-muted">Your baseline: median of {Math.round(base)} ms.</div> : null}
+        <button onClick={iniciar} className="w-full rounded-xl bg-accent py-2.5 font-semibold text-onaccent hover:brightness-110">Start PVT-B (3 min)</button>
       </div>
     );
   return (
     <div className="space-y-3">
       <button onPointerDown={tocar} onKeyDown={(e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); tocar(); } }} disabled={fase === "fin"}
-        aria-label="Área de respuesta de la prueba de reacción"
+        aria-label="Reaction test response area"
         className={`flex h-44 w-full select-none flex-col items-center justify-center rounded-2xl border-4 text-2xl font-bold transition ${estimulo ? "border-accent bg-accent/25 text-accent" : "border-line bg-ink/5 text-muted"}`}>
-        {fase === "fin" ? "¡Listo!" : estimulo ? "¡TOCA!" : "Espera…"}
-        {ultimo != null && fase !== "fin" && <span className="mt-1 text-sm font-medium">{ultimo === "falsa" ? "Falsa alarma" : `${ultimo} ms`}</span>}
+        {fase === "fin" ? "Done!" : estimulo ? "TAP!" : "Wait…"}
+        {ultimo != null && fase !== "fin" && <span className="mt-1 text-sm font-medium">{ultimo === "falsa" ? "False alarm" : `${ultimo} ms`}</span>}
       </button>
       <div className="grid grid-cols-3 gap-2 text-center text-sm">
-        <div className="rounded-lg bg-ink/5 p-2"><div className="text-muted">Restante</div><div className="font-semibold tabular-nums">{Math.floor(restante / 60)}:{String(restante % 60).padStart(2, "0")}</div></div>
-        <div className="rounded-lg bg-ink/5 p-2"><div className="text-muted">Respuestas</div><div className="font-semibold">{n}</div></div>
-        <div className="rounded-lg bg-ink/5 p-2"><div className="text-muted">Lapso</div><div className="font-semibold">≥ {P.lapsoMs} ms</div></div>
+        <div className="rounded-lg bg-ink/5 p-2"><div className="text-muted">Remaining</div><div className="font-semibold tabular-nums">{Math.floor(restante / 60)}:{String(restante % 60).padStart(2, "0")}</div></div>
+        <div className="rounded-lg bg-ink/5 p-2"><div className="text-muted">Responses</div><div className="font-semibold">{n}</div></div>
+        <div className="rounded-lg bg-ink/5 p-2"><div className="text-muted">Lapse</div><div className="font-semibold">≥ {P.lapsoMs} ms</div></div>
       </div>
-      {fase === "corriendo" && <button onClick={terminar} className="w-full rounded-xl border border-line py-2 text-sm hover:bg-ink/5">Terminar antes</button>}
+      {fase === "corriendo" && <button onClick={terminar} className="w-full rounded-xl border border-line py-2 text-sm hover:bg-ink/5">Finish early</button>}
     </div>
   );
 }
@@ -541,36 +541,36 @@ export function AmslerTest({ onFinish }) {
   const lineas = Array.from({ length: 21 }, (_, i) => i * 10);
   return (
     <div className="space-y-3">
-      <p className="text-sm text-soft">Ponte tus lentes si los usas. Tapa un ojo y mira fijamente el punto central a 30–40 cm. Repite con el otro ojo.</p>
+      <p className="text-sm text-soft">Put on your glasses if you use them. Cover one eye and stare at the center dot from 30–40 cm. Repeat with the other eye.</p>
       <div className="mx-auto w-full max-w-[260px] rounded-xl bg-white p-2">
-        <svg viewBox="0 0 200 200" className="h-auto w-full" role="img" aria-label="Rejilla de Amsler">
+        <svg viewBox="0 0 200 200" className="h-auto w-full" role="img" aria-label="Amsler grid">
           {lineas.map((x) => <line key={`v${x}`} x1={x} y1="0" x2={x} y2="200" stroke="#111" strokeWidth="0.7" />)}
           {lineas.map((y) => <line key={`h${y}`} x1="0" y1={y} x2="200" y2={y} stroke="#111" strokeWidth="0.7" />)}
           <circle cx="100" cy="100" r="3" fill="#111" />
         </svg>
       </div>
-      <SiNo texto="Ojo derecho: ¿líneas onduladas, borrosas o zonas faltantes?" valor={od} onChange={setOd} />
-      <SiNo texto="Ojo izquierdo: ¿líneas onduladas, borrosas o zonas faltantes?" valor={oi} onChange={setOi} />
+      <SiNo texto="Right eye: wavy or blurry lines, or missing areas?" valor={od} onChange={setOd} />
+      <SiNo texto="Left eye: wavy or blurry lines, or missing areas?" valor={oi} onChange={setOi} />
       <button disabled={od == null || oi == null} onClick={() => onFinish({ od, oi })}
-        className="w-full rounded-xl bg-accent py-2.5 font-semibold text-onaccent hover:brightness-110 disabled:opacity-50">Guardar resultado</button>
+        className="w-full rounded-xl bg-accent py-2.5 font-semibold text-onaccent hover:brightness-110 disabled:opacity-50">Save result</button>
     </div>
   );
 }
 
 const MENSAJE_TAMIZAJE = (tipo, r) => {
   const p = r.puntaje;
-  if (tipo === "who5") return p <= UMBRALES.who5.atencion ? ["Tu bienestar está bajo. Avisé al médico de tripulación.", "warn"] : p <= UMBRALES.who5.sugierePhq9 ? ["Gracias. Te sugiero contestar el PHQ-9.", "warn"] : ["Gracias. Tu bienestar está en buen rango.", "ok"];
-  if (tipo === "phq9") return r.item9 > 0 ? ["Gracias por responder con honestidad. Avisé de inmediato al médico de tripulación; no estás solo(a).", "crit"] : p >= UMBRALES.phq9.atencion ? ["Avisé al médico de tripulación para platicar contigo.", "warn"] : ["Gracias. Tu puntaje está en rango bajo.", "ok"];
-  if (tipo === "gad7") return p >= UMBRALES.gad7.atencion ? ["Avisé al médico de tripulación para platicar contigo.", "warn"] : ["Gracias. Tu puntaje está en rango bajo.", "ok"];
-  if (tipo === "amsler") return r.od || r.oi ? ["Registré la distorsión. Se combina con tus preguntas de visión; si persiste, revísalo con el médico.", "warn"] : ["Sin distorsión en ninguno de los dos ojos.", "ok"];
-  return ["Listo, registré tu prueba.", "ok"];
+  if (tipo === "who5") return p <= UMBRALES.who5.atencion ? ["Your well-being is low. I notified the crew physician.", "warn"] : p <= UMBRALES.who5.sugierePhq9 ? ["Thank you. I suggest you answer the PHQ-9.", "warn"] : ["Thank you. Your well-being is in a good range.", "ok"];
+  if (tipo === "phq9") return r.item9 > 0 ? ["Thank you for answering honestly. I notified the crew physician right away; you are not alone.", "crit"] : p >= UMBRALES.phq9.atencion ? ["I notified the crew physician to talk with you.", "warn"] : ["Thank you. Your score is in the low range.", "ok"];
+  if (tipo === "gad7") return p >= UMBRALES.gad7.atencion ? ["I notified the crew physician to talk with you.", "warn"] : ["Thank you. Your score is in the low range.", "ok"];
+  if (tipo === "amsler") return r.od || r.oi ? ["I recorded the distortion. It is combined with your vision questions; if it persists, check it with the physician.", "warn"] : ["No distortion in either eye.", "ok"];
+  return ["Done, I recorded your test.", "ok"];
 };
 
 export function mensajeDesenlace(desenlace, alerta) {
-  if (!desenlace) return "Listo, registré tu prueba.";
+  if (!desenlace) return "Done, I recorded your test.";
   if (desenlace === "mejoro") {
-    if (!alerta) return "Tus valores están dentro de tu rango.";
-    if (alerta.estado === "critico") return "Tus valores regresaron a tu rango. Por ser una alerta crítica, el médico de tripulación decide cuándo cerrarla.";
+    if (!alerta) return "Your values are within your range.";
+    if (alerta.estado === "critico") return "Your values are back in your range. Because it is a critical alert, the crew physician decides when to close it.";
   }
   return MENSAJE_DESENLACE[desenlace];
 }
@@ -584,7 +584,7 @@ export function ResultadoMedic({ res, onCerrar }) {
           <div className="font-semibold">Medic: {res.mensaje}</div>
           <div className="mt-1 text-sm text-soft">{res.interpretacion}</div>
         </div>
-        {onCerrar && <button onClick={onCerrar} aria-label="Cerrar" className="rounded-md p-0.5 text-muted hover:bg-ink/10"><Icon name="x" size={16} /></button>}
+        {onCerrar && <button onClick={onCerrar} aria-label="Close" className="rounded-md p-0.5 text-muted hover:bg-ink/10"><Icon name="x" size={16} /></button>}
       </div>
     </div>
   );
@@ -610,16 +610,16 @@ export function PruebaRunner({ tipo, astronautId, analisis, alerta, onToast, onC
           sistema: alerta?.sistema || (tipo === "reaccion" ? "sueno" : "cardiovascular"),
           nivel: ev.nivelAlerta || "critico",
           clave: orto ? "ortostatica" : null,
-          mensaje: orto ? "Prueba ortostática positiva: hipotensión ortostática. Medic avisó al médico de tripulación" : `${PRUEBAS[tipo].nombre}: el resultado empeoró. Médico de tripulación notificado`,
+          mensaje: orto ? "Positive orthostatic test: orthostatic hypotension. Medic notified the crew physician" : `${PRUEBAS[tipo].nombre}: the result got worse. Crew physician notified`,
         });
       }
       const tam = ["who5", "phq9", "gad7", "amsler"].includes(tipo) ? MENSAJE_TAMIZAJE(tipo, r) : null;
-      const mensaje = tam ? tam[0] : tipo === "ortostatica" && ev.positiva ? "Prueba positiva (ámbar): hipotensión ortostática. Avisé al médico de tripulación." : mensajeDesenlace(ev.desenlace, alerta);
+      const mensaje = tam ? tam[0] : tipo === "ortostatica" && ev.positiva ? "Positive test (amber): orthostatic hypotension. I notified the crew physician." : mensajeDesenlace(ev.desenlace, alerta);
       const out = { ...ev, tipo, mensaje, tono: tam ? tam[1] : null, alerta: alerta?.motivo || null };
       setRes(out);
       onCompletada?.(out);
     } catch (e) {
-      onToast?.("No se pudo guardar la prueba: " + (e.message || e));
+      onToast?.("Could not save the test: " + (e.message || e));
     } finally {
       setGuardando(false);
     }
@@ -628,11 +628,11 @@ export function PruebaRunner({ tipo, astronautId, analisis, alerta, onToast, onC
   if (res)
     return (
       <div className="space-y-3">
-        {resultadoExterno ? <div className="text-sm text-muted">Prueba registrada.</div> : <ResultadoMedic res={res} />}
-        <button onClick={() => { setRes(null); setN((x) => x + 1); }} className="w-full rounded-xl border border-line py-2 text-sm hover:bg-ink/5">Repetir prueba</button>
+        {resultadoExterno ? <div className="text-sm text-muted">Test recorded.</div> : <ResultadoMedic res={res} />}
+        <button onClick={() => { setRes(null); setN((x) => x + 1); }} className="w-full rounded-xl border border-line py-2 text-sm hover:bg-ink/5">Repeat test</button>
       </div>
     );
-  if (guardando) return <div className="py-6 text-center text-muted">Guardando…</div>;
+  if (guardando) return <div className="py-6 text-center text-muted">Saving…</div>;
   const k = `${tipo}-${n}`;
   if (tipo === "remedicion") return <RemedicionTest key={k} hoy={hoy} onFinish={terminar} />;
   if (tipo === "ortostatica") return <OrtostaticaTest key={k} hoy={hoy} onFinish={terminar} />;
@@ -641,6 +641,6 @@ export function PruebaRunner({ tipo, astronautId, analisis, alerta, onToast, onC
   if (tipo === "amsler") return <AmslerTest key={k} onFinish={terminar} />;
   if (tipo === "checkin")
     return <CheckinForm key={k} astronautId={astronautId} inicial={analisis.checkinHoy} onSaved={onToast} who5Pendiente={analisis.tamizaje?.who5Pendiente}
-      onResultado={(ev) => setRes({ ...ev, mensaje: "Listo, registré tu check-in." })} />;
+      onResultado={(ev) => setRes({ ...ev, mensaje: "Done, I recorded your check-in." })} />;
   return null;
 }

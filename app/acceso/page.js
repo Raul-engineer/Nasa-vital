@@ -33,7 +33,7 @@ function Campo({ id, icono, etiqueta, error, children, ojo }) {
         <label className="sr-only" htmlFor={id}>{etiqueta}</label>
         {hijo}
         {ojo && (
-          <button type="button" className="ojo" onClick={() => setVer((v) => !v)} aria-label={ver ? "Ocultar contraseña" : "Mostrar contraseña"}>
+          <button type="button" className="ojo" onClick={() => setVer((v) => !v)} aria-label={ver ? "Hide password" : "Show password"}>
             <I n={ver ? "eyeOff" : "eye"} />
           </button>
         )}
@@ -56,9 +56,9 @@ function Login({ alEntrar, aRegistro, aviso, correoInicial }) {
   const enviar = (e) => {
     e.preventDefault();
     const er = {};
-    if (!correo.trim()) er.correo = "Escribe tu correo.";
-    else if (!correoValido(correo)) er.correo = "Ese correo no parece válido.";
-    if (!clave) er.clave = "Escribe tu contraseña.";
+    if (!correo.trim()) er.correo = "Enter your email.";
+    else if (!correoValido(correo)) er.correo = "That email does not look valid.";
+    if (!clave) er.clave = "Enter your password.";
     if (!er.correo && !er.clave) {
       const r = iniciarSesion(correo, clave, recordar);
       if (r.error) er.clave = `${r.error}.`;
@@ -81,27 +81,27 @@ function Login({ alEntrar, aRegistro, aviso, correoInicial }) {
 
   return (
     <form ref={form} onSubmit={enviar} noValidate className="aparece">
-      <Campo id="l-email" icono="mail" etiqueta="Correo electrónico" error={err.correo}>
-        <input type="email" id="l-email" placeholder="Correo electrónico" autoComplete="email" value={correo} onChange={limpiar("correo", setCorreo)} aria-invalid={!!err.correo} aria-describedby={err.correo ? "l-email-e" : undefined} />
+      <Campo id="l-email" icono="mail" etiqueta="Email" error={err.correo}>
+        <input type="email" id="l-email" placeholder="Email" autoComplete="email" value={correo} onChange={limpiar("correo", setCorreo)} aria-invalid={!!err.correo} aria-describedby={err.correo ? "l-email-e" : undefined} />
       </Campo>
-      <Campo id="l-pass" icono="lock" etiqueta="Contraseña" error={err.clave} ojo>
-        {(ver) => <input type={ver ? "text" : "password"} id="l-pass" placeholder="Contraseña" autoComplete="current-password" value={clave} onChange={limpiar("clave", setClave)} aria-invalid={!!err.clave} aria-describedby={err.clave ? "l-pass-e" : undefined} />}
+      <Campo id="l-pass" icono="lock" etiqueta="Password" error={err.clave} ojo>
+        {(ver) => <input type={ver ? "text" : "password"} id="l-pass" placeholder="Password" autoComplete="current-password" value={clave} onChange={limpiar("clave", setClave)} aria-invalid={!!err.clave} aria-describedby={err.clave ? "l-pass-e" : undefined} />}
       </Campo>
       <div className="fila">
-        <label className="check"><input type="checkbox" checked={recordar} onChange={(e) => setRecordar(e.target.checked)} /> Recordar mi correo</label>
-        <button type="button" className="enlace" onClick={() => aviso("Pide a tu médico de vuelo que restablezca tu contraseña.")}>¿Olvidaste tu contraseña?</button>
+        <label className="check"><input type="checkbox" checked={recordar} onChange={(e) => setRecordar(e.target.checked)} /> Remember my email</label>
+        <button type="button" className="enlace" onClick={() => aviso("Ask your flight surgeon to reset your password.")}>Forgot your password?</button>
       </div>
-      <button className="boton" type="submit">Iniciar sesión</button>
-      <div className="separador">o entra con una cuenta de la tripulación</div>
+      <button className="boton" type="submit">Sign in</button>
+      <div className="separador">or sign in with a crew account</div>
       <div className="demos">
         {CUENTAS_DEMO.map((c) => (
           <button key={c.correo} type="button" className="demo" onClick={() => demo(c)} title={c.correo}>
             <span className={`demo-ini ${c.rol === "medico" ? "demo-med" : ""}`}>{c.rol === "medico" ? <I n="steto" /> : iniciales(c.nombre)}</span>
-            <span>{c.rol === "medico" ? "Médico" : c.nombre.split(" ").pop()}</span>
+            <span>{c.rol === "medico" ? "Physician" : c.nombre.split(" ").pop()}</span>
           </button>
         ))}
       </div>
-      <p className="pie">¿No tienes cuenta? <button type="button" className="enlace" onClick={aRegistro}>Crea una</button></p>
+      <p className="pie">No account? <button type="button" className="enlace" onClick={aRegistro}>Create one</button></p>
     </form>
   );
 }
@@ -123,16 +123,16 @@ function Registro({ alRegistrar, aLogin }) {
   const enviar = (e) => {
     e.preventDefault();
     const er = {};
-    if (f.nombre.trim().length < 3) er.nombre = "Escribe tu nombre completo.";
-    if (!f.correo.trim()) er.correo = "Escribe tu correo.";
-    else if (!correoValido(f.correo)) er.correo = "Ese correo no parece válido.";
+    if (f.nombre.trim().length < 3) er.nombre = "Enter your full name.";
+    if (!f.correo.trim()) er.correo = "Enter your email.";
+    else if (!correoValido(f.correo)) er.correo = "That email does not look valid.";
     if (medico) {
-      if (!/^\d{7,8}$/.test(f.cedula.trim())) er.cedula = "La cédula debe tener 7 u 8 dígitos.";
-      if (!f.especialidad) er.especialidad = "Elige tu especialidad.";
-    } else if (!f.astronautId) er.astronautId = "Elige tu puesto en la tripulación.";
-    if (f.clave.length < 8) er.clave = "Usa al menos 8 caracteres.";
-    if (!f.clave2 || f.clave2 !== f.clave) er.clave2 = "Las contraseñas no coinciden.";
-    if (!terminos) er.terminos = "Debes aceptar para continuar.";
+      if (!/^\d{7,8}$/.test(f.cedula.trim())) er.cedula = "The license number must have 7 or 8 digits.";
+      if (!f.especialidad) er.especialidad = "Choose your specialty.";
+    } else if (!f.astronautId) er.astronautId = "Choose your crew position.";
+    if (f.clave.length < 8) er.clave = "Use at least 8 characters.";
+    if (!f.clave2 || f.clave2 !== f.clave) er.clave2 = "The passwords do not match.";
+    if (!terminos) er.terminos = "You must accept to continue.";
     if (!Object.values(er).some(Boolean)) {
       const r = registrar({ ...f, cedula: f.cedula.trim() });
       if (r.error) er.correo = `${r.error}.`;
@@ -147,10 +147,10 @@ function Registro({ alRegistrar, aLogin }) {
   return (
     <form ref={form} onSubmit={enviar} noValidate className="aparece">
       <fieldset className="roles">
-        <legend>¿Cómo vas a usar QuickFix?</legend>
+        <legend>How will you use QuickFix?</legend>
         {[
-          { v: "astronauta", n: "rocket", t: "Astronauta", s: "Monitorea tu salud" },
-          { v: "medico", n: "steto", t: "Médico o doctora", s: "Atiende a la tripulación" },
+          { v: "astronauta", n: "rocket", t: "Astronaut", s: "Monitor your health" },
+          { v: "medico", n: "steto", t: "Physician", s: "Care for the crew" },
         ].map((r) => (
           <label key={r.v} className="rol">
             <input type="radio" name="rol" value={r.v} checked={f.rol === r.v} onChange={cambia("rol")} />
@@ -161,52 +161,52 @@ function Registro({ alRegistrar, aLogin }) {
         ))}
       </fieldset>
 
-      <Campo id="r-nombre" icono="user" etiqueta="Nombre completo" error={err.nombre}>
-        <input type="text" id="r-nombre" placeholder="Nombre completo" autoComplete="name" value={f.nombre} onChange={cambia("nombre")} {...inv("nombre")} />
+      <Campo id="r-nombre" icono="user" etiqueta="Full name" error={err.nombre}>
+        <input type="text" id="r-nombre" placeholder="Full name" autoComplete="name" value={f.nombre} onChange={cambia("nombre")} {...inv("nombre")} />
       </Campo>
-      <Campo id="r-correo" icono="mail" etiqueta="Correo electrónico" error={err.correo}>
-        <input type="email" id="r-correo" placeholder="Correo electrónico" autoComplete="email" value={f.correo} onChange={cambia("correo")} {...inv("correo")} />
+      <Campo id="r-correo" icono="mail" etiqueta="Email" error={err.correo}>
+        <input type="email" id="r-correo" placeholder="Email" autoComplete="email" value={f.correo} onChange={cambia("correo")} {...inv("correo")} />
       </Campo>
 
       {medico ? (
         <div className="extra" key="medico">
-          <Campo id="r-cedula" icono="badge" etiqueta="Cédula profesional" error={err.cedula}>
-            <input type="text" id="r-cedula" inputMode="numeric" maxLength={8} placeholder="Cédula profesional (7 u 8 dígitos)" value={f.cedula} onChange={cambia("cedula")} {...inv("cedula")} />
+          <Campo id="r-cedula" icono="badge" etiqueta="Professional license" error={err.cedula}>
+            <input type="text" id="r-cedula" inputMode="numeric" maxLength={8} placeholder="Professional license (7 or 8 digits)" value={f.cedula} onChange={cambia("cedula")} {...inv("cedula")} />
           </Campo>
-          <Campo id="r-especialidad" icono="steto" etiqueta="Especialidad" error={err.especialidad}>
+          <Campo id="r-especialidad" icono="steto" etiqueta="Specialty" error={err.especialidad}>
             <select id="r-especialidad" value={f.especialidad} onChange={cambia("especialidad")} className={f.especialidad ? "" : "vacio"} {...inv("especialidad")}>
-              <option value="">Especialidad</option>
+              <option value="">Specialty</option>
               {ESPECIALIDADES.map((e) => <option key={e}>{e}</option>)}
             </select>
           </Campo>
-          <p className="aviso">En una misión real se verifica la cédula profesional antes de dar acceso a los datos de la tripulación.</p>
+          <p className="aviso">On a real mission the professional license is verified before granting access to crew data.</p>
         </div>
       ) : (
         <div className="extra" key="astronauta">
-          <Campo id="r-astronautId" icono="rocket" etiqueta="Puesto en la tripulación" error={err.astronautId}>
+          <Campo id="r-astronautId" icono="rocket" etiqueta="Crew position" error={err.astronautId}>
             <select id="r-astronautId" value={f.astronautId} onChange={cambia("astronautId")} className={f.astronautId ? "" : "vacio"} {...inv("astronautId")}>
-              <option value="">Puesto en la tripulación</option>
+              <option value="">Crew position</option>
               {PERFILES.map((p) => <option key={p.id} value={p.id}>{p.puesto}</option>)}
             </select>
           </Campo>
         </div>
       )}
 
-      <Campo id="r-clave" icono="lock" etiqueta="Contraseña" error={err.clave} ojo>
-        {(ver) => <input type={ver ? "text" : "password"} id="r-clave" placeholder="Contraseña (mínimo 8 caracteres)" autoComplete="new-password" value={f.clave} onChange={cambia("clave")} {...inv("clave")} />}
+      <Campo id="r-clave" icono="lock" etiqueta="Password" error={err.clave} ojo>
+        {(ver) => <input type={ver ? "text" : "password"} id="r-clave" placeholder="Password (at least 8 characters)" autoComplete="new-password" value={f.clave} onChange={cambia("clave")} {...inv("clave")} />}
       </Campo>
-      <Campo id="r-clave2" icono="lock" etiqueta="Confirmar contraseña" error={err.clave2}>
-        <input type="password" id="r-clave2" placeholder="Confirmar contraseña" autoComplete="new-password" value={f.clave2} onChange={cambia("clave2")} {...inv("clave2")} />
+      <Campo id="r-clave2" icono="lock" etiqueta="Confirm password" error={err.clave2}>
+        <input type="password" id="r-clave2" placeholder="Confirm password" autoComplete="new-password" value={f.clave2} onChange={cambia("clave2")} {...inv("clave2")} />
       </Campo>
       <div className="campo">
         <label className="check">
           <input type="checkbox" id="r-terminos" checked={terminos} onChange={(e) => { setTerminos(e.target.checked); setErr((x) => ({ ...x, terminos: "" })); }} {...inv("terminos")} />
-          <span>Acepto el aviso de privacidad y el uso de mis datos de salud con fines de seguimiento.</span>
+          <span>I accept the privacy notice and the use of my health data for monitoring purposes.</span>
         </label>
         {err.terminos && <p className="error" id="r-terminos-e" role="alert">{err.terminos}</p>}
       </div>
-      <button className="boton" type="submit">Crear cuenta</button>
-      <p className="pie">¿Ya tienes cuenta? <button type="button" className="enlace" onClick={aLogin}>Inicia sesión</button></p>
+      <button className="boton" type="submit">Create account</button>
+      <p className="pie">Already have an account? <button type="button" className="enlace" onClick={aLogin}>Sign in</button></p>
     </form>
   );
 }
@@ -243,8 +243,8 @@ export default function Acceso() {
 
   const alEntrar = (s) => {
     setExito({
-      titulo: "Sesión iniciada",
-      texto: s.rol === "medico" ? "Abriendo el panel de la tripulación…" : `Abriendo tu panel de salud, ${s.nombre.split(" ").slice(-1)[0]}…`,
+      titulo: "Signed in",
+      texto: s.rol === "medico" ? "Opening the crew panel…" : `Opening your health panel, ${s.nombre.split(" ").slice(-1)[0]}…`,
     });
     setTimeout(() => router.push(destinoDe(s)), 1000);
   };
@@ -252,9 +252,9 @@ export default function Acceso() {
   const alRegistrar = (c) => {
     setCorreoNuevo(c.correo);
     setExito({
-      titulo: "Cuenta creada",
-      texto: c.rol === "medico" ? "Ya puedes iniciar sesión y revisar a la tripulación." : "Ya puedes iniciar sesión y empezar a conocer tu cuerpo.",
-      boton: "Ir a iniciar sesión",
+      titulo: "Account created",
+      texto: c.rol === "medico" ? "You can now sign in and check on the crew." : "You can now sign in and start getting to know your body.",
+      boton: "Go to sign in",
       onBoton: () => ir("login"),
     });
   };
@@ -264,15 +264,15 @@ export default function Acceso() {
   return (
     <div className="acceso">
       <FondoGalaxia />
-      <a className="credito-video" href="https://www.pexels.com/es-es/video/galaxy-estrellas-universo-astronomia-15562120/" target="_blank" rel="noreferrer">Vídeo: Colin Jones · Pexels</a>
+      <a className="credito-video" href="https://www.pexels.com/es-es/video/galaxy-estrellas-universo-astronomia-15562120/" target="_blank" rel="noreferrer">Video: Colin Jones · Pexels</a>
       <div className="pagina">
         <section className="hero">
           <div className="marca"><LogoQuickFix alto={84} /></div>
-          <h1>Tu compañero de salud, incluso a <span className="degradado">millones de kilómetros</span></h1>
+          <h1>Your health companion, even <span className="degradado">millions of kilometers</span> away</h1>
           <ul>
-            <li>¿Cómo está mi cuerpo?</li>
-            <li>¿Estoy listo para hoy?</li>
-            <li>¿Qué hago para mantenerme sano?</li>
+            <li>How is my body doing?</li>
+            <li>Am I ready for today?</li>
+            <li>What do I do to stay healthy?</li>
           </ul>
         </section>
 
@@ -281,11 +281,11 @@ export default function Acceso() {
             <LogoIcono size={58} className="logo" />
             {!exito && (
               <>
-                <h2>{esLogin ? "Bienvenido de nuevo" : "Crea tu cuenta"}</h2>
-                <p className="sub">{nota || (esLogin ? <>Entra como astronauta a tu cuenta de <b>QuickFix</b></> : "Regístrate como astronauta o como personal médico")}</p>
-                <div className="pestanas" role="tablist" aria-label="Acceso">
-                  <button type="button" role="tab" aria-selected={esLogin} onClick={() => ir("login")}>Iniciar sesión</button>
-                  <button type="button" role="tab" aria-selected={!esLogin} onClick={() => ir("registro")}>Crear cuenta</button>
+                <h2>{esLogin ? "Welcome back" : "Create your account"}</h2>
+                <p className="sub">{nota || (esLogin ? <>Sign in as an astronaut to your <b>QuickFix</b> account</> : "Sign up as an astronaut or as medical staff")}</p>
+                <div className="pestanas" role="tablist" aria-label="Access">
+                  <button type="button" role="tab" aria-selected={esLogin} onClick={() => ir("login")}>Sign in</button>
+                  <button type="button" role="tab" aria-selected={!esLogin} onClick={() => ir("registro")}>Create account</button>
                 </div>
                 {esLogin
                   ? <Login alEntrar={alEntrar} aRegistro={() => ir("registro")} aviso={setNota} correoInicial={correoNuevo} />

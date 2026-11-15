@@ -19,7 +19,7 @@ import { useFichas, useResultados, useTripulacion } from "@/lib/useFichas";
 import { useQuickFix } from "@/lib/useQuickFix";
 
 const REUSO_MIN = 30;
-const hora = (iso) => (iso ? new Date(iso).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }) : "—");
+const hora = (iso) => (iso ? new Date(iso).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "—");
 
 const GUARDAR_REMEDIR = { fc: "fc", frec_resp: "frec_resp", spo2: "spo2", temperatura: "temperatura", who5: "who5", reaccion: "reaccion", huesosPct: "ejercicio_pct" };
 
@@ -51,7 +51,7 @@ function Fuentes({ ids }) {
   if (!partes.length) return null;
   return (
     <p className="text-[11px] leading-relaxed text-[#8f838a]">
-      Basado en: {partes.map((p, i) => (
+      Based on: {partes.map((p, i) => (
         <span key={p.texto}>
           {i > 0 && " · "}
           {p.url ? <a href={p.url} target="_blank" rel="noreferrer" className="underline decoration-dotted hover:text-soft">{p.texto}</a> : p.texto}
@@ -91,7 +91,7 @@ function useReloj(activo) {
 
 function Cuenta({ limite, ahora }) {
   const ms = limite - ahora;
-  if (ms <= 0) return <span className="font-semibold text-crit">Venció</span>;
+  if (ms <= 0) return <span className="font-semibold text-crit">Expired</span>;
   const s = Math.ceil(ms / 1000);
   const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
   const txt = h ? `${h} h ${String(m).padStart(2, "0")} min` : `${m}:${String(ss).padStart(2, "0")}`;
@@ -125,14 +125,14 @@ function Encuesta({ ev, onResponder, editando, setEditando, bloqueada }) {
           </div>
         </div>
       ) : (
-        <p className="text-sm text-ok">Encuesta completa.</p>
+        <p className="text-sm text-ok">Survey complete.</p>
       )}
       <ol className="mt-3 space-y-1">
         {lista.filter((p) => p.id in ev.respuestas && p !== actual).map((p) => (
           <li key={p.id}>
             <button type="button" onClick={() => setEditando(p.id)} className="flex w-full items-start gap-2 rounded-lg px-2 py-1 text-left text-xs text-muted hover:bg-white/[0.05]">
               <span className="min-w-0 flex-1">{p.texto}</span>
-              <span className="shrink-0 font-semibold text-soft">{RESPUESTAS[ev.respuestas[p.id]]}{ev.autos.has(p.id) ? " · según tus datos" : ""}</span>
+              <span className="shrink-0 font-semibold text-soft">{RESPUESTAS[ev.respuestas[p.id]]}{ev.autos.has(p.id) ? " · from your data" : ""}</span>
             </button>
           </li>
         ))}
@@ -154,7 +154,7 @@ function Causas({ ev }) {
           <li key={c.id} ref={ref(c.id)} data-causa={c.id} className={`rounded-xl border px-3 py-2.5 ${top ? "border-accent/60 bg-accent/10" : "border-white/10 bg-white/[0.03]"} ${c.descartarAntes ? "opacity-60" : ""}`}>
             <div className="flex items-center gap-2">
               <span className={`min-w-0 flex-1 text-sm font-semibold ${top ? "text-fg" : "text-soft"}`}>{c.nombre}</span>
-              {c.descartarAntes && <span className="text-[11px] text-warn">Primero descarta otra causa</span>}
+              {c.descartarAntes && <span className="text-[11px] text-warn">Rule out another cause first</span>}
               <span className="h-1.5 w-16 shrink-0 overflow-hidden rounded-full bg-white/10">
                 <span className="block h-full rounded-full bg-accent transition-[width] duration-300" style={{ width: `${Math.max(0, (c.puntos / max) * 100)}%` }} />
               </span>
@@ -175,7 +175,7 @@ function Paso({ paso, hecho, nota, alt, limite, ahora, onToggle, onToggleAlt, on
     return (
       <li className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
         <span className="min-w-0 flex-1 text-sm">{paso.texto}</span>
-        <button type="button" onClick={() => onAbrir?.(paso.abrir)} className="min-h-11 shrink-0 rounded-xl border border-cyan/50 px-3 text-sm font-semibold text-cyan hover:bg-cyan/10">Abrir</button>
+        <button type="button" onClick={() => onAbrir?.(paso.abrir)} className="min-h-11 shrink-0 rounded-xl border border-cyan/50 px-3 text-sm font-semibold text-cyan hover:bg-cyan/10">Open</button>
       </li>
     );
   const visible = alt || paso;
@@ -189,16 +189,16 @@ function Paso({ paso, hecho, nota, alt, limite, ahora, onToggle, onToggleAlt, on
         </button>
         <div className="min-w-0 flex-1">
           <div className={`text-sm leading-snug ${hecho ? "text-muted line-through decoration-white/30" : ""}`}>
-            {visible.obligatorio && <span className="mr-1.5 inline-block h-2 w-2 rounded-full bg-crit align-middle" title="Obligatorio" aria-label="Obligatorio" />}
+            {visible.obligatorio && <span className="mr-1.5 inline-block h-2 w-2 rounded-full bg-crit align-middle" title="Required" aria-label="Required" />}
             {visible.texto}
           </div>
           {alt && <div className="mt-0.5 text-xs text-muted line-through decoration-white/20">{paso.texto}</div>}
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-            {(alt ? alt.minutos : paso.minutos) != null && !hecho && limite && <span className="text-muted">Tiempo: <Cuenta limite={limite} ahora={ahora} /></span>}
-            {paso.href && !alt && <Link href={paso.href} className="font-semibold text-cyan hover:underline">Ir a la prueba</Link>}
-            {nota && <span className="text-warn" data-motivo={nota.motivo}>{textoMotivo(nota.motivo)}{nota.posponer ? ` · pospuesto ${nota.posponer} min` : ""}{nota.hora ? ` · tomado a las ${nota.hora}: no repetir` : ""}{nota.cola ? " · reporte en cola" : ""}</span>}
+            {(alt ? alt.minutos : paso.minutos) != null && !hecho && limite && <span className="text-muted">Time: <Cuenta limite={limite} ahora={ahora} /></span>}
+            {paso.href && !alt && <Link href={paso.href} className="font-semibold text-cyan hover:underline">Go to the test</Link>}
+            {nota && <span className="text-warn" data-motivo={nota.motivo}>{textoMotivo(nota.motivo)}{nota.posponer ? ` · postponed ${nota.posponer} min` : ""}{nota.hora ? ` · taken at ${nota.hora}: do not repeat` : ""}{nota.cola ? " · report queued" : ""}</span>}
             {!hecho && !deshabilitado && !bloqueado && (
-              <button type="button" onClick={() => setMenu((x) => !x)} className="text-muted underline decoration-dotted hover:text-soft">No puedo hacer este paso</button>
+              <button type="button" onClick={() => setMenu((x) => !x)} className="text-muted underline decoration-dotted hover:text-soft">I can't do this step</button>
             )}
           </div>
           {menu && (
@@ -210,8 +210,8 @@ function Paso({ paso, hecho, nota, alt, limite, ahora, onToggle, onToggleAlt, on
           )}
           {pidiendoHora && (
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <label className="text-xs text-muted">¿A qué hora lo tomaste? <input type="time" value={horaTome} onChange={(e) => setHoraTome(e.target.value)} className="campo ml-1 min-h-11" /></label>
-              <button type="button" disabled={!horaTome} onClick={() => { setPidiendoHora(false); onNoPuedo("ya_tome", { hora: horaTome }); }} className="min-h-11 rounded-xl border border-white/15 px-3 text-xs font-semibold text-soft hover:bg-white/10 disabled:opacity-40">Guardar hora</button>
+              <label className="text-xs text-muted">What time did you take it? <input type="time" value={horaTome} onChange={(e) => setHoraTome(e.target.value)} className="campo ml-1 min-h-11" /></label>
+              <button type="button" disabled={!horaTome} onClick={() => { setPidiendoHora(false); onNoPuedo("ya_tome", { hora: horaTome }); }} className="min-h-11 rounded-xl border border-white/15 px-3 text-xs font-semibold text-soft hover:bg-white/10 disabled:opacity-40">Save time</button>
             </div>
           )}
         </div>
@@ -225,7 +225,7 @@ function alergiaDe(med, alergias = []) {
   for (const a of alergias || []) {
     const s = String(a?.sustancia || a || "").toLowerCase();
     if (!s) continue;
-    if (n.includes(s.split(" ")[0]) || (med.grupo === "penicilina" && /penicilina|amoxicilina/.test(s)) || (med.grupo === "aine" && /ibuprofeno|aine/.test(s))) return a.sustancia || s;
+    if (n.includes(s.split(" ")[0]) || (med.grupo === "penicilina" && /penicilina|amoxicilina|penicillin|amoxicillin/.test(s)) || (med.grupo === "aine" && /ibuprofeno|aine|ibuprofen|nsaid/.test(s))) return a.sustancia || s;
   }
   return null;
 }
@@ -252,7 +252,7 @@ function Remedir({ clave, ev, contexto, inicial, onResultado, deshabilitado }) {
   const r = ev.ficha.remedir || {};
   return (
     <div data-remedir>
-      <p className="mb-3 text-sm text-soft">{r.minutos ? `Vuelve a medir en ${r.minutos >= 60 ? `${Math.round(r.minutos / 60)} h` : `${r.minutos} min`}. ` : ""}Se cierra si: {r.cierra}.</p>
+      <p className="mb-3 text-sm text-soft">{r.minutos ? `Measure again in ${r.minutos >= 60 ? `${Math.round(r.minutos / 60)} h` : `${r.minutos} min`}. ` : ""}It closes if: {r.cierra}.</p>
       {campos.length > 0 && (
         <div className="mb-3 grid grid-cols-2 gap-2">
           {campos.map((c) => (
@@ -265,13 +265,13 @@ function Remedir({ clave, ev, contexto, inicial, onResultado, deshabilitado }) {
         </div>
       )}
       <div className="flex flex-wrap gap-2">
-        {campos.length > 0 && <CyberButton onClick={() => comparar(false)} disabled={deshabilitado || campos.every((c) => vals[c.campo] == null || vals[c.campo] === "")} texto="Comparar">Comparar</CyberButton>}
-        <CyberButton onClick={() => comparar(true)} disabled={deshabilitado} tam="sm" texto="Usar la lectura más reciente">Usar la lectura más reciente</CyberButton>
+        {campos.length > 0 && <CyberButton onClick={() => comparar(false)} disabled={deshabilitado || campos.every((c) => vals[c.campo] == null || vals[c.campo] === "")} texto="Compare">Compare</CyberButton>}
+        <CyberButton onClick={() => comparar(true)} disabled={deshabilitado} tam="sm" texto="Use the latest reading">Use the latest reading</CyberButton>
       </div>
       {error && <p className="mt-3 text-sm font-semibold text-warn" data-revisa-sensor>{error}</p>}
       {res && (
         <p className={`mt-3 text-sm font-semibold ${res === "resuelto" ? "text-ok" : res === "peor" ? "text-crit" : "text-warn"}`} data-resultado-remedir={res}>
-          {res === "resuelto" ? "Regresó a tu rango: resuelto." : res === "peor" ? "Empeoró: sube un nivel. Revisa las señales de peligro." : "Sigue igual: continúa el plan."}
+          {res === "resuelto" ? "Back in your range: resolved." : res === "peor" ? "Worse: it goes up one level. Check the danger signs." : "No change: keep following the plan."}
         </p>
       )}
     </div>
@@ -348,7 +348,7 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
       combinaciones: ev.combinaciones,
     })
       .then(() => db.refresh())
-      .catch((e) => setMensaje(`No se pudo abrir el registro: ${e?.message || e}`))
+      .catch((e) => setMensaje(`Could not open the log: ${e?.message || e}`))
       .finally(() => { creando.current = false; });
   }, [ev?.nivel, db.listo, evento?.id, clave, aid]);
 
@@ -377,7 +377,7 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
       await guardarRespuestas(evento.id, r);
       await db.refresh();
     } catch (e) {
-      setMensaje(`No se pudo guardar: ${e?.message || e}`);
+      setMensaje(`Could not save: ${e?.message || e}`);
     }
     setOptimista(null);
   };
@@ -411,7 +411,7 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
       await guardarRespuestas(evento.id, toque(evento.respuestas || {}));
       await db.refresh();
     } catch (e) {
-      setMensaje(`No se pudo marcar: ${e?.message || e}`);
+      setMensaje(`Could not check it: ${e?.message || e}`);
     }
   };
   const alternarAlt = async (paso) => {
@@ -424,7 +424,7 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
       await guardarRespuestas(evento.id, toque(evento.respuestas || {}));
       await db.refresh();
     } catch (e) {
-      setMensaje(`No se pudo marcar: ${e?.message || e}`);
+      setMensaje(`Could not check it: ${e?.message || e}`);
     }
   };
   const noPuedo = async (paso, motivo, extra = {}) => {
@@ -441,22 +441,22 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
         nivelNuevo = res.escalar === "subir" ? subirNivel(actual) : mayorNivel(actual, res.escalar);
         mm.nivelMin = nivelNuevo;
       }
-      if (res.escalar || res.avisoOficial) mm.avisos = [...(mm.avisos || []), { id: `motivo.${paso.id}.${Date.now()}`, t, nivel: nivelNuevo || ev.nivel, sonar: !!res.escalar, texto: `${TITULOS[clave]}: ${textoMotivo(motivo).toLowerCase()} en "${paso.texto}". ${res.avisoOficial ? "Aviso al oficial médico." : ""}${nivelNuevo ? ` Sube a ${ETIQUETA_NIVEL[nivelNuevo]}.` : ""}` }].slice(-30);
+      if (res.escalar || res.avisoOficial) mm.avisos = [...(mm.avisos || []), { id: `motivo.${paso.id}.${Date.now()}`, t, nivel: nivelNuevo || ev.nivel, sonar: !!res.escalar, texto: `${TITULOS[clave]}: ${textoMotivo(motivo).toLowerCase()} on "${paso.texto}". ${res.avisoOficial ? "Notice to the medical officer." : ""}${nivelNuevo ? ` Goes up to ${ETIQUETA_NIVEL[nivelNuevo]}.` : ""}` }].slice(-30);
       await actualizarEventoFicha(evento.id, { ...(nivelNuevo ? { nivel: nivelNuevo } : {}), respuestas: toque({ ...(evento.respuestas || {}), _m: mm }) });
       await db.refresh();
       setMensaje(res.texto);
       if (res.abrir && onAbrir) setTimeout(() => onAbrir(res.abrir), 600);
     } catch (e) {
-      setMensaje(`No se pudo guardar: ${e?.message || e}`);
+      setMensaje(`Could not save: ${e?.message || e}`);
     }
   };
   const tome = async (nombre) => {
     try {
       await registrarMedicamento(aid, nombre);
       await db.refresh();
-      setMensaje(`Registrado: ${nombre} · ${hora(new Date().toISOString())}`);
+      setMensaje(`Recorded: ${nombre} · ${hora(new Date().toISOString())}`);
     } catch (e) {
-      setMensaje(`No se pudo registrar: ${e?.message || e}`);
+      setMensaje(`Could not record it: ${e?.message || e}`);
     }
   };
   const guardarLectura = async (nueva) => {
@@ -468,7 +468,7 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
   };
   const alRemedir = async (r, nueva, usarActual) => {
     if (!evento) return;
-    if (!usarActual) await guardarLectura(nueva).catch((e) => setMensaje(`No se pudo guardar la lectura: ${e?.message || e}`));
+    if (!usarActual) await guardarLectura(nueva).catch((e) => setMensaje(`Could not save the reading: ${e?.message || e}`));
     const mm = { ...(evento.respuestas?._m || {}) };
     if (clave === "spo2" && nueva?.spo2 != null && (CAMPOS_REMEDIR.spo2[0].campo in nueva)) mm.oximetro = nueva.spo2;
     mm.remediciones = [...(mm.remediciones || []), { t: new Date().toISOString(), resultado: r.resultado, lectura: r.lectura }].slice(-10);
@@ -479,7 +479,7 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
         const nivel = subirNivel(mayorNivel(ev.nivel, mm.nivelMin || "ok"));
         mm.nivelMin = nivel;
         mm.peor = true;
-        mm.avisos = [...(mm.avisos || []), { id: `peor.${Date.now()}`, t: new Date().toISOString(), nivel, sonar: true, texto: `${TITULOS[clave]}: empeoró al volver a medir. Sube a ${ETIQUETA_NIVEL[nivel]}.` }].slice(-30);
+        mm.avisos = [...(mm.avisos || []), { id: `peor.${Date.now()}`, t: new Date().toISOString(), nivel, sonar: true, texto: `${TITULOS[clave]}: worse on re-measurement. Goes up to ${ETIQUETA_NIVEL[nivel]}.` }].slice(-30);
         await actualizarEventoFicha(evento.id, { nivel, respuestas: toque({ ...(evento.respuestas || {}), _m: mm }) });
       } else if (r.resultado === "resuelto" && !(clave === "spo2" && ev.nivel === "critico" && nueva?.spo2 < 90)) {
         await actualizarEventoFicha(evento.id, { respuestas: toque({ ...(evento.respuestas || {}), _m: mm }) });
@@ -488,7 +488,7 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
       } else await actualizarEventoFicha(evento.id, { respuestas: toque({ ...(evento.respuestas || {}), _m: mm }) });
       await db.refresh();
     } catch (e) {
-      setMensaje(`No se pudo guardar: ${e?.message || e}`);
+      setMensaje(`Could not save: ${e?.message || e}`);
     }
   };
   const cancelar = async () => {
@@ -519,8 +519,8 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
   const peligrosVisibles = ev ? ev.ficha.peligro.filter((p) => !p.dato) : [];
 
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={`Ficha: ${TITULOS[clave]}`} data-ficha={clave}>
-      <button type="button" aria-label="Cerrar ficha" onClick={cerrar} className="ficha-fondo absolute inset-0 hidden bg-black/45 min-[1100px]:block" />
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={`Card: ${TITULOS[clave]}`} data-ficha={clave}>
+      <button type="button" aria-label="Close card" onClick={cerrar} className="ficha-fondo absolute inset-0 hidden bg-black/45 min-[1100px]:block" />
       <div ref={panel} className="ficha-panel ficha-cyber glass absolute inset-0 overflow-y-auto overscroll-contain rounded-none min-[1100px]:inset-y-3 min-[1100px]:left-auto min-[1100px]:right-3 min-[1100px]:w-[520px]"
         style={{ "--nivel": color }}>
         <header className="sticky top-0 z-10 flex items-start gap-3 border-b border-white/10 bg-[#17131a]/85 px-5 py-4 backdrop-blur-md">
@@ -529,28 +529,28 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
             <h2 className="font-display text-xl font-semibold leading-tight">{ev?.titulo || TITULOS[clave]}</h2>
             <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-muted">
               {ev && <Nivel nivel={nivel} grande />}
-              {evento && <span>Abierta {hora(evento.abierto_en)}</span>}
-              {m.reusado && <span>· Usamos tus respuestas recientes</span>}
+              {evento && <span>Opened {hora(evento.abierto_en)}</span>}
+              {m.reusado && <span>· We used your recent answers</span>}
             </div>
           </div>
-          <button type="button" onClick={cerrar} aria-label="Cerrar" className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.06] text-xl text-soft hover:bg-white/[0.12] hover:text-fg">×</button>
+          <button type="button" onClick={cerrar} aria-label="Close" className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.06] text-xl text-soft hover:bg-white/[0.12] hover:text-fg">×</button>
         </header>
 
         {cargando ? (
-          <div className="px-5 py-10 text-center text-muted">Cargando ficha…</div>
+          <div className="px-5 py-10 text-center text-muted">Loading card…</div>
         ) : (
           <>
             {ultimoCerrado?.cierre === "resuelto" && (
-              <div className="mx-5 mt-4 rounded-2xl border border-ok/50 bg-ok/10 px-4 py-3 text-sm font-semibold text-ok" data-resuelto>✓ Resuelto a las {hora(ultimoCerrado.cerrado_en)}</div>
+              <div className="mx-5 mt-4 rounded-2xl border border-ok/50 bg-ok/10 px-4 py-3 text-sm font-semibold text-ok" data-resuelto>✓ Resolved at {hora(ultimoCerrado.cerrado_en)}</div>
             )}
 
             {ev.combinaciones.length > 0 && (
               <div className="mx-5 mt-4 rounded-2xl border border-white/12 bg-white/[0.05] px-4 py-3" data-combinaciones>
-                <div className="mb-1.5 text-xs font-semibold text-soft">Se junta con:</div>
+                <div className="mb-1.5 text-xs font-semibold text-soft">Combines with:</div>
                 <ul className="space-y-2">
                   {ev.combinaciones.map((c) => (
                     <li key={c.id} className="text-sm" data-combinacion={c.id}>
-                      <div className="flex flex-wrap items-center gap-2"><span className="font-semibold">{c.titulo}</span><Nivel nivel={c.nivel} etiqueta={c.nivel === "info" ? "Aviso" : null} />{c.todos && <span className="text-[11px] text-muted">Toda la tripulación</span>}</div>
+                      <div className="flex flex-wrap items-center gap-2"><span className="font-semibold">{c.titulo}</span><Nivel nivel={c.nivel} etiqueta={c.nivel === "info" ? "Notice" : null} />{c.todos && <span className="text-[11px] text-muted">Whole crew</span>}</div>
                       <p className="mt-0.5 text-xs text-muted">{c.significado}</p>
                       <Fuentes ids={c.fuente.split(",")} />
                     </li>
@@ -561,21 +561,21 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
 
             {ev.peligros.length > 0 ? (
               <div className="ficha-peligro mx-5 mt-4 rounded-2xl border border-crit/70 bg-crit/15 px-4 py-3" role="alert" data-peligro>
-                <div className="mb-1 text-sm font-bold uppercase tracking-wide text-crit">Señal de peligro</div>
+                <div className="mb-1 text-sm font-bold uppercase tracking-wide text-crit">Danger sign</div>
                 <ul className="space-y-1 text-sm">
                   {ev.peligros.map((p) => <li key={p.id}>• {p.texto}</li>)}
                 </ul>
-                {respuestas._peligro && <button type="button" onClick={quitarPeligro} className="mt-2 text-xs text-muted underline">Me equivoqué</button>}
+                {respuestas._peligro && <button type="button" onClick={quitarPeligro} className="mt-2 text-xs text-muted underline">I made a mistake</button>}
               </div>
             ) : (
               ev.modo === "normal" && peligrosVisibles.length > 0 && (
                 <div className={`mx-5 mt-4 rounded-2xl border px-4 py-3 ${m.peor ? "border-crit/60 bg-crit/10" : "border-white/10 bg-white/[0.03]"}`} data-senales>
-                  <div className={`mb-1.5 text-xs font-semibold ${m.peor ? "text-crit" : "text-soft"}`}>{m.peor ? "Te sientes peor: ¿tienes alguna de estas señales?" : "Señales de peligro"}</div>
+                  <div className={`mb-1.5 text-xs font-semibold ${m.peor ? "text-crit" : "text-soft"}`}>{m.peor ? "You feel worse: do you have any of these signs?" : "Danger signs"}</div>
                   <ul className="space-y-1.5">
                     {peligrosVisibles.map((p) => (
                       <li key={p.id} className="flex items-center gap-2 text-sm">
                         <span className="min-w-0 flex-1 text-soft">{p.texto}</span>
-                        <button type="button" onClick={() => marcarPeligro(p.id)} className="min-h-11 shrink-0 rounded-xl border border-crit/50 px-3 text-xs font-semibold text-crit hover:bg-crit/10">Tengo esto</button>
+                        <button type="button" onClick={() => marcarPeligro(p.id)} className="min-h-11 shrink-0 rounded-xl border border-crit/50 px-3 text-xs font-semibold text-crit hover:bg-crit/10">I have this</button>
                       </li>
                     ))}
                   </ul>
@@ -584,8 +584,8 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
             )}
 
             {ev.modo === "conductual" ? (
-              <Seccion titulo="Salud conductual">
-                <p className="mb-4 font-display text-lg leading-snug">Vamos a conectarte ahora con el equipo de salud conductual.</p>
+              <Seccion titulo="Behavioral health">
+                <p className="mb-4 font-display text-lg leading-snug">We will connect you now with the behavioral health team.</p>
                 <ul className="space-y-2">
                   {ev.planes[0].pasos.map((p) => (
                     <Paso key={p.id} paso={p} hecho={hechos.has(p.id)} nota={notaDe(p.id)} alt={altDe(p.id)} limite={limiteDe(p)} ahora={ahora} onToggle={() => alternar(p)} onToggleAlt={() => alternarAlt(p)} onNoPuedo={(mo, ex) => noPuedo(p, mo, ex)} deshabilitado={sinEvento} />
@@ -594,7 +594,7 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
               </Seccion>
             ) : (
               <>
-                <Seccion titulo="Qué está pasando">
+                <Seccion titulo="What is happening">
                   <p className="text-[15px] leading-snug" data-frase>{ev.frase}</p>
                   {ev.causaProbable && <p className="mt-2 text-[15px] font-semibold text-accent" data-causa-probable>{ev.causaProbable}.</p>}
                   {ev.contexto && <p className="mt-2 text-xs leading-snug text-muted">{ev.contexto}</p>}
@@ -602,18 +602,18 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
                   {ev.exclusion && (
                     <div className="mt-3 flex items-center gap-2 rounded-xl border border-warn/50 bg-warn/10 px-3 py-2 text-sm text-warn">
                       <span className="min-w-0 flex-1">{ev.exclusion.texto}</span>
-                      {onAbrir && <button type="button" onClick={() => onAbrir(ev.exclusion.abrir)} className="min-h-11 shrink-0 rounded-xl border border-warn/60 px-3 text-xs font-semibold">Abrir {TITULOS[ev.exclusion.abrir]}</button>}
+                      {onAbrir && <button type="button" onClick={() => onAbrir(ev.exclusion.abrir)} className="min-h-11 shrink-0 rounded-xl border border-warn/60 px-3 text-xs font-semibold">Open {TITULOS[ev.exclusion.abrir]}</button>}
                     </div>
                   )}
                 </Seccion>
 
                 {deLaFicha.length > 0 && (
-                  <Seccion titulo="Resultado de la prueba">
+                  <Seccion titulo="Test result">
                     <ul className="space-y-2" data-resultados-ficha>
                       {deLaFicha.map((r) => (
                         <li key={r.id} className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm" data-resultado-prueba={r.prueba_id}>
                           <div className="flex flex-wrap items-center gap-2"><span className="font-semibold">{PRUEBAS_POR_ID[r.prueba_id]?.nombre || r.prueba_id}</span><Nivel nivel={r.nivel} /><span className="text-xs text-muted">{hora(r.hecho_en)}</span></div>
-                          <p className="mt-0.5 text-soft">Resultado de la prueba: {r.valor?.resultado?.texto}</p>
+                          <p className="mt-0.5 text-soft">Test result: {r.valor?.resultado?.texto}</p>
                         </li>
                       ))}
                     </ul>
@@ -622,7 +622,7 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
 
                 {completa?.mostrar && evento && ev.modo !== "conductual" && (
                   <div className="mx-5 my-4 rounded-2xl border border-cyan/50 bg-cyan/[0.07] px-4 py-3" data-prueba-completa>
-                    <div className="text-sm font-semibold text-fg">Hacer prueba completa</div>
+                    <div className="text-sm font-semibold text-fg">Take the full test</div>
                     <p className="mt-0.5 text-xs text-muted">{completa.motivos.join(" · ")}</p>
                     <div className="mt-2.5 flex flex-wrap gap-2">
                       {completa.pruebas.map((id) => PRUEBAS_POR_ID[id] && (
@@ -633,54 +633,54 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
                 )}
 
                 {ev.modo === "alarma" && (
-                  <Seccion titulo="Alarma de la nave">
-                    <p className="mb-3 text-sm font-semibold text-crit">Sigue el procedimiento de la nave. Confirma cuando estés a salvo.</p>
+                  <Seccion titulo="Ship alarm">
+                    <p className="mb-3 text-sm font-semibold text-crit">Follow the ship procedure. Confirm when you are safe.</p>
                     <ul className="mb-3 space-y-1.5">
                       {trip.map((x) => (
                         <li key={x.id} className="flex items-center justify-between rounded-xl border border-white/10 px-3 py-2 text-sm" data-a-salvo={x.id}>
                           <span>{x.nombre}</span>
-                          {salvo(x) ? <span className="font-semibold text-ok">A salvo · {hora(salvo(x))}</span> : <span className="text-muted">Sin confirmar</span>}
+                          {salvo(x) ? <span className="font-semibold text-ok">Safe · {hora(salvo(x))}</span> : <span className="text-muted">Not confirmed</span>}
                         </li>
                       ))}
                     </ul>
-                    <CyberButton onClick={() => setEnVivo(aid, "a_salvo", new Date().toISOString()).catch(() => {})} texto="Estoy a salvo">Estoy a salvo</CyberButton>
+                    <CyberButton onClick={() => setEnVivo(aid, "a_salvo", new Date().toISOString()).catch(() => {})} texto="I am safe">I am safe</CyberButton>
                   </Seccion>
                 )}
 
                 {ev.modo !== "alarma" && m.huboAlarma && (
-                  <Seccion titulo="Revisión de vitales por tripulante">
+                  <Seccion titulo="Vital signs check by crew member">
                     <ul className="space-y-1.5">
                       {trip.map((x) => (
                         <li key={x.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm">
                           <span>{x.nombre}</span>
-                          <span className="text-xs text-muted">FC {x.lectura.fc ?? "—"} · SpO₂ {x.lectura.spo2 ?? "—"} % · FR {x.lectura.frec_resp ?? "—"}</span>
+                          <span className="text-xs text-muted">HR {x.lectura.fc ?? "—"} · SpO₂ {x.lectura.spo2 ?? "—"} % · RR {x.lectura.frec_resp ?? "—"}</span>
                         </li>
                       ))}
                     </ul>
-                    <Link href={`/tripulacion?a=${aid}`} className="mt-2 inline-block text-xs font-semibold text-cyan hover:underline">Abrir Tripulación</Link>
+                    <Link href={`/tripulacion?a=${aid}`} className="mt-2 inline-block text-xs font-semibold text-cyan hover:underline">Open Crew</Link>
                   </Seccion>
                 )}
 
                 {ev.preguntas.length > 0 && (
-                  <Seccion titulo="Encuesta">
+                  <Seccion titulo="Survey">
                     <Encuesta ev={ev} onResponder={responder} editando={editando} setEditando={setEditando} />
                   </Seccion>
                 )}
 
                 {ev.modo === "normal" && (
-                  <Seccion titulo="Causas">
+                  <Seccion titulo="Causes">
                     <Causas ev={ev} />
                   </Seccion>
                 )}
 
-                <Seccion titulo={ev.modo === "emergencia" ? "Plan de emergencia" : "Plan"} extra={unicos.length > 0 && <span className="text-xs text-muted" data-progreso-plan>{nHechos} de {unicos.length} pasos</span>}>
+                <Seccion titulo={ev.modo === "emergencia" ? "Emergency plan" : "Plan"} extra={unicos.length > 0 && <span className="text-xs text-muted" data-progreso-plan>{nHechos} of {unicos.length} steps</span>}>
                   {unicos.length > 0 && (
                     <span className="mb-3 block h-1.5 overflow-hidden rounded-full bg-white/10">
                       <span className="block h-full rounded-full bg-ok transition-[width] duration-300" style={{ width: `${(nHechos / unicos.length) * 100}%` }} />
                     </span>
                   )}
-                  {ev.empate && ev.modo === "normal" && <p className="mb-2 text-xs text-muted">Hay un empate: sigue los dos planes; manda la causa que se resuelva al volver a medir.</p>}
-                  {sinEvento && <p className="mb-2 text-xs text-muted">Esta métrica está en rango; el plan queda como guía.</p>}
+                  {ev.empate && ev.modo === "normal" && <p className="mb-2 text-xs text-muted">There is a tie: follow both plans; the cause that resolves on re-measurement wins.</p>}
+                  {sinEvento && <p className="mb-2 text-xs text-muted">This metric is in range; the plan stays as a guide.</p>}
                   <div className="space-y-4">
                     {ev.planes.map((pl) => (
                       <div key={pl.causa.id}>
@@ -697,8 +697,8 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
                 </Seccion>
 
                 {ev.modo !== "emergencia" && (
-                  <Seccion titulo="Botiquín de la NASA">
-                    {ev.botiquin.length === 0 && <p className="text-sm text-soft">{ev.ficha.sinPrimeraLinea || "Sin medicamento para este caso."}</p>}
+                  <Seccion titulo="NASA medical kit">
+                    {ev.botiquin.length === 0 && <p className="text-sm text-soft">{ev.ficha.sinPrimeraLinea || "No medication for this case."}</p>}
                     {ev.ficha.sinPrimeraLinea && ev.botiquin.length > 0 && <p className="mb-2 text-sm text-soft">{ev.ficha.sinPrimeraLinea}</p>}
                     <ul className="space-y-2">
                       {ev.botiquin.map((med) => {
@@ -710,12 +710,12 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
                               <div className="min-w-0 flex-1">
                                 <div className="text-sm font-semibold">{med.nombre}</div>
                                 <div className="text-xs text-muted">{med.paquete} · {med.uso}</div>
-                                <div className={`mt-0.5 text-xs ${med.libre ? "text-ok" : "text-soft"}`}>{med.libre ? "Puedes tomarlo por tu cuenta" : ev.ficha.textoNoLibre || TEXTO_NO_LIBRE}</div>
+                                <div className={`mt-0.5 text-xs ${med.libre ? "text-ok" : "text-soft"}`}>{med.libre ? "You can take it on your own" : ev.ficha.textoNoLibre || TEXTO_NO_LIBRE}</div>
                                 {med.advertencia && <div className="mt-0.5 text-xs text-warn">{med.advertencia}</div>}
-                                {al && <div className="mt-0.5 text-xs font-semibold text-crit">⚠ Alergia registrada: {al}</div>}
-                                {tomado && <div className="mt-0.5 text-xs text-cyan">Tomado a las {hora(tomado.tomado_en)}</div>}
+                                {al && <div className="mt-0.5 text-xs font-semibold text-crit">⚠ Recorded allergy: {al}</div>}
+                                {tomado && <div className="mt-0.5 text-xs text-cyan">Taken at {hora(tomado.tomado_en)}</div>}
                               </div>
-                              <button type="button" onClick={() => tome(med.nombre)} className="min-h-11 shrink-0 rounded-xl border border-white/15 px-3 text-xs font-semibold text-soft hover:bg-white/10">Tomé este medicamento</button>
+                              <button type="button" onClick={() => tome(med.nombre)} className="min-h-11 shrink-0 rounded-xl border border-white/15 px-3 text-xs font-semibold text-soft hover:bg-white/10">I took this medication</button>
                             </div>
                           </li>
                         );
@@ -727,17 +727,17 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
                 )}
 
                 {ev.modo !== "alarma" && (
-                  <Seccion titulo="Volver a medir">
+                  <Seccion titulo="Measure again">
                     <Remedir key={`${clave}-${evento?.id || "x"}`} clave={clave} ev={ev} contexto={calc.contexto} inicial={m.lecturaInicial} onResultado={alRemedir} deshabilitado={sinEvento} />
                   </Seccion>
                 )}
               </>
             )}
 
-            <Seccion titulo="Cuándo escalar">
+            <Seccion titulo="When to escalate">
               <ul className="space-y-1.5">
                 {ev.ficha.escalar.map((e) => (
-                  <li key={e.texto} className="flex items-start gap-2 text-sm"><Nivel nivel={e.nivel} etiqueta={e.nivel === "info" ? "Aviso" : null} /><span className="min-w-0 flex-1 text-soft">{e.texto}</span></li>
+                  <li key={e.texto} className="flex items-start gap-2 text-sm"><Nivel nivel={e.nivel} etiqueta={e.nivel === "info" ? "Notice" : null} /><span className="min-w-0 flex-1 text-soft">{e.texto}</span></li>
                 ))}
               </ul>
             </Seccion>
@@ -745,7 +745,7 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
             <div className="border-t border-white/10 px-5 py-4">
               <Fuentes ids={fuentes} />
               {evento && (
-                <button type="button" onClick={cancelar} className="mt-3 min-h-11 rounded-xl border border-white/12 px-3 text-xs font-semibold text-muted hover:text-soft" data-accion="cancelar-ficha">Cerrar sin resolver</button>
+                <button type="button" onClick={cancelar} className="mt-3 min-h-11 rounded-xl border border-white/12 px-3 text-xs font-semibold text-muted hover:text-soft" data-accion="cancelar-ficha">Close without resolving</button>
               )}
             </div>
           </>

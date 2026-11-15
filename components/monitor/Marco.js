@@ -33,7 +33,7 @@ export function useMovimientoReducido() {
   return r;
 }
 
-export function Marco({ titulo, color, valor, unidad, sub, extra, children, etiquetaVivo = "EN VIVO", alto = 176 }) {
+export function Marco({ titulo, color, valor, unidad, sub, extra, children, etiquetaVivo = "LIVE", alto = 176 }) {
   return (
     <section data-theme="dark" aria-label={`Monitor: ${titulo}`}
       className="relative overflow-hidden rounded-2xl border"

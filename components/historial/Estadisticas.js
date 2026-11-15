@@ -13,13 +13,13 @@ import { loadData } from "@/lib/data";
 import { useFichas, useHistorialPruebas } from "@/lib/useFichas";
 import { tooltipEstilo, useTheme } from "@/lib/theme";
 
-const RANGOS = [[7, "7 días"], [30, "30 días"], [null, "Toda la misión"]];
-const PESTANAS = [["corazon", "Corazón y respiración"], ["mente", "Mente y defensas"], ["espacio", "Efectos del espacio"], ["diario", "Diario"], ["completo", "Completo"], ["historia", "Historia clínica"]];
-const DIAS_SEM = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-const fFecha = (f) => new Date(f + "T12:00:00").toLocaleDateString("es-MX", { day: "numeric", month: "short" });
+const RANGOS = [[7, "7 days"], [30, "30 days"], [null, "Whole mission"]];
+const PESTANAS = [["corazon", "Heart and breathing"], ["mente", "Mind and defenses"], ["espacio", "Space effects"], ["diario", "Daily"], ["completo", "Complete"], ["historia", "Medical history"]];
+const DIAS_SEM = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const fFecha = (f) => new Date(f + "T12:00:00").toLocaleDateString("en-US", { day: "numeric", month: "short" });
 const hace = (iso) => {
   const d = Math.floor((Date.now() - Date.parse(iso)) / 864e5);
-  return d <= 0 ? "hoy" : d === 1 ? "ayer" : `hace ${d} días`;
+  return d <= 0 ? "today" : d === 1 ? "yesterday" : `${d} days ago`;
 };
 
 function Calendario({ mapa, dias, onDia, sel, marcados = null }) {
@@ -39,9 +39,9 @@ function Calendario({ mapa, dias, onDia, sel, marcados = null }) {
   return (
     <div data-calendario-categoria>
       <div className="mb-2 flex items-center justify-between">
-        <button type="button" onClick={() => mover(-1)} className="h-10 w-10 rounded-lg border border-line hover:bg-white/5" aria-label="Mes anterior">‹</button>
-        <div className="font-semibold capitalize">{primero.toLocaleDateString("es-MX", { month: "long", year: "numeric" })}</div>
-        <button type="button" onClick={() => mover(1)} className="h-10 w-10 rounded-lg border border-line hover:bg-white/5" aria-label="Mes siguiente">›</button>
+        <button type="button" onClick={() => mover(-1)} className="h-10 w-10 rounded-lg border border-line hover:bg-white/5" aria-label="Previous month">‹</button>
+        <div className="font-semibold capitalize">{primero.toLocaleDateString("en-US", { month: "long", year: "numeric" })}</div>
+        <button type="button" onClick={() => mover(1)} className="h-10 w-10 rounded-lg border border-line hover:bg-white/5" aria-label="Next month">›</button>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center text-[11px] text-muted">{DIAS_SEM.map((d) => <div key={d}>{d}</div>)}</div>
       <div className="mt-1 grid grid-cols-7 gap-1">
@@ -61,7 +61,7 @@ function Calendario({ mapa, dias, onDia, sel, marcados = null }) {
       </div>
       <div className="mt-2 flex flex-wrap gap-3 text-[11px] text-muted">
         {["ok", "critico", "urgente", "moderado", "info"].map((n) => <span key={n} className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: COLOR_NIVEL[n] }} />{ETIQUETA_NIVEL[n]}</span>)}
-        {marcados && <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-cyan" />Prueba hecha</span>}
+        {marcados && <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-cyan" />Test done</span>}
       </div>
     </div>
   );
@@ -76,10 +76,10 @@ function RadarSemana({ datos }) {
           <PolarGrid stroke={c.grid} />
           <PolarAngleAxis dataKey="metrica" tick={{ fill: c.muted, fontSize: 11 }} />
           <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-          <Radar name="Semana anterior" dataKey="anterior" stroke={c.muted} fill={c.muted} fillOpacity={0.12} isAnimationActive={false} />
-          <Radar name="Esta semana" dataKey="actual" stroke={c.accent} fill={c.accent} fillOpacity={0.28} isAnimationActive={false} />
+          <Radar name="Previous week" dataKey="anterior" stroke={c.muted} fill={c.muted} fillOpacity={0.12} isAnimationActive={false} />
+          <Radar name="This week" dataKey="actual" stroke={c.accent} fill={c.accent} fillOpacity={0.28} isAnimationActive={false} />
           <Legend wrapperStyle={{ fontSize: 11, color: c.muted }} />
-          <Tooltip {...tooltipEstilo(c)} formatter={(v, n) => [`${v} % de días en rango`, n]} />
+          <Tooltip {...tooltipEstilo(c)} formatter={(v, n) => [`${v} % of days in range`, n]} />
         </RadarChart>
       </ResponsiveContainer>
     </div>
@@ -139,8 +139,8 @@ function Linea({ serie, banda, unidad }) {
           <CartesianGrid stroke={c.grid} vertical={false} />
           <XAxis dataKey="etiqueta" stroke={c.muted} fontSize={11} tickLine={false} minTickGap={18} />
           <YAxis stroke={c.muted} fontSize={11} tickLine={false} domain={["auto", "auto"]} width={44} />
-          <Tooltip {...tooltipEstilo(c)} formatter={(v) => [`${v} ${unidad || ""}`.trim(), "Resultado"]} />
-          {banda && <ReferenceArea y1={banda[0]} y2={banda[1]} fill={c.banda} fillOpacity={0.1} stroke={c.banda} strokeOpacity={0.35} strokeDasharray="4 4" label={{ value: "Tu base", position: "insideTopRight", fill: c.banda, fontSize: 11 }} />}
+          <Tooltip {...tooltipEstilo(c)} formatter={(v) => [`${v} ${unidad || ""}`.trim(), "Result"]} />
+          {banda && <ReferenceArea y1={banda[0]} y2={banda[1]} fill={c.banda} fillOpacity={0.1} stroke={c.banda} strokeOpacity={0.35} strokeDasharray="4 4" label={{ value: "Your baseline", position: "insideTopRight", fill: c.banda, fontSize: 11 }} />}
           <Line type="monotone" dataKey="valor" stroke={c.accent} strokeWidth={2} dot={<Punto />} isAnimationActive={false} connectNulls />
         </ComposedChart>
       </ResponsiveContainer>
@@ -157,7 +157,7 @@ function BarrasSemana({ datos, unidad }) {
           <CartesianGrid stroke={c.grid} vertical={false} />
           <XAxis dataKey="dia" stroke={c.muted} fontSize={11} tickLine={false} />
           <YAxis stroke={c.muted} fontSize={11} tickLine={false} />
-          <Tooltip {...tooltipEstilo(c)} formatter={(v) => [`${v ?? "—"} ${unidad || ""}`.trim(), "Promedio"]} />
+          <Tooltip {...tooltipEstilo(c)} formatter={(v) => [`${v ?? "—"} ${unidad || ""}`.trim(), "Average"]} />
           <Bar dataKey="promedio" fill={c.accent} radius={[4, 4, 0, 0]} maxBarSize={26} isAnimationActive={false} />
         </BarChart>
       </ResponsiveContainer>
@@ -177,38 +177,38 @@ function VistaCategoria({ cat, data, porDia, historial, eventos, dias, registros
   return (
     <div className="space-y-5" data-vista-categoria={cat}>
       <div className="grid gap-5 lg:grid-cols-3">
-        <div className="card p-5"><h3 className="etiqueta mb-2">Forma de la semana</h3><RadarSemana datos={forma} /></div>
-        <div className="card p-5"><h3 className="etiqueta mb-3">Reparto del día</h3><Dona datos={reparto} /><p className="mt-2 text-xs text-muted">Promedio de los últimos 7 días</p></div>
-        <div className="card p-5"><h3 className="etiqueta mb-3">Semana contra semana</h3><Semana filas={semana} /></div>
+        <div className="card p-5"><h3 className="etiqueta mb-2">Shape of the week</h3><RadarSemana datos={forma} /></div>
+        <div className="card p-5"><h3 className="etiqueta mb-3">Split of the day</h3><Dona datos={reparto} /><p className="mt-2 text-xs text-muted">Average of the last 7 days</p></div>
+        <div className="card p-5"><h3 className="etiqueta mb-3">Week over week</h3><Semana filas={semana} /></div>
       </div>
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="card p-5">
-          <h3 className="etiqueta mb-3">Calendario · peor nivel del día</h3>
+          <h3 className="etiqueta mb-3">Calendar · worst level of the day</h3>
           <Calendario mapa={mapa} dias={dias} onDia={setDia} sel={dia} />
           {dia && (
             <div className="mt-3 rounded-xl border border-line p-3 text-sm" data-detalle-dia>
               <div className="mb-1 font-semibold">{fFecha(dia)}</div>
-              {delDia.length ? <ul className="space-y-1">{delDia.map((r, i) => <li key={i} className="flex items-start gap-2"><span className="mt-1.5 h-2 w-2 shrink-0 rounded-full" style={{ background: COLOR_NIVEL[r.nivel] }} />{r.fuente === "metrica" ? `${r.clave}: ${ETIQUETA_NIVEL[r.nivel]}` : `${PRUEBAS_POR_ID[r.prueba_id]?.nombre}: ${r.resultado?.valor?.resultado?.texto || ETIQUETA_NIVEL[r.nivel]}`}</li>)}</ul> : <p className="text-muted">Sin alertas ni pruebas en esta categoría.</p>}
+              {delDia.length ? <ul className="space-y-1">{delDia.map((r, i) => <li key={i} className="flex items-start gap-2"><span className="mt-1.5 h-2 w-2 shrink-0 rounded-full" style={{ background: COLOR_NIVEL[r.nivel] }} />{r.fuente === "metrica" ? `${r.clave}: ${ETIQUETA_NIVEL[r.nivel]}` : `${PRUEBAS_POR_ID[r.prueba_id]?.nombre}: ${r.resultado?.valor?.resultado?.texto || ETIQUETA_NIVEL[r.nivel]}`}</li>)}</ul> : <p className="text-muted">No alerts or tests in this category.</p>}
             </div>
           )}
         </div>
         <div className="card p-5">
-          <h3 className="etiqueta mb-3">Combinaciones de la semana</h3>
+          <h3 className="etiqueta mb-3">Combinations this week</h3>
           {combos.length ? (
             <ul className="space-y-2" data-combinaciones-semana>
               {combos.map((x) => (
                 <li key={x.id} className="flex items-center gap-3 rounded-xl border border-white/10 px-3 py-2 text-sm" data-combinacion-semana={x.id}>
                   <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: COLOR_NIVEL[x.nivel] }} />
                   <span className="min-w-0 flex-1">{x.titulo}</span>
-                  <span className="shrink-0 text-xs text-muted"><b className="text-fg">{x.veces}</b> {x.veces === 1 ? "vez" : "veces"}</span>
+                  <span className="shrink-0 text-xs text-muted"><b className="text-fg">{x.veces}</b> {x.veces === 1 ? "time" : "times"}</span>
                 </li>
               ))}
             </ul>
-          ) : <p className="text-sm text-muted">Ninguna combinación esta semana.</p>}
+          ) : <p className="text-sm text-muted">No combinations this week.</p>}
         </div>
       </div>
       <div>
-        <h3 className="etiqueta mb-3 px-0.5">Pruebas de {CATEGORIAS_PRUEBA[cat].nombre}</h3>
+        <h3 className="etiqueta mb-3 px-0.5">{CATEGORIAS_PRUEBA[cat].nombre} tests</h3>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {pruebasDeCategoria(cat).map((p) => {
             const serie = serieDePrueba(p.id, historial);
@@ -216,9 +216,9 @@ function VistaCategoria({ cat, data, porDia, historial, eventos, dias, registros
             return (
               <button key={p.id} type="button" onClick={() => onPrueba(p.id)} className="card glass-hover flex flex-col gap-2 p-4 text-left" data-tarjeta-prueba={p.id}>
                 <span className="font-semibold">{p.nombre}</span>
-                <span className="text-xs text-muted">{ult ? <>Última: {hace(ult.hecho_en)} · <span style={{ color: COLOR_NIVEL[ult.nivel] }}>{ETIQUETA_NIVEL[ult.nivel]}</span></> : "Sin resultados"}</span>
+                <span className="text-xs text-muted">{ult ? <>Last: {hace(ult.hecho_en)} · <span style={{ color: COLOR_NIVEL[ult.nivel] }}>{ETIQUETA_NIVEL[ult.nivel]}</span></> : "No results"}</span>
                 <span className="flex items-end justify-between gap-2">
-                  <span className="text-xs text-soft">{serie.length} {serie.length === 1 ? "vez" : "veces"}</span>
+                  <span className="text-xs text-soft">{serie.length} {serie.length === 1 ? "time" : "times"}</span>
                   {serie.length > 1 && <Sparkline data={serie.slice(-12).map((x) => x.valor)} w={90} h={28} />}
                 </span>
               </button>
@@ -243,7 +243,7 @@ function VistaPrueba({ id, historial, data, rango, dias, onVolver }) {
   const marcados = new Set(serie.map((x) => x.fecha));
   const fila = sel ? serie.find((x) => x.id === sel)?.fila : null;
   const copiar = async () => {
-    const txt = [`${prueba.nombre} · ${data.astronaut.nombre}`, ...serie.map((x) => `${x.fecha} · ${x.valor} ${unidad} · ${ETIQUETA_NIVEL[x.nivel] || x.nivel} · ${x.origen === "control" ? "celular" : "laptop"}`)].join("\n");
+    const txt = [`${prueba.nombre} · ${data.astronaut.nombre}`, ...serie.map((x) => `${x.fecha} · ${x.valor} ${unidad} · ${ETIQUETA_NIVEL[x.nivel] || x.nivel} · ${x.origen === "control" ? "phone" : "laptop"}`)].join("\n");
     try {
       await navigator.clipboard.writeText(txt);
     } catch {}
@@ -253,46 +253,46 @@ function VistaPrueba({ id, historial, data, rango, dias, onVolver }) {
   return (
     <div className="space-y-5" data-vista-prueba={id}>
       <div className="flex flex-wrap items-center gap-3">
-        <CyberButton onClick={onVolver} tam="sm" texto={`Volver a ${CATEGORIAS_PRUEBA[prueba.categoria].nombre}`} data-accion="volver-categoria">‹ {CATEGORIAS_PRUEBA[prueba.categoria].nombre}</CyberButton>
+        <CyberButton onClick={onVolver} tam="sm" texto={`Back to ${CATEGORIAS_PRUEBA[prueba.categoria].nombre}`} data-accion="volver-categoria">‹ {CATEGORIAS_PRUEBA[prueba.categoria].nombre}</CyberButton>
         <h2 className="font-display text-2xl font-semibold">{prueba.nombre}</h2>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" data-stats-prueba>
-        <div className="rounded-xl border border-line p-3"><div className="text-xs text-muted">Veces hecha</div><div className="text-2xl font-semibold">{st.veces}</div></div>
-        <div className="rounded-xl border border-line p-3"><div className="text-xs text-muted">Cumplimiento</div><div className="text-2xl font-semibold">{st.cumplimiento != null ? `${st.cumplimiento} %` : "—"} <span className="text-sm font-normal text-muted">{st.debidas != null ? `${st.hechas} de ${st.debidas}` : "sin intervalo"}</span></div></div>
-        <div className="rounded-xl border border-line p-3"><div className="text-xs text-muted">Mejor · peor</div><div className="text-2xl font-semibold">{st.mejor ?? "—"} <span className="text-muted">·</span> {st.peor ?? "—"} <span className="text-sm font-normal text-muted">{unidad}</span></div></div>
-        <div className="rounded-xl border border-line p-3"><div className="text-xs text-muted">Últimos 7 días contra los 7 anteriores</div><div className="text-2xl font-semibold">{st.prom7 ?? "—"} <span className="text-sm font-normal text-muted">vs {st.promPrev7 ?? "—"}{st.cambio != null ? ` (${st.cambio > 0 ? "+" : ""}${st.cambio} %)` : ""}</span></div></div>
+        <div className="rounded-xl border border-line p-3"><div className="text-xs text-muted">Times done</div><div className="text-2xl font-semibold">{st.veces}</div></div>
+        <div className="rounded-xl border border-line p-3"><div className="text-xs text-muted">Adherence</div><div className="text-2xl font-semibold">{st.cumplimiento != null ? `${st.cumplimiento} %` : "—"} <span className="text-sm font-normal text-muted">{st.debidas != null ? `${st.hechas} of ${st.debidas}` : "no interval"}</span></div></div>
+        <div className="rounded-xl border border-line p-3"><div className="text-xs text-muted">Best · worst</div><div className="text-2xl font-semibold">{st.mejor ?? "—"} <span className="text-muted">·</span> {st.peor ?? "—"} <span className="text-sm font-normal text-muted">{unidad}</span></div></div>
+        <div className="rounded-xl border border-line p-3"><div className="text-xs text-muted">Last 7 days vs. the previous 7</div><div className="text-2xl font-semibold">{st.prom7 ?? "—"} <span className="text-sm font-normal text-muted">vs {st.promPrev7 ?? "—"}{st.cambio != null ? ` (${st.cambio > 0 ? "+" : ""}${st.cambio} %)` : ""}</span></div></div>
       </div>
       <div className="card p-5">
-        <h3 className="etiqueta mb-1">Resultados</h3>
-        <p className="mb-3 text-xs text-muted">{serie.length} resultados · banda = tu base (percentiles 10–90)</p>
-        {serie.length ? <Linea serie={serie} banda={banda} unidad={unidad} /> : <p className="py-8 text-center text-sm text-muted">Sin resultados en este rango.</p>}
+        <h3 className="etiqueta mb-1">Results</h3>
+        <p className="mb-3 text-xs text-muted">{serie.length} results · band = your baseline (percentiles 10–90)</p>
+        {serie.length ? <Linea serie={serie} banda={banda} unidad={unidad} /> : <p className="py-8 text-center text-sm text-muted">No results in this range.</p>}
       </div>
       <div className="grid gap-5 xl:grid-cols-2">
-        <div className="card p-5"><h3 className="etiqueta mb-3">Promedio por día de la semana</h3><BarrasSemana datos={porDiaSemana(serie)} unidad={unidad} /></div>
-        <div className="card p-5"><h3 className="etiqueta mb-3">Días en que se hizo</h3><Calendario mapa={mapa} dias={dias} marcados={marcados} /></div>
+        <div className="card p-5"><h3 className="etiqueta mb-3">Average by day of the week</h3><BarrasSemana datos={porDiaSemana(serie)} unidad={unidad} /></div>
+        <div className="card p-5"><h3 className="etiqueta mb-3">Days it was done</h3><Calendario mapa={mapa} dias={dias} marcados={marcados} /></div>
       </div>
       <div className="card p-5">
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h3 className="etiqueta">Tabla de resultados</h3>
-          {serie.length > 0 && <CyberButton onClick={copiar} tam="sm" texto={copiado ? "Copiado" : "Copiar reporte"}>{copiado ? "✓ Copiado" : "Copiar reporte"}</CyberButton>}
+          <h3 className="etiqueta">Results table</h3>
+          {serie.length > 0 && <CyberButton onClick={copiar} tam="sm" texto={copiado ? "Copied" : "Copy report"}>{copiado ? "✓ Copied" : "Copy report"}</CyberButton>}
         </div>
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
           <div className="max-h-96 overflow-y-auto">
             <table className="w-full text-sm" data-tabla-historial>
-              <thead className="text-left text-xs text-muted"><tr><th className="py-1.5">Fecha</th><th>Valor</th><th>Nivel</th><th>Origen</th></tr></thead>
+              <thead className="text-left text-xs text-muted"><tr><th className="py-1.5">Date</th><th>Value</th><th>Level</th><th>Source</th></tr></thead>
               <tbody>
                 {[...serie].reverse().map((x) => (
                   <tr key={x.id} onClick={() => setSel(x.id)} className={`cursor-pointer border-t border-white/[0.06] hover:bg-white/[0.04] ${sel === x.id ? "bg-white/[0.06]" : ""}`} data-fila-resultado={x.id}>
                     <td className="py-1.5 tabular-nums">{fFecha(x.fecha)}</td>
                     <td className="tabular-nums">{x.valor} {unidad}</td>
                     <td><span style={{ color: COLOR_NIVEL[x.nivel] }}>{ETIQUETA_NIVEL[x.nivel] || x.nivel}</span></td>
-                    <td className="text-xs text-muted">{x.origen === "control" ? "Celular" : "Laptop"}</td>
+                    <td className="text-xs text-muted">{x.origen === "control" ? "Phone" : "Laptop"}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <div>{fila ? <DetalleRespuestas fila={fila} /> : <p className="text-sm text-muted">Toca un resultado para ver todas sus respuestas.</p>}</div>
+          <div>{fila ? <DetalleRespuestas fila={fila} /> : <p className="text-sm text-muted">Tap a result to see all its answers.</p>}</div>
         </div>
       </div>
     </div>
@@ -350,20 +350,20 @@ export default function Estadisticas({ data, porDia, aid, astronauts, onAstronau
   return (
     <section className="space-y-5" data-estadisticas>
       <div className="card flex flex-wrap items-end gap-3 p-4">
-        <label className="flex flex-col gap-1 text-xs text-muted">Astronauta
+        <label className="flex flex-col gap-1 text-xs text-muted">Astronaut
           <select value={tripulacion ? "trip" : String(aid)} onChange={(e) => { if (e.target.value === "trip") setTripulacion(true); else { setTripulacion(false); onAstronaut(Number(e.target.value)); } }} className="campo h-10" data-filtro-astronauta>
             {astronauts.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
-            <option value="trip">Tripulación</option>
+            <option value="trip">Crew</option>
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-xs text-muted">Rango
+        <label className="flex flex-col gap-1 text-xs text-muted">Range
           <select value={String(rango)} onChange={(e) => setRango(e.target.value === "null" ? null : Number(e.target.value))} className="campo h-10" data-filtro-rango>
             {RANGOS.map(([v, t]) => <option key={t} value={String(v)}>{t}</option>)}
           </select>
         </label>
       </div>
 
-      <nav className="no-scrollbar -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 min-[900px]:flex-wrap" role="tablist" aria-label="Categorías del historial">
+      <nav className="no-scrollbar -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 min-[900px]:flex-wrap" role="tablist" aria-label="History categories">
         {PESTANAS.map(([k, t]) => (
           <BotonPestana key={k} onClick={() => { setTab(k); setPrueba(null); setTripulacion(false); }} activo={!tripulacion && tab === k} role="tab" aria-selected={tab === k} data-tab-historial={k} className="shrink-0">{t}</BotonPestana>
         ))}
@@ -371,8 +371,8 @@ export default function Estadisticas({ data, porDia, aid, astronauts, onAstronau
 
       {tripulacion ? (
         <div className="card p-5" data-vista-tripulacion>
-          <h2 className="mb-3 font-semibold">Tripulación · peor nivel por día</h2>
-          {!filasTrip ? <p className="text-sm text-muted">Cargando tripulación…</p> : (
+          <h2 className="mb-3 font-semibold">Crew · worst level per day</h2>
+          {!filasTrip ? <p className="text-sm text-muted">Loading crew…</p> : (
             <div className="space-y-4">
               {filasTrip.map(({ a, fechas, registros: rg }) => (
                 <div key={a.id}>

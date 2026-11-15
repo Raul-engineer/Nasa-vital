@@ -13,7 +13,7 @@ export async function GET() {
       .filter((d) => d.energy === ">=10 MeV" && d.flux != null)
       .sort((a, b) => String(a.time_tag).localeCompare(String(b.time_tag)));
     const ultimo = p10[p10.length - 1];
-    if (!ultimo) throw new Error("sin datos");
+    if (!ultimo) throw new Error("no data");
     const flujo = Number(ultimo.flux);
     return Response.json({ flujo, nivel: nivelNOAA(flujo), hora: ultimo.time_tag });
   } catch {

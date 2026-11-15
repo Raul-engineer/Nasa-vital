@@ -45,14 +45,14 @@ export default function Bienvenida() {
         <h1 className="sr-only">QuickFix · Another successful procedure</h1>
         <LogoCompleto alto={90} />
         <p className="mt-6 max-w-md text-[15px] leading-relaxed text-soft">
-          Tu compañero de salud para misiones de larga duración. Revisa tu cuerpo, actúa a tiempo y cuídate.
+          Your health companion for long-duration missions. Check your body, act in time and take care of yourself.
         </p>
       </div>
 
       <div className="mt-10 w-full max-w-3xl">
-        <div className="mb-3 text-center text-sm uppercase tracking-widest text-muted">Elige tu perfil de tripulación</div>
-        {error && <div className="text-center text-crit">No se pudieron cargar los perfiles: {error}</div>}
-        {!lista && !error && <div className="text-center text-muted">Cargando tripulación…</div>}
+        <div className="mb-3 text-center text-sm uppercase tracking-widest text-muted">Choose your crew profile</div>
+        {error && <div className="text-center text-crit">Could not load the profiles: {error}</div>}
+        {!lista && !error && <div className="text-center text-muted">Loading crew…</div>}
         {lista && (
           <div className="grid gap-4 sm:grid-cols-3">
             {lista.map((a) => {
@@ -74,8 +74,8 @@ export default function Bienvenida() {
                   </div>
                   <div className="flex w-full items-end justify-between">
                     <div className="text-xs text-muted">
-                      Día {a.dia_mision} / 500
-                      <div>{a.alertas ? `${a.alertas} alerta(s) activa(s)` : "Sin alertas"}</div>
+                      Day {a.dia_mision} / 500
+                      <div>{a.alertas ? `${a.alertas} active alert(s)` : "No alerts"}</div>
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold leading-none" style={{ color: col }}>{a.prep.total}</div>
@@ -98,13 +98,13 @@ export default function Bienvenida() {
           Entrar a Mi salud
         </button>
         <Link href={`/reloj?a=${sel}`} className="rounded-xl border border-line px-6 py-3 hover:bg-ink/5">
-          Abrir reloj
+          Open watch
         </Link>
         <Link href="/acceso" className="rounded-xl border border-line px-6 py-3 hover:bg-ink/5">
-          Iniciar sesión
+          Sign in
         </Link>
       </div>
-      <div className="mt-6 text-xs text-muted">El índice de preparación es orientativo, no una autorización médica.</div>
+      <div className="mt-6 text-xs text-muted">The readiness index is for guidance only, not a medical clearance.</div>
     </div>
   );
 }

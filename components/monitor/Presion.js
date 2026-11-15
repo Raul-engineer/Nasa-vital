@@ -4,7 +4,7 @@ import { Marco, MON } from "./Marco";
 import { medirPresion } from "@/lib/data";
 import CyberButton from "@/components/CyberButton";
 
-const hhmm = (d) => d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", hour12: false });
+const hhmm = (d) => d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
 
 export function medicionesPresion(data) {
   const diarias = data.vitals.filter((v) => v.sistolica != null).map((v) => ({ fecha: new Date(v.fecha + "T07:00:00"), sis: Number(v.sistolica), dia: Number(v.diastolica), origen: "diaria" }));
@@ -47,15 +47,15 @@ export default function MonitorPresion({ data, analisis, aid }) {
   const hi = 170;
   const Y = (v) => 100 - ((v - lo) / (hi - lo)) * 100;
   return (
-    <Marco titulo="Presión · brazalete" color={MON.rojo} etiquetaVivo="ÚLTIMA MEDICIÓN"
+    <Marco titulo="Pressure · cuff" color={MON.rojo} etiquetaVivo="LAST READING"
       valor={ult ? `${ult.sis}/${ult.dia}` : "—"} unidad="mmHg"
-      sub={ult ? `Media ${media} · ${hhmm(ult.fecha)}${ult.fecha.toDateString() !== new Date().toDateString() ? ` · ${ult.fecha.toLocaleDateString("es-MX", { day: "numeric", month: "short" })}` : ""}` : null}
+      sub={ult ? `Mean ${media} · ${hhmm(ult.fecha)}${ult.fecha.toDateString() !== new Date().toDateString() ? ` · ${ult.fecha.toLocaleDateString("en-US", { day: "numeric", month: "short" })}` : ""}` : null}
       extra={
         <div className="mt-2">
-          <CyberButton onClick={medir} disabled={inflando} className="w-full" atajo="↵" texto={inflando ? "Inflando…" : "Medir ahora"}>
-            {inflando ? "Inflando…" : "Medir ahora"}
+          <CyberButton onClick={medir} disabled={inflando} className="w-full" atajo="↵" texto={inflando ? "Inflating…" : "Measure now"}>
+            {inflando ? "Inflating…" : "Measure now"}
           </CyberButton>
-          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full" style={{ background: "rgba(148,163,184,0.18)" }} role="progressbar" aria-valuenow={Math.round(pct * 100)} aria-valuemin={0} aria-valuemax={100} aria-label="Inflado del brazalete">
+          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full" style={{ background: "rgba(148,163,184,0.18)" }} role="progressbar" aria-valuenow={Math.round(pct * 100)} aria-valuemin={0} aria-valuemax={100} aria-label="Cuff inflation">
             <div className="h-full rounded-full" style={{ width: `${pct * 100}%`, background: MON.rojo, boxShadow: `0 0 8px ${MON.rojo}` }} />
           </div>
         </div>
@@ -73,7 +73,7 @@ export default function MonitorPresion({ data, analisis, aid }) {
                 <div className="absolute w-2.5 rounded-full" style={{ top: `${Y(m.sis)}%`, height: `${Y(m.dia) - Y(m.sis)}%`, background: i === seis.length - 1 ? MON.rojo : `${MON.rojo}88`, boxShadow: i === seis.length - 1 ? `0 0 10px ${MON.rojo}` : "none" }} />
                 <span className="num absolute text-[10px]" style={{ top: `calc(${Y(m.sis)}% - 15px)`, color: MON.texto }}>{m.sis}</span>
                 <span className="num absolute text-[10px]" style={{ top: `calc(${Y(m.dia)}% + 2px)`, color: MON.tenue }}>{m.dia}</span>
-                <span className="absolute -bottom-0.5 text-[9px]" style={{ color: MON.tenue }}>{m.origen === "brazalete" ? hhmm(m.fecha) : m.fecha.toLocaleDateString("es-MX", { day: "numeric", month: "short" })}</span>
+                <span className="absolute -bottom-0.5 text-[9px]" style={{ color: MON.tenue }}>{m.origen === "brazalete" ? hhmm(m.fecha) : m.fecha.toLocaleDateString("en-US", { day: "numeric", month: "short" })}</span>
               </div>
             ))}
           </div>

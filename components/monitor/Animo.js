@@ -16,8 +16,8 @@ export default function MonitorAnimo({ data, analisis, t }) {
   const Y = (v) => 8 + (1 - (v - 1) / 4) * (h - 30);
   const linea = (k) => dias.map((d, i) => (d[k] == null ? "" : `${i ? "L" : "M"}${X(i).toFixed(1)},${Y(d[k]).toFixed(1)}`)).join(" ");
   return (
-    <Marco titulo="Ánimo y estrés · 14 días" color={MON.lila} etiquetaVivo="CHECK-IN" valor={t.valor ?? "—"} unidad="WHO-5"
-      sub={<span className="flex gap-3"><span style={{ color: MON.lila }}>● Ánimo</span><span style={{ color: MON.ambar }}>○ Estrés</span></span>}>
+    <Marco titulo="Mood and stress · 14 days" color={MON.lila} etiquetaVivo="CHECK-IN" valor={t.valor ?? "—"} unidad="WHO-5"
+      sub={<span className="flex gap-3"><span style={{ color: MON.lila }}>● Mood</span><span style={{ color: MON.ambar }}>○ Stress</span></span>}>
       <div ref={caja} className="absolute inset-0">
         <svg width={w} height={h} aria-hidden>
           {[1, 3, 5].map((v) => (
@@ -34,7 +34,7 @@ export default function MonitorAnimo({ data, analisis, t }) {
               {d.estres != null && <circle cx={X(i)} cy={Y(d.estres)} r="4" fill={MON.fondo} stroke={MON.ambar} strokeWidth="2" />}
             </g>
           ))}
-          {[[0, "−14 d"], [dias.length - 1, "hoy"]].map(([i, txt]) => (
+          {[[0, "−14 d"], [dias.length - 1, "today"]].map(([i, txt]) => (
             <text key={txt} x={X(i)} y={h - 2} fill={MON.tenue} fontSize="10" textAnchor={i === 0 ? "start" : "end"}>{txt}</text>
           ))}
         </svg>

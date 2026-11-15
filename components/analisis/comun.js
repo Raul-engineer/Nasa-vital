@@ -16,10 +16,10 @@ export const NIVEL = {
 
 export function simboloEstado(t) {
   if (t.estado === "normal") return { icono: "✓", palabra: "Normal" };
-  if (t.estado === "info") return { icono: "⚡", palabra: t.etiqueta || "Esfuerzo" };
-  if (/VFC|Síntomas|Mareo|Confus|Tormenta|refugio|Acumulado|Dolor|borrosa|Amsler/i.test(t.etiqueta || "")) return { icono: t.dir === "up" ? "↑" : t.dir === "down" ? "↓" : "!", palabra: t.etiqueta };
-  if (t.dir === "up") return { icono: "↑", palabra: "Alto" };
-  if (t.dir === "down") return { icono: "↓", palabra: "Bajo" };
+  if (t.estado === "info") return { icono: "⚡", palabra: t.etiqueta || "Exertion" };
+  if (/HRV|Symptom|Dizz|Confus|Storm|shelter|Cumulative|Pain|Headache|blurr|Amsler/i.test(t.etiqueta || "")) return { icono: t.dir === "up" ? "↑" : t.dir === "down" ? "↓" : "!", palabra: t.etiqueta };
+  if (t.dir === "up") return { icono: "↑", palabra: "High" };
+  if (t.dir === "down") return { icono: "↓", palabra: "Low" };
   return { icono: "!", palabra: t.etiqueta || ESTADO[t.estado]?.txt };
 }
 
@@ -103,18 +103,18 @@ export function fmtRango(r, dec = 0) {
 
 export function tuNormal(t) {
   const dec = DEC[t.k] || 0;
-  if (t.k === "conciencia") return "Alerta";
+  if (t.k === "conciencia") return "Alert";
   if (t.k === "vision") return "OK";
   if (t.k === "pa" && t.rangoPersonal && t.rangoPersonal2) return `${fmtRango(t.rangoPersonal)} / ${fmtRango(t.rangoPersonal2)}`;
   return fmtRango(t.rangoPersonal, dec) || t.rango;
 }
 
 export function hhmm(d) {
-  return d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", hour12: false });
+  return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
 }
 
 export function fechaCorta(f) {
-  return new Date(f + "T12:00:00").toLocaleDateString("es-MX", { day: "numeric", month: "short" });
+  return new Date(f + "T12:00:00").toLocaleDateString("en-US", { day: "numeric", month: "short" });
 }
 
 export function horaMedicion(t, analisis, ahora) {
@@ -122,13 +122,13 @@ export function horaMedicion(t, analisis, ahora) {
   if (t.k === "pa") return analisis.hoy.horaPa ? hhmm(new Date(analisis.hoy.horaPa)) : "07:00";
   if (t.k === "sueno") return "06:00";
   if (t.k === "animo") return t.who5Fecha ? fechaCorta(t.who5Fecha) : "—";
-  if (t.k === "huesos") return "Hoy";
+  if (t.k === "huesos") return "Today";
   return "08:00";
 }
 
 export function tiempoRelativo(ms, ahora = Date.now()) {
   const d = ms - ahora;
   const a = Math.abs(d);
-  const txt = a < 6e4 ? "1 min" : a < 36e5 ? `${Math.round(a / 6e4)} min` : a < 864e5 * 2 ? `${Math.round(a / 36e5)} h` : `${Math.round(a / 864e5)} días`;
-  return d > 0 ? `en ${txt}` : `hace ${txt}`;
+  const txt = a < 6e4 ? "1 min" : a < 36e5 ? `${Math.round(a / 6e4)} min` : a < 864e5 * 2 ? `${Math.round(a / 36e5)} h` : `${Math.round(a / 864e5)} days`;
+  return d > 0 ? `in ${txt}` : `${txt} ago`;
 }

@@ -14,13 +14,13 @@ import AlarmaCritica from "./AlarmaCritica";
 
 export const ESTADO = {
   normal: { txt: "Normal", color: "text-ok", bg: "bg-ok", border: "border-ok/50", hex: "var(--color-ok)" },
-  atencion: { txt: "Atención", color: "text-warn", bg: "bg-warn", border: "border-warn/60", hex: "var(--color-warn)" },
-  critico: { txt: "Crítico", color: "text-crit", bg: "bg-crit", border: "border-crit/70", hex: "var(--color-crit)" },
-  info: { txt: "Esfuerzo", color: "text-info", bg: "bg-info", border: "border-info/60", hex: "var(--color-info)" },
-  sin: { txt: "Sin datos", color: "text-muted", bg: "bg-muted", border: "border-line", hex: "var(--color-muted)" },
+  atencion: { txt: "Attention", color: "text-warn", bg: "bg-warn", border: "border-warn/60", hex: "var(--color-warn)" },
+  critico: { txt: "Critical", color: "text-crit", bg: "bg-crit", border: "border-crit/70", hex: "var(--color-crit)" },
+  info: { txt: "Exertion", color: "text-info", bg: "bg-info", border: "border-info/60", hex: "var(--color-info)" },
+  sin: { txt: "No data", color: "text-muted", bg: "bg-muted", border: "border-line", hex: "var(--color-muted)" },
 };
 
-export const ESTADO_GENERAL = { normal: "Bien", atencion: "Precaución", critico: "Actúa ahora" };
+export const ESTADO_GENERAL = { normal: "Good", atencion: "Caution", critico: "Act now" };
 
 export function Dot({ estado, className = "" }) {
   return <span className={`inline-block h-2.5 w-2.5 shrink-0 rounded-full ${ESTADO[estado]?.bg} ${className}`} />;
@@ -38,12 +38,12 @@ export function ChipGeneral({ estado, children, className = "" }) {
 }
 
 const NAV = [
-  { href: "/", label: "Inicio", glifo: "⌂" },
-  { href: "/analisis", label: "Análisis", glifo: "◫" },
-  { href: "/pruebas", label: "Pruebas", glifo: "✚" },
-  { href: "/historial", label: "Historial", glifo: "◷" },
-  { href: "/perfil", label: "Perfil", glifo: "♙" },
-  { href: "/tripulacion", label: "Tripulación", glifo: "⚕" },
+  { href: "/", label: "Home", glifo: "⌂" },
+  { href: "/analisis", label: "Analysis", glifo: "◫" },
+  { href: "/pruebas", label: "Tests", glifo: "✚" },
+  { href: "/historial", label: "History", glifo: "◷" },
+  { href: "/perfil", label: "Profile", glifo: "♙" },
+  { href: "/tripulacion", label: "Crew", glifo: "⚕" },
 ];
 
 export function useMissionClock() {
@@ -59,7 +59,7 @@ export function useMissionClock() {
 }
 
 export function iniciales(nombre = "") {
-  const partes = nombre.split(/\s+/).filter((p) => p && !/^(cmdr|dra?|ing|sr|sra|lic)\.?$/i.test(p));
+  const partes = nombre.split(/\s+/).filter((p) => p && !/^(cmdr|dra?|ing|sr|sra|lic|mr|mrs|ms|eng)\.?$/i.test(p));
   return partes.map((p) => p[0]).join("").slice(0, 2).toUpperCase() || "QF";
 }
 
@@ -80,7 +80,7 @@ export function FullscreenToggle({ className = "" }) {
       else await document.documentElement.requestFullscreen();
     } catch {}
   };
-  const txt = activo ? "Salir de pantalla completa" : "Pantalla completa";
+  const txt = activo ? "Exit full screen" : "Full screen";
   return (
     <button onClick={alternar} aria-label={txt} title={txt} aria-pressed={activo}
       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-soft transition hover:border-[#8f86ff80] hover:bg-white/[0.12] hover:text-fg ${className}`}>
@@ -111,7 +111,7 @@ function useAtajosNav(q) {
 export function AvisoSinConexion() {
   return (
     <div role="status" className="mb-4 flex items-center justify-center gap-2 rounded-full border border-warn/45 bg-warn/10 px-4 py-1.5 text-xs font-medium text-warn" data-sin-conexion>
-      <span className="dot-estado" /> Sin conexión a la base de datos · usando datos locales
+      <span className="dot-estado" /> No database connection · using local data
     </div>
   );
 }
@@ -144,17 +144,17 @@ export function Shell({ children, active, astronaut, astronauts = [], onAstronau
   const [qr, setQr] = useState(false);
   const cerrarQr = useCallback(() => setQr(false), []);
   const con = useConexion();
-  if (!conSesion) return <div className="flex min-h-screen items-center justify-center text-muted">Verificando sesión…</div>;
+  if (!conSesion) return <div className="flex min-h-screen items-center justify-center text-muted">Checking session…</div>;
   return (
     <div className="mx-auto min-h-screen max-w-[1540px] px-3 pb-6 pt-3 sm:px-7 sm:pt-[22px]">
       <header className="barra flex min-h-[72px] flex-wrap items-center gap-3 px-2 py-3 sm:gap-[18px] sm:px-1">
-        <button type="button" onClick={() => setQr(true)} aria-label="QuickFix: controlar los datos desde el celular" title="Controla los datos desde tu celular" className="flex min-w-0 items-center gap-2.5 rounded-xl text-left drop-shadow-[0_0_14px_rgba(80,100,255,0.35)] focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan sm:min-w-[180px]">
+        <button type="button" onClick={() => setQr(true)} aria-label="QuickFix: control the data from your phone" title="Control the data from your phone" className="flex min-w-0 items-center gap-2.5 rounded-xl text-left drop-shadow-[0_0_14px_rgba(80,100,255,0.35)] focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan sm:min-w-[180px]">
           <LogoQuickFix alto={52} titulo="" />
         </button>
 
-        <nav aria-label="Secciones" className="nav-pills order-last flex w-full flex-wrap justify-start gap-1 min-[1100px]:order-none min-[1100px]:w-auto min-[1100px]:flex-1 min-[1100px]:justify-center">
+        <nav aria-label="Sections" className="nav-pills order-last flex w-full flex-wrap justify-start gap-1 min-[1100px]:order-none min-[1100px]:w-auto min-[1100px]:flex-1 min-[1100px]:justify-center">
           {NAV.map((n, i) => (
-            <Link key={n.href} href={n.href + q} aria-current={active === n.href ? "page" : undefined} aria-keyshortcuts={String(i + 1)} title={`${n.label} · atajo ${i + 1}`} className={`nav-pill ${active === n.href ? "activo" : ""}`}>
+            <Link key={n.href} href={n.href + q} aria-current={active === n.href ? "page" : undefined} aria-keyshortcuts={String(i + 1)} title={`${n.label} · shortcut ${i + 1}`} className={`nav-pill ${active === n.href ? "activo" : ""}`}>
               <span className="nav-pill-texto">{n.label}</span>
             </Link>
           ))}
@@ -172,7 +172,7 @@ export function Shell({ children, active, astronaut, astronauts = [], onAstronau
         {children}
       </main>
       <ModalQR abierto={qr} onCerrar={cerrarQr} astronautId={astronautId} />
-      <AlarmaCritica astronautId={astronaut?.id ?? astronautId} quien={astronaut?.nombre || "Tripulante"} esOficial={/médic/i.test(astronaut?.rol || "") || active === "/tripulacion"} />
+      <AlarmaCritica astronautId={astronaut?.id ?? astronautId} quien={astronaut?.nombre || "Crew member"} esOficial={/médic|physician|medical|doctor/i.test(astronaut?.rol || "") || active === "/tripulacion"} />
       <VigiaFichas astronautId={astronaut?.id ?? astronautId} onAbrir={(k) => (onAbrirFicha ? onAbrirFicha(k) : router.push(`/?a=${astronaut?.id ?? astronautId}&ficha=${k}`))} />
     </div>
   );

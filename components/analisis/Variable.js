@@ -14,10 +14,10 @@ import { GraficaExtra } from "./Extras";
 import { RadiacionExtra } from "./RadiacionExtra";
 import { ChipEstado, DEC, Indicador, NIVEL, Pildoras, fechaCorta, promedio, simboloEstado, validos } from "./comun";
 
-const PERIODOS = [["7", "7D"], ["30", "30D"], ["90", "90D"], ["mision", "Misión"]];
-const AGRUPAR = [["dia", "Diario"], ["semana", "Semanal"]];
-const BLOQUES = [["ahora", "Ahora"], ["hoy", "Hoy"], ["prevenir", "Para prevenir"], ["escalar", "Cuándo escalar"]];
-const PALABRA_AHORA = { fc: "en vivo", spo2: "en vivo", fr: "en vivo", temp: "en vivo", pa: "brazalete", radiacion: "dosímetro", sueno: "anoche", animo: "WHO-5", huesos: "hoy", cabina: "tu módulo", conciencia: "check-in", vision: "check-in" };
+const PERIODOS = [["7", "7D"], ["30", "30D"], ["90", "90D"], ["mision", "Mission"]];
+const AGRUPAR = [["dia", "Daily"], ["semana", "Weekly"]];
+const BLOQUES = [["ahora", "Now"], ["hoy", "Today"], ["prevenir", "To prevent"], ["escalar", "When to escalate"]];
+const PALABRA_AHORA = { fc: "live", spo2: "live", fr: "live", temp: "live", pa: "cuff", radiacion: "dosimeter", sueno: "last night", animo: "WHO-5", huesos: "today", cabina: "your module", conciencia: "check-in", vision: "check-in" };
 const SIN_RANGO = new Set(["conciencia", "vision"]);
 const CATEGORICAS = new Set(["conciencia", "vision"]);
 
@@ -46,34 +46,34 @@ function Indicadores({ k, t, analisis, data, n, etiquetaP }) {
     const r = analisis.radiacion;
     const c = (p) => (p >= UMBRALES.radiacion.criticoPct ? ESTADO.critico.color : p >= UMBRALES.radiacion.atencionPct ? ESTADO.atencion.color : "");
     items = [
-      { etiqueta: "Ahora", icono: "rad", valor: fmtNum(r.tasa), unidad: "µSv/h", palabra: "dosímetro", color: E.color },
-      { etiqueta: "Hoy", icono: "clock", valor: fmtNum(r.hoy, 2), unidad: "mSv", palabra: "dosis del día" },
-      { etiqueta: "Carrera", icono: "shield", valor: Math.round(r.pct * 100), unidad: "%", palabra: `${fmtNum(r.carrera)} de ${UMBRALES.radiacion.limiteCarrera} mSv`, color: c(r.pct) },
-      { etiqueta: "30 días", icono: "calendar", valor: Math.round(r.pct30 * 100), unidad: "%", palabra: `${fmtNum(r.ventana30)} de ${UMBRALES.radiacion.limite30d} mSv`, color: c(r.pct30) },
+      { etiqueta: "Now", icono: "rad", valor: fmtNum(r.tasa), unidad: "µSv/h", palabra: "dosimeter", color: E.color },
+      { etiqueta: "Today", icono: "clock", valor: fmtNum(r.hoy, 2), unidad: "mSv", palabra: "dose of the day" },
+      { etiqueta: "Career", icono: "shield", valor: Math.round(r.pct * 100), unidad: "%", palabra: `${fmtNum(r.carrera)} of ${UMBRALES.radiacion.limiteCarrera} mSv`, color: c(r.pct) },
+      { etiqueta: "30 days", icono: "calendar", valor: Math.round(r.pct30 * 100), unidad: "%", palabra: `${fmtNum(r.ventana30)} of ${UMBRALES.radiacion.limite30d} mSv`, color: c(r.pct30) },
     ];
   } else if (k === "conciencia") {
     const ult = [...data.checkins].reverse()[0];
     items = [
-      { etiqueta: "Días alerta", icono: "check", valor: s.filter((x) => x === 0).length, unidad: `de ${v.length}`, palabra: etiquetaP },
-      { etiqueta: "Días con mareo", icono: "standing", valor: s.filter((x) => x === 1).length, palabra: etiquetaP, color: s.some((x) => x === 1) ? ESTADO.atencion.color : "" },
-      { etiqueta: "Días con confusión", icono: "brain", valor: s.filter((x) => x === 2).length, palabra: etiquetaP, color: s.some((x) => x === 2) ? ESTADO.critico.color : "" },
-      { etiqueta: "Último registro", icono: "clipboard", valor: t.texto, palabra: ult ? fechaCorta(ult.fecha) : "—", color: E.color },
+      { etiqueta: "Alert days", icono: "check", valor: s.filter((x) => x === 0).length, unidad: `of ${v.length}`, palabra: etiquetaP },
+      { etiqueta: "Days with dizziness", icono: "standing", valor: s.filter((x) => x === 1).length, palabra: etiquetaP, color: s.some((x) => x === 1) ? ESTADO.atencion.color : "" },
+      { etiqueta: "Days with confusion", icono: "brain", valor: s.filter((x) => x === 2).length, palabra: etiquetaP, color: s.some((x) => x === 2) ? ESTADO.critico.color : "" },
+      { etiqueta: "Last record", icono: "clipboard", valor: t.texto, palabra: ult ? fechaCorta(ult.fecha) : "—", color: E.color },
     ];
   } else if (k === "vision") {
     const sem = semanasVision(data, analisis, Math.max(1, Math.ceil(n / 7)));
     const am = (data.pruebas || []).filter((p) => p.tipo === "amsler").sort((a, b) => String(b.creada_en || b.fecha).localeCompare(String(a.creada_en || a.fecha)))[0];
     items = [
-      { etiqueta: "Semanas sin distorsión", icono: "eye", valor: sem.filter((x) => x.amsler !== "distorsion").length, unidad: `de ${sem.length}`, palabra: etiquetaP },
-      { etiqueta: "Días con síntomas", icono: "alert", valor: s.filter((x) => x > 0).length, palabra: etiquetaP, color: s.some((x) => x > 0) ? ESTADO.atencion.color : "" },
-      { etiqueta: "Última Amsler", icono: "target", valor: am ? (am.resultado?.od || am.resultado?.oi ? "✕" : "✓") : "—", palabra: am ? fechaCorta(am.fecha) : "sin registro" },
-      { etiqueta: "Estado", icono: "info", valor: t.texto, palabra: t.estado === "normal" ? "sin síntomas" : t.etiqueta, color: E.color },
+      { etiqueta: "Weeks without distortion", icono: "eye", valor: sem.filter((x) => x.amsler !== "distorsion").length, unidad: `of ${sem.length}`, palabra: etiquetaP },
+      { etiqueta: "Days with symptoms", icono: "alert", valor: s.filter((x) => x > 0).length, palabra: etiquetaP, color: s.some((x) => x > 0) ? ESTADO.atencion.color : "" },
+      { etiqueta: "Last Amsler", icono: "target", valor: am ? (am.resultado?.od || am.resultado?.oi ? "✕" : "✓") : "—", palabra: am ? fechaCorta(am.fecha) : "no record" },
+      { etiqueta: "Status", icono: "info", valor: t.texto, palabra: t.estado === "normal" ? "no symptoms" : t.etiqueta, color: E.color },
     ];
   } else if (k === "sueno") {
     items = [
-      { etiqueta: "Anoche", icono: "moon", valor: fmtNum(t.valor, 1), unidad: "h", palabra: "anoche", color: E.color },
-      { etiqueta: "Promedio", icono: "chart", valor: fmtNum(promedio(v), 1), unidad: "h", palabra: etiquetaP },
-      { etiqueta: "Noches < 7 h", icono: "alert", valor: v.filter((x) => x < UMBRALES.suenoMetaHoras).length, unidad: `de ${v.length}`, palabra: etiquetaP, color: v.some((x) => x < UMBRALES.suenoMetaHoras) ? ESTADO.atencion.color : "" },
-      { etiqueta: "Última reacción", icono: "target", valor: t.reaccion ?? "—", unidad: "ms", palabra: t.reaccionBase ? `normal ${Math.round(t.reaccionBase)} ms` : "PVT-B", color: t.reaccionPct > UMBRALES.tarjetas.sueno.reaccionLentaPct ? ESTADO.atencion.color : "" },
+      { etiqueta: "Last night", icono: "moon", valor: fmtNum(t.valor, 1), unidad: "h", palabra: "last night", color: E.color },
+      { etiqueta: "Average", icono: "chart", valor: fmtNum(promedio(v), 1), unidad: "h", palabra: etiquetaP },
+      { etiqueta: "Nights < 7 h", icono: "alert", valor: v.filter((x) => x < UMBRALES.suenoMetaHoras).length, unidad: `of ${v.length}`, palabra: etiquetaP, color: v.some((x) => x < UMBRALES.suenoMetaHoras) ? ESTADO.atencion.color : "" },
+      { etiqueta: "Last reaction", icono: "target", valor: t.reaccion ?? "—", unidad: "ms", palabra: t.reaccionBase ? `normal ${Math.round(t.reaccionBase)} ms` : "PVT-B", color: t.reaccionPct > UMBRALES.tarjetas.sueno.reaccionLentaPct ? ESTADO.atencion.color : "" },
     ];
   } else if (k === "huesos") {
     const presc = t.prescrito || 120;
@@ -81,10 +81,10 @@ function Indicadores({ k, t, analisis, data, n, etiquetaP }) {
     const cumplidos = tot.slice(-7).filter((x) => x >= presc).length;
     const rOk = racha(tot, (x) => x >= presc);
     items = [
-      { etiqueta: "Hoy", icono: "dumbbell", valor: t.valor, unidad: "%", palabra: "de lo prescrito", color: E.color },
-      { etiqueta: "Promedio", icono: "chart", valor: Math.round(promedio(v) || 0), unidad: "%", palabra: etiquetaP },
-      { etiqueta: "Días cumplidos", icono: "check", valor: cumplidos, unidad: "de 7", palabra: "última semana", color: cumplidos < 5 ? ESTADO.atencion.color : "" },
-      rOk ? { etiqueta: "Racha", icono: "bolt", valor: rOk, unidad: "días", palabra: "cumpliendo" } : { etiqueta: "Racha", icono: "bolt", valor: t.racha, unidad: "días", palabra: "debajo de lo prescrito", color: ESTADO.critico.color },
+      { etiqueta: "Today", icono: "dumbbell", valor: t.valor, unidad: "%", palabra: "of prescribed", color: E.color },
+      { etiqueta: "Average", icono: "chart", valor: Math.round(promedio(v) || 0), unidad: "%", palabra: etiquetaP },
+      { etiqueta: "Days met", icono: "check", valor: cumplidos, unidad: "of 7", palabra: "last week", color: cumplidos < 5 ? ESTADO.atencion.color : "" },
+      rOk ? { etiqueta: "Streak", icono: "bolt", valor: rOk, unidad: "days", palabra: "on target" } : { etiqueta: "Streak", icono: "bolt", valor: t.racha, unidad: "days", palabra: "below prescribed", color: ESTADO.critico.color },
     ];
   } else {
     const prev = t.serie.length >= 2 * n ? validos(t.serie.slice(-2 * n, -n)) : [];
@@ -92,10 +92,10 @@ function Indicadores({ k, t, analisis, data, n, etiquetaP }) {
     const fmtPar = (a, b) => (t.serie2 ? `${fmtNum(a)}/${fmtNum(b)}` : fmtNum(a, dec));
     const v2 = t.serie2 ? validos(t.serie2.slice(-n)) : [];
     items = [
-      { etiqueta: "Ahora", icono: t.icono, valor: t.texto, unidad: t.unidad, palabra: PALABRA_AHORA[k], color: E.color },
-      { etiqueta: "Promedio", icono: "chart", valor: fmtPar(prom, promedio(v2)), unidad: t.unidad, palabra: etiquetaP, extra: <Flecha actual={prom} previo={promedio(prev)} /> },
-      { etiqueta: "Mínimo", icono: "trend", valor: v.length ? fmtPar(Math.min(...v), v2.length ? Math.min(...v2) : null) : "—", unidad: t.unidad, palabra: etiquetaP },
-      { etiqueta: "Máximo", icono: "trend", valor: v.length ? fmtPar(Math.max(...v), v2.length ? Math.max(...v2) : null) : "—", unidad: t.unidad, palabra: etiquetaP },
+      { etiqueta: "Now", icono: t.icono, valor: t.texto, unidad: t.unidad, palabra: PALABRA_AHORA[k], color: E.color },
+      { etiqueta: "Average", icono: "chart", valor: fmtPar(prom, promedio(v2)), unidad: t.unidad, palabra: etiquetaP, extra: <Flecha actual={prom} previo={promedio(prev)} /> },
+      { etiqueta: "Minimum", icono: "trend", valor: v.length ? fmtPar(Math.min(...v), v2.length ? Math.min(...v2) : null) : "—", unidad: t.unidad, palabra: etiquetaP },
+      { etiqueta: "Maximum", icono: "trend", valor: v.length ? fmtPar(Math.max(...v), v2.length ? Math.max(...v2) : null) : "—", unidad: t.unidad, palabra: etiquetaP },
     ];
   }
   return (
@@ -119,18 +119,18 @@ function Tendencia({ k, t, data, n, periodo, setPeriodo, agrupar, setAgrupar }) 
   const banda = t.rangoPersonal ? [Math.round(t.rangoPersonal[0] * 10) / 10, Math.round(t.rangoPersonal[1] * 10) / 10] : null;
   const linea = { sueno: [UMBRALES.suenoMetaHoras, "7 h"], huesos: [UMBRALES.tarjetas.huesos.atencionPct, "80 %"], cabina: [UMBRALES.cabina.co2AtencionPpm, "3,500 ppm"], animo: [UMBRALES.tarjetas.animo.who5Atencion, "50"] }[k];
   const series = t.serie2
-    ? [{ key: "v", nombre: "Sistólica", color: "accent" }, { key: "v2", nombre: "Diastólica", color: "violet", tipo: "line" }]
-    : [{ key: "v", nombre: CATEGORICAS.has(k) ? (agrupar === "semana" ? "Días con eventos" : "Evento") : t.nombre, color: "accent", tipo: CATEGORICAS.has(k) ? "bar" : undefined }];
+    ? [{ key: "v", nombre: "Systolic", color: "accent" }, { key: "v2", nombre: "Diastolic", color: "violet", tipo: "line" }]
+    : [{ key: "v", nombre: CATEGORICAS.has(k) ? (agrupar === "semana" ? "Days with events" : "Event") : t.nombre, color: "accent", tipo: CATEGORICAS.has(k) ? "bar" : undefined }];
   return (
     <section className="card p-5">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="etiqueta">Tendencia</h2>
+        <h2 className="etiqueta">Trend</h2>
         <div className="flex flex-wrap gap-2">
-          <Pildoras opciones={PERIODOS} valor={periodo} onChange={setPeriodo} etiqueta="Periodo" />
-          <Pildoras opciones={AGRUPAR} valor={agrupar} onChange={setAgrupar} etiqueta="Agrupar" />
+          <Pildoras opciones={PERIODOS} valor={periodo} onChange={setPeriodo} etiqueta="Period" />
+          <Pildoras opciones={AGRUPAR} valor={agrupar} onChange={setAgrupar} etiqueta="Group" />
         </div>
       </div>
-      <TrendChart datos={datos} series={series} banda={CATEGORICAS.has(k) ? null : banda} bandaTxt={banda ? "Tu rango" : undefined}
+      <TrendChart datos={datos} series={series} banda={CATEGORICAS.has(k) ? null : banda} bandaTxt={banda ? "Your range" : undefined}
         linea={linea?.[0]} lineaTxt={linea?.[1]} unidad={CATEGORICAS.has(k) ? "" : t.unidad} dec={dec} alto={250} />
     </section>
   );
@@ -155,7 +155,7 @@ function PorQue({ it }) {
   return (
     <section className={`card flex h-full flex-col gap-3 p-5 ${it.nivel === "bad" ? "glow-crit" : it.nivel === "warn" ? "glow-warn" : ""}`}>
       <div className="flex items-center justify-between gap-2">
-        <h2 className="etiqueta">Por qué</h2>
+        <h2 className="etiqueta">Why</h2>
         <Icon name="medic" size={18} className="text-cyan" />
       </div>
       <div className="flex items-center gap-2.5">
@@ -176,8 +176,8 @@ function QueHacer({ plan, it, clave }) {
   return (
     <section className="card p-5">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <h2 className="etiqueta">Qué hacer</h2>
-        {hayMas && <button onClick={() => setTodo((x) => !x)} className="text-sm font-medium text-cyan hover:underline">{todo ? "ver menos" : "ver más"}</button>}
+        <h2 className="etiqueta">What to do</h2>
+        {hayMas && <button onClick={() => setTodo((x) => !x)} className="text-sm font-medium text-cyan hover:underline">{todo ? "see less" : "see more"}</button>}
       </div>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {BLOQUES.map(([b, nom]) => (
@@ -201,7 +201,7 @@ function QueHacer({ plan, it, clave }) {
           </div>
         ))}
       </div>
-      {plan.omitidas.length > 0 && <div className="mt-3 text-xs text-warn">Se omitió {plan.omitidas.length} acción por tu alergia a {[...new Set(plan.omitidas.map((o) => o.sustancia))].join(", ")}.</div>}
+      {plan.omitidas.length > 0 && <div className="mt-3 text-xs text-warn">{plan.omitidas.length} action(s) skipped because of your allergy to {[...new Set(plan.omitidas.map((o) => o.sustancia))].join(", ")}.</div>}
     </section>
   );
 }
@@ -212,7 +212,7 @@ export function VistaVariable({ k, analisis, data, aid }) {
   const t = analisis.tarjetas.find((x) => x.k === k);
   const it = analisis.interpretaciones[k];
   const n = periodo === "mision" ? data.vitals.length : Math.min(Number(periodo), data.vitals.length);
-  const etiquetaP = periodo === "mision" ? "misión" : `${periodo} días`;
+  const etiquetaP = periodo === "mision" ? "mission" : `${periodo} days`;
   const rel = analisis.activas.filter((a) => (a.vars || [a.var]).includes(k));
   const principal = rel[0] || null;
   const plan = planDeAlerta(data.protocols, principal || { clave: `tarjeta_${k}`, sistema: t.sistema, estado: "atencion" }, data.profile?.alergias);
@@ -235,7 +235,7 @@ export function VistaVariable({ k, analisis, data, aid }) {
       {k === "radiacion" && <RadiacionExtra analisis={analisis} data={data} aid={aid} />}
       <PorQue it={it} />
       <QueHacer key={`${aid}-${k}`} plan={plan} it={it} clave={`${aid}-${k}`} />
-      <Fuente corto className="px-1" ids={[t.fuente, principal?.fuente, plan?.fuente].filter(Boolean).join(",")} extra={k === "cabina" ? "umbrales de demo" : null} />
+      <Fuente corto className="px-1" ids={[t.fuente, principal?.fuente, plan?.fuente].filter(Boolean).join(",")} extra={k === "cabina" ? "demo thresholds" : null} />
     </div>
   );
 }
