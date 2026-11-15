@@ -1,4 +1,4 @@
-const CACHE = "quickfix-v10";
+const CACHE = "quickfix-v11";
 const PAGINAS = ["/", "/analisis", "/pruebas", "/historial", "/perfil", "/reloj", "/bienvenida", "/tripulacion", "/control", "/acceso", "/cuenta"];
 const ASSETS = [
   "/favicon.png",
@@ -53,6 +53,7 @@ self.addEventListener("fetch", (e) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith("/api/")) return;
+  if (url.pathname.startsWith("/video/")) return;
   if (url.pathname.startsWith("/_next/static/") || ASSETS.includes(url.pathname) || url.pathname.startsWith("/icons/")) {
     e.respondWith(cachePrimero(req));
     return;

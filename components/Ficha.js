@@ -1,4 +1,6 @@
 "use client";
+import "./cyber-medic.css";
+import "./cyber-estilo.css";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import CyberButton from "./CyberButton";
@@ -519,8 +521,8 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
   return (
     <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={`Ficha: ${TITULOS[clave]}`} data-ficha={clave}>
       <button type="button" aria-label="Cerrar ficha" onClick={cerrar} className="ficha-fondo absolute inset-0 hidden bg-black/45 min-[1100px]:block" />
-      <div ref={panel} className="ficha-panel glass absolute inset-0 overflow-y-auto overscroll-contain rounded-none min-[1100px]:inset-y-3 min-[1100px]:left-auto min-[1100px]:right-3 min-[1100px]:w-[520px] min-[1100px]:rounded-[23px]"
-        style={{ borderColor: `color-mix(in oklab, ${color} 45%, transparent)` }}>
+      <div ref={panel} className="ficha-panel ficha-cyber glass absolute inset-0 overflow-y-auto overscroll-contain rounded-none min-[1100px]:inset-y-3 min-[1100px]:left-auto min-[1100px]:right-3 min-[1100px]:w-[520px]"
+        style={{ "--nivel": color }}>
         <header className="sticky top-0 z-10 flex items-start gap-3 border-b border-white/10 bg-[#17131a]/85 px-5 py-4 backdrop-blur-md">
           <div className="min-w-0 flex-1">
             <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">{CATEGORIA_FICHA[clave]}</div>
@@ -751,6 +753,10 @@ export default function Ficha({ clave, astronautId, data: dataExt = null, analis
         {mensaje && (
           <div role="status" className="sticky bottom-3 mx-5 mb-3 rounded-full border border-white/15 bg-[#17131a]/95 px-4 py-2 text-center text-xs font-semibold" onClick={() => setMensaje(null)}>{mensaje}</div>
         )}
+      </div>
+      <div aria-hidden className="ficha-cyber-marco absolute inset-0 min-[1100px]:inset-y-3 min-[1100px]:left-auto min-[1100px]:right-3 min-[1100px]:w-[520px]" style={{ "--nivel": color }}>
+        <span className="cm-backdrop"><span className="cm-corner" /></span>
+        <span className="ficha-cyber-barra" />
       </div>
     </div>
   );

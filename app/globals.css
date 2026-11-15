@@ -47,7 +47,11 @@ body { margin: 0; background: transparent; min-height: 100vh; overflow-x: hidden
 .fondo-app-foto { position: absolute; inset: 0; opacity: 0; transition: opacity 1.4s ease; }
 .fondo-app-foto.visible { opacity: 1; }
 .fondo-app-foto img { width: 100%; height: 100%; object-fit: cover; object-position: var(--pos, 50% 50%); transform-origin: 50% 50%; transform: scale(1.04); animation: fondo-deriva 90s ease-in-out infinite alternate; }
-.fondo-app-velo { background: radial-gradient(ellipse 26% 42% at 50% 56%, rgba(5, 4, 14, 0.38), transparent 75%), linear-gradient(180deg, rgba(5, 4, 14, 0.62) 0%, rgba(5, 4, 14, 0.28) 38%, rgba(5, 4, 14, 0.2) 70%, rgba(5, 4, 14, 0.5) 100%); }
+.fondo-app-velo { background: radial-gradient(ellipse 26% 42% at 50% 56%, rgba(5, 4, 14, 0.38), transparent 75%), linear-gradient(180deg, rgba(5, 4, 14, 0.7) 0%, rgba(5, 4, 14, 0.46) 38%, rgba(5, 4, 14, 0.4) 70%, rgba(5, 4, 14, 0.62) 100%); }
+.chip-legible { background: rgba(8, 10, 24, 0.78) !important; -webkit-backdrop-filter: blur(12px) saturate(140%); backdrop-filter: blur(12px) saturate(140%); border-color: rgba(214, 226, 255, 0.22); color: #f2f4ff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6); }
+.chip-legible:hover { background: rgba(20, 24, 48, 0.88) !important; }
+.titulo-categoria { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 8px; border-radius: 6px; background: rgba(8, 10, 24, 0.75); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: var(--color-cyan); font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+.titulo-categoria::before { content: ""; width: 3px; height: 12px; border-radius: 2px; background: var(--color-cyan); box-shadow: 0 0 8px var(--color-cyan); }
 @keyframes fondo-deriva { from { transform: scale(1.04); } to { transform: scale(1.1) translate(-1%, -0.6%); } }
 @media (prefers-reduced-motion: reduce) { .fondo-app-foto img { animation: none; } .fondo-app-foto { transition: none; } }
 

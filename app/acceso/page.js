@@ -3,7 +3,8 @@ import "./acceso.css";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogoIcono, LogoQuickFix } from "@/components/Marca";
-import { CUENTAS_DEMO, ESPECIALIDADES, PERFILES, correoValido, destinoDe, iniciarSesion, registrar } from "@/lib/cuentas";
+import FondoGalaxia from "@/components/FondoGalaxia";
+import { correoRecordado, CUENTAS_DEMO, ESPECIALIDADES, PERFILES, correoValido, destinoDe, iniciarSesion, registrar } from "@/lib/cuentas";
 import { iniciales } from "@/components/Shell";
 
 const SIMBOLOS = {
@@ -44,6 +45,9 @@ function Campo({ id, icono, etiqueta, error, children, ojo }) {
 
 function Login({ alEntrar, aRegistro, aviso, correoInicial }) {
   const [correo, setCorreo] = useState(correoInicial || "");
+  useEffect(() => {
+    if (!correoInicial) setCorreo((c) => c || correoRecordado());
+  }, [correoInicial]);
   const [clave, setClave] = useState("");
   const [recordar, setRecordar] = useState(true);
   const [err, setErr] = useState({});
@@ -84,7 +88,7 @@ function Login({ alEntrar, aRegistro, aviso, correoInicial }) {
         {(ver) => <input type={ver ? "text" : "password"} id="l-pass" placeholder="Contraseña" autoComplete="current-password" value={clave} onChange={limpiar("clave", setClave)} aria-invalid={!!err.clave} aria-describedby={err.clave ? "l-pass-e" : undefined} />}
       </Campo>
       <div className="fila">
-        <label className="check"><input type="checkbox" checked={recordar} onChange={(e) => setRecordar(e.target.checked)} /> Recordarme</label>
+        <label className="check"><input type="checkbox" checked={recordar} onChange={(e) => setRecordar(e.target.checked)} /> Recordar mi correo</label>
         <button type="button" className="enlace" onClick={() => aviso("Pide a tu médico de vuelo que restablezca tu contraseña.")}>¿Olvidaste tu contraseña?</button>
       </div>
       <button className="boton" type="submit">Iniciar sesión</button>
@@ -259,10 +263,12 @@ export default function Acceso() {
 
   return (
     <div className="acceso">
+      <FondoGalaxia />
+      <a className="credito-video" href="https://www.pexels.com/es-es/video/galaxy-estrellas-universo-astronomia-15562120/" target="_blank" rel="noreferrer">Vídeo: Colin Jones · Pexels</a>
       <div className="pagina">
         <section className="hero">
           <div className="marca"><LogoQuickFix alto={84} /></div>
-          <h1>Tu compañero de salud, incluso a millones de kilómetros</h1>
+          <h1>Tu compañero de salud, incluso a <span className="degradado">millones de kilómetros</span></h1>
           <ul>
             <li>¿Cómo está mi cuerpo?</li>
             <li>¿Estoy listo para hoy?</li>

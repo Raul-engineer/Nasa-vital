@@ -69,7 +69,7 @@ function colocar(items, H, alto) {
   return orden;
 }
 
-export default function Cuerpo({ analisis, lista, todas = null, onVer, debug = false, conTarjetas = true, brillo = null, resaltado = null, masHref = null }) {
+export default function Cuerpo({ analisis, lista, onTarjeta = null, extraDe = null, todas = null, onVer, debug = false, conTarjetas = true, brillo = null, resaltado = null, masHref = null }) {
   const completas = todas || lista;
   const caja = useRef(null);
   const { W, H } = useTam(caja);
@@ -186,7 +186,7 @@ export default function Cuerpo({ analisis, lista, todas = null, onVer, debug = f
             <div key={`t-${b.k}-${b.nivel}`} className={`absolute z-10 ${b.sale ? "burbuja-sale pointer-events-none" : "burbuja-entra"}`}
               style={{ left: xDe(b), top: b.y, width: cw, height: ALTO_T, transition: "top .35s ease, left .35s ease, outline-color .2s ease", borderRadius: 23, outline: resaltado === b.k ? `3px solid ${colorDe(b.nivel)}` : "3px solid transparent", outlineOffset: 3 }}
               data-tarjeta={b.k} data-nivel={b.nivel} data-resaltado={resaltado === b.k ? "si" : undefined}>
-              <Metrica t={b.t} analisis={analisis} onClick={() => onVer(b.k)} className="h-full w-full" acento={colorDe(b.nivel)} grande />
+              <Metrica t={b.t} analisis={analisis} onClick={() => (onTarjeta || onVer)(b.k)} extra={b.sale ? null : extraDe?.(b.k)} className="h-full w-full" acento={colorDe(b.nivel)} grande cyber />
             </div>
           ))}
           {masHref && conTarjetas && lista.length > MAX_TARJETAS && (

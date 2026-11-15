@@ -128,7 +128,7 @@ export function EncabezadoPagina({ titulo, sub, derecha }) {
   );
 }
 
-export function Shell({ children, active, astronaut, astronauts = [], onAstronaut, astronautId, estadoGeneral, analisis, pie = true, onAbrirFicha }) {
+export function Shell({ children, active, astronaut, astronauts = [], onAstronaut, astronautId, estadoGeneral, analisis, onAbrirFicha }) {
   const router = useRouter();
   const { hora } = useMissionClock();
   const [conSesion, setConSesion] = useState(false);
@@ -171,12 +171,6 @@ export function Shell({ children, active, astronaut, astronauts = [], onAstronau
         <AlarmaRadiacion radiacion={analisis?.radiacion} astronautId={astronautId} />
         {children}
       </main>
-      {pie && (
-        <footer className="mt-8 flex flex-wrap items-center justify-center gap-2 px-1 text-center text-[11px] text-[#8a8fae]">
-          <span className={`h-1.5 w-1.5 rounded-full ${con.modo === "supabase" ? "bg-ok" : "bg-warn"}`} />
-          {typeof pie === "string" ? pie : "Datos simulados · Medic no diagnostica"}
-        </footer>
-      )}
       <ModalQR abierto={qr} onCerrar={cerrarQr} astronautId={astronautId} />
       <AlarmaCritica astronautId={astronaut?.id ?? astronautId} quien={astronaut?.nombre || "Tripulante"} esOficial={/médic/i.test(astronaut?.rol || "") || active === "/tripulacion"} />
       <VigiaFichas astronautId={astronaut?.id ?? astronautId} onAbrir={(k) => (onAbrirFicha ? onAbrirFicha(k) : router.push(`/?a=${astronaut?.id ?? astronautId}&ficha=${k}`))} />

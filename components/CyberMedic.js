@@ -69,7 +69,7 @@ function Texto({ titulo, parrafos, detalle, copia = false }) {
   );
 }
 
-export default function CyberMedic({ ref, t, it, dia, onProceder, detalle }) {
+export default function CyberMedic({ ref, t, it, dia, onProceder, detalle, textoProceder = "Ver análisis", pregunta = "¿Quieres ver el análisis completo?" }) {
   const id = `medic-${useId().replace(/:/g, "")}`;
   const modal = useRef(null);
   const glitch = useRef(null);
@@ -182,7 +182,7 @@ export default function CyberMedic({ ref, t, it, dia, onProceder, detalle }) {
   const parrafos = [
     it?.conclusion ? `Medic: ${it.conclusion}` : null,
     it?.acciones?.length ? `Qué hacer: ${it.acciones.slice(0, 2).join(" · ")}.` : null,
-    "¿Quieres ver el análisis completo?",
+    pregunta,
   ].filter(Boolean);
 
   return (
@@ -216,7 +216,7 @@ export default function CyberMedic({ ref, t, it, dia, onProceder, detalle }) {
               <path d="m9 10-5 5 5 5" />
             </svg>
           </kbd>
-          <span>Ver análisis</span>
+          <span>{textoProceder}</span>
         </button>
       </div>
     </div>

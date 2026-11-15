@@ -1,4 +1,6 @@
 "use client";
+import "./cyber-medic.css";
+import "./cyber-estilo.css";
 import { useRouter } from "next/navigation";
 import { ChipGeneral, ESTADO, Sparkline } from "@/components/Shell";
 import { Icon } from "@/components/Icons";
@@ -80,33 +82,39 @@ function Encabezado({ t }) {
   );
 }
 
-function Tarjeta({ t, onClick, className, accion = "Ver análisis", extra, children, base = "flex flex-col justify-between p-[18px]", estilo, sinBrillo = false }) {
+function Tarjeta({ t, onClick, className, accion = "Ver análisis", extra, children, base = "flex flex-col justify-between p-[18px]", estilo, sinBrillo = false, cyber = false }) {
+  const clase = cyber
+    ? `tarjeta-cyber ${base} text-left ${className}`
+    : `glass glass-hover ${base} text-left ${sinBrillo ? "" : t.estado === "critico" ? "glow-crit" : t.estado === "atencion" ? "glow-warn" : t.estado === "info" ? "glow-info" : ""} ${className}`;
   return (
-    <div data-tarjeta style={estilo} className={`glass glass-hover ${base} text-left ${sinBrillo ? "" : t.estado === "critico" ? "glow-crit" : t.estado === "atencion" ? "glow-warn" : t.estado === "info" ? "glow-info" : ""} ${className}`}>
+    <div data-tarjeta style={estilo} className={clase}>
+      {cyber && <span className="cm-backdrop" aria-hidden><span className="cm-corner" /></span>}
       <button type="button" onClick={onClick} aria-label={`${t.nombre}: ${t.texto} ${t.unidad}. ${palabraEstado(t)}. ${accion}`}
         aria-haspopup={extra ? "dialog" : undefined}
-        className="absolute inset-0 rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-accent" />
+        className="absolute inset-0 z-[1] rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-accent" />
       {children}
       {extra}
     </div>
   );
 }
 
-export function Metrica({ t, analisis, onClick, className = "", extra, accion, acento = null, grande = false }) {
+export function Metrica({ t, analisis, onClick, className = "", extra, accion, acento = null, grande = false, cyber = false }) {
   const E = ESTADO[t.estado] || ESTADO.normal;
   const color = acento || E.hex;
-  const estilo = acento ? { borderColor: `color-mix(in oklab, ${acento} 62%, transparent)`, boxShadow: `inset 0 1px 0 rgba(255,255,255,0.2), 0 0 0 1px color-mix(in oklab, ${acento} 60%, transparent), 0 0 28px color-mix(in oklab, ${acento} 20%, transparent)`, transition: "border-color .4s, box-shadow .4s" } : undefined;
+  const estilo = cyber
+    ? { "--accent": color }
+    : acento ? { borderColor: `color-mix(in oklab, ${acento} 62%, transparent)`, boxShadow: `inset 0 1px 0 rgba(255,255,255,0.2), 0 0 0 1px color-mix(in oklab, ${acento} 60%, transparent), 0 0 28px color-mix(in oklab, ${acento} 20%, transparent)`, transition: "border-color .4s, box-shadow .4s" } : undefined;
   return (
-    <Tarjeta t={t} onClick={onClick} accion={accion} extra={extra} estilo={estilo} sinBrillo={!!acento} base={`flex flex-col justify-between ${grande ? "p-6" : "p-[18px]"}`} className={`min-h-[154px] ${className}`}>
-      <span className="pointer-events-none relative flex w-full items-center justify-between gap-2">
+    <Tarjeta t={t} onClick={onClick} accion={accion} extra={extra} estilo={estilo} sinBrillo={!!acento} cyber={cyber} base={`flex flex-col justify-between ${grande ? "p-6" : "p-[18px]"}`} className={`min-h-[154px] ${className}`}>
+      <span className="tc-cabeza pointer-events-none relative flex w-full items-center justify-between gap-2">
         <span className={`flex min-w-0 items-center gap-2 text-[#c9cde8] ${grande ? "text-base" : "text-xs"}`}>
-          <Icon name={t.icono} size={grande ? 20 : 16} className="shrink-0 text-[#a5b4ff]" />
-          <span className="truncate">{t.nombre}</span>
+          <Icon name={t.icono} size={grande ? 20 : 16} className="tc-icono shrink-0 text-[#a5b4ff]" />
+          <span className="tc-nombre truncate">{t.nombre}</span>
         </span>
         <Flecha t={t} />
       </span>
       <span className="pointer-events-none relative whitespace-nowrap">
-        <span className={`font-display font-semibold ${grande ? "text-[52px] leading-none tracking-[-1.5px]" : "text-[clamp(23px,2.5vw,31px)] tracking-[-0.7px]"} ${t.estado === "normal" || acento ? "" : E.color}`} style={acento ? { color: acento } : undefined}>{t.texto}</span>
+        <span className={`tc-valor inline-block font-display font-semibold ${grande ? "text-[52px] leading-none tracking-[-1.5px]" : "text-[clamp(23px,2.5vw,31px)] tracking-[-0.7px]"} ${t.estado === "normal" || acento ? "" : E.color}`} style={acento ? { color: acento } : undefined}>{t.texto}</span>
         {t.unidad && <span className={`ml-1.5 text-muted ${grande ? "text-base" : "text-xs"}`}>{t.unidad}</span>}
       </span>
       <span className="pointer-events-none relative flex w-full items-end justify-between gap-2">

@@ -93,7 +93,7 @@ export default function Cuenta() {
   const sucio = cuenta && (nombre.trim() !== cuenta.nombre || (cuenta.rol !== "medico" && Number(puesto) !== Number(cuenta.astronautId)));
 
   return (
-    <Shell astronaut={data?.astronaut} astronauts={data?.astronauts || []} onAstronaut={setAid} astronautId={aid} analisis={analisis} pie={false}>
+    <Shell astronaut={data?.astronaut} astronauts={data?.astronauts || []} onAstronaut={setAid} astronautId={aid} analisis={analisis}>
       <EncabezadoPagina titulo="Configuración de la cuenta" sub="Tus datos de acceso y preferencias" />
       {!cuenta ? (
         <div className="glass p-6 text-muted">Cargando cuenta…</div>
