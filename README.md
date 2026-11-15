@@ -13,18 +13,18 @@ npm run dev
 ```
 Abre http://localhost:3000 (en PowerShell usa `npm.cmd` si `npm` falla por la política de scripts).
 
-- `/` → **Inicio**: silueta con 6 signos vitales y burbuja de Medic, ritmo del día, check-in (con WHO-5 cada 7 días), Medic, índice, sueño, radiación, ejercicio y alergias
+- `/` → **Inicio**: solo "Conoce tu cuerpo": estado general, urgencia y 12 tarjetas (signos vitales a la izquierda, salud espacial a la derecha). Clic en una tarjeta → `/analisis?var=<clave>`
 - `/analisis` → **Análisis**: NEWS2, alertas con su fuente, tendencia 7/30/90 días, plan de acción, prueba recomendada, sección de radiación (gráfica de 90 días y NOAA GOES) y todas las métricas (`/alerta` redirige aquí)
-- `/pruebas` → **Pruebas**: check-in, remedición, ortostática, PVT-B de 3 min, WHO-5, PHQ-9, GAD-7 y rejilla de Amsler
+- `/pruebas` → **Pruebas**: check-in diario de 30 s (primera tarjeta), remedición, ortostática, PVT-B de 3 min, WHO-5, PHQ-9, GAD-7 y rejilla de Amsler
 - `/historial` → **Historial**: calendario con semáforo y eventos de radiación, tendencias de 90 días e historia clínica (NOM-004-SSA3-2012)
 - `/perfil` → **Perfil**: datos médicos, alergias, valores basales, dosis de carrera previa
 - `/reloj` → **Reloj simulado** con tasa de radiación y controles de la demo
 - `/bienvenida` → portada con el logo para elegir astronauta
 
 Cambia de astronauta con el selector:
-- **Reyes** → 8 noches de sueño corto, VFC baja y reacción lenta (rojo por la regla AASM + PVT, índice 54); 180 mSv de misiones previas
-- **Garza** → todo bien (índice 92); 60 mSv previos
-- **Torres** → poco ejercicio (riesgo óseo, índice 85); primera misión; alérgico a la penicilina
+- **Reyes** → 8 noches de sueño corto, VFC baja y reacción lenta (Actúa ahora, índice 54); 180 mSv de misiones previas
+- **Garza** → pico de CO₂ con dolor de cabeza los últimos 2 días (Precaución, índice 92); 60 mSv previos
+- **Torres** → 25 días debajo de su ejercicio prescrito y garganta hoy (Actúa ahora, índice 85); primera misión; alérgico a la penicilina
 
 ## Radiación (tres fuentes, como en la NASA)
 1. **Dosímetro personal** (Crew Active Dosimeter): `dosis_dia_msv` de cada astronauta, 0.4–0.7 mSv/día y 8–25 en tormenta.
@@ -34,8 +34,8 @@ Cambia de astronauta con el selector:
 Límites: 600 mSv de carrera y 250 mSv en 30 días (NASA-STD-3001 / OCHMO). Verde < 50 %, ámbar ≥ 50 % o tasa > 3 veces la línea base, rojo con tormenta activa o ≥ 80 %. En tormenta la tasa se multiplica (S1 ×3, S2 ×6, S3 ×12, S4 ×25, S5 ×50) y baja a la mitad al confirmar refugio.
 
 ## Guion de demo (2 min)
-1. Tablet en Reyes: índice 54, Medic explica el sueño corto y la reacción lenta → "Sí, ajústalo".
-2. Tocar un punto del cuerpo → burbuja de Medic → "Ver su análisis".
+1. Tablet en Reyes: "Actúa ahora" y la tarjeta Sueño y alerta en rojo.
+2. Tocar la tarjeta (o el punto del cuerpo) → Análisis de esa variable: tus números, tendencia, por qué, prueba recomendada y qué hacer.
 3. En el reloj: **Simular tormenta solar** → alarma S3 en el reloj y en la tablet al mismo tiempo, con el protocolo de refugio.
 4. "Ya estoy en refugio" → la tasa baja a la mitad. **Terminar tormenta** → "Evento terminado" con la dosis, guardado en el historial.
 
