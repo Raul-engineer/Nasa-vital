@@ -217,7 +217,7 @@ export function CheckinForm({ astronautId, inicial, onSaved, onResultado, who5Pe
         await savePrueba({ astronaut_id: astronautId, tipo: "who5", resultado: r5, interpretacion: evaluarPrueba("who5", r5).interpretacion });
       }
       const alarma = PREGUNTAS.some((p) => v[p.k]);
-      onResultado?.({ tipo: "checkin", ...ev });
+      onResultado?.({ tipo: "checkin", ...ev, valores: v });
       onSaved?.(alarma ? "Check-in guardado. Medic revisó tus respuestas y abrió alertas nuevas en Análisis." : "Check-in guardado. Medic actualizó tu estado del día.");
     } catch (e) {
       onSaved?.("No se pudo guardar: " + (e.message || e));
@@ -340,7 +340,6 @@ export function ReactionTest({ onDone }) {
   );
 }
 
-const variar = (v, d, dec = 0) => (v == null ? "" : Math.round((Number(v) + (Math.random() * 2 - 1) * d) * 10 ** dec) / 10 ** dec);
 
 function CamposLectura({ valores, onChange, campos }) {
   return (
@@ -365,7 +364,7 @@ export function RemedicionTest({ hoy, onFinish }) {
   const [despues, setDespues] = useState(null);
   const antes = { fc: hoy.fc, spo2: hoy.spo2, sistolica: hoy.sistolica, diastolica: hoy.diastolica };
   function pasarALectura() {
-    setDespues({ fc: variar(hoy.fc, 3), spo2: Math.min(100, variar(hoy.spo2, 0.5, 1)), sistolica: variar(hoy.sistolica, 4), diastolica: variar(hoy.diastolica, 3) });
+    setDespues({ fc: hoy.fc ?? "", spo2: hoy.spo2 ?? "", sistolica: hoy.sistolica ?? "", diastolica: hoy.diastolica ?? "" });
     setFase("lectura");
   }
   useEffect(() => {
@@ -390,13 +389,13 @@ export function RemedicionTest({ hoy, onFinish }) {
         <div className="text-5xl font-semibold tabular-nums" aria-live="polite">{Math.floor(seg / 60)}:{String(seg % 60).padStart(2, "0")}</div>
         <div className="h-2 w-full rounded-full bg-ink/10"><div className="h-full rounded-full bg-accent transition-all" style={{ width: `${(1 - seg / 300) * 100}%` }} /></div>
         <p className="text-sm text-muted">Respira tranquilo. Medic toma la lectura al terminar.</p>
-        <button onClick={pasarALectura} className="rounded-xl border border-line px-4 py-2 text-sm hover:bg-ink/5">Saltar (demo)</button>
+        <button onClick={pasarALectura} className="rounded-xl border border-line px-4 py-2 text-sm hover:bg-ink/5">Saltar espera</button>
       </div>
     );
   return (
     <div className="space-y-3">
       <div className="text-xs text-muted">
-        Lectura anterior: FC {antes.fc} · SpO₂ {antes.spo2} % · PA {antes.sistolica}/{antes.diastolica}. Valores simulados precargados; puedes editarlos.
+        Lectura anterior: FC {antes.fc} · SpO₂ {antes.spo2} % · PA {antes.sistolica}/{antes.diastolica}. Valores precargados; puedes editarlos.
       </div>
       <CamposLectura valores={despues} onChange={setDespues} campos={CAMPOS_REMED} />
       <button onClick={() => onFinish({ antes, despues })} className="w-full rounded-xl bg-accent py-2.5 font-semibold text-onaccent hover:brightness-110">Guardar lectura</button>
@@ -430,7 +429,7 @@ export function OrtostaticaTest({ hoy, onFinish }) {
       </ol>
       <div className="flex items-center gap-2 text-sm text-soft"><Icon name="standing" size={18} className="text-accent" /> {P.d}</div>
       <CamposLectura valores={r[P.k]} onChange={(v) => setR((x) => ({ ...x, [P.k]: v }))} campos={CAMPOS_ORTO} />
-      <div className="text-[11px] text-muted">Valores simulados precargados; puedes editarlos para probar el resultado.</div>
+      <div className="text-[11px] text-muted">Valores precargados; puedes editarlos.</div>
       <div className="flex gap-2">
         {paso > 0 && <button onClick={() => setPaso(paso - 1)} className="flex-1 rounded-xl border border-line py-2.5 hover:bg-ink/5">Atrás</button>}
         {paso < 2 ? (
@@ -465,7 +464,7 @@ export function PvtbTest({ onFinish, base }) {
     setEstimulo(false);
     setFase("fin");
     const dur = Math.round(P.duracionS - Math.max(0, (fin.current - Date.now()) / 1000));
-    onFinish({ ...resumenPvt(resp.current), duracion_s: dur });
+    onFinish({ ...resumenPvt(resp.current), duracion_s: dur, tiempos: resp.current.map((x) => (x.falsa ? "falsa" : x.ms)) });
   };
   const programar = () => {
     clearTimeout(timer.current);
@@ -531,7 +530,7 @@ export function PvtbTest({ onFinish, base }) {
         <div className="rounded-lg bg-ink/5 p-2"><div className="text-muted">Respuestas</div><div className="font-semibold">{n}</div></div>
         <div className="rounded-lg bg-ink/5 p-2"><div className="text-muted">Lapso</div><div className="font-semibold">≥ {P.lapsoMs} ms</div></div>
       </div>
-      {fase === "corriendo" && <button onClick={terminar} className="w-full rounded-xl border border-line py-2 text-sm hover:bg-ink/5">Terminar antes (demo)</button>}
+      {fase === "corriendo" && <button onClick={terminar} className="w-full rounded-xl border border-line py-2 text-sm hover:bg-ink/5">Terminar antes</button>}
     </div>
   );
 }

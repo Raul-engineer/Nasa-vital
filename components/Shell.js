@@ -6,6 +6,8 @@ import CyberButton from "./CyberButton";
 import { AlarmaRadiacion } from "./Radiacion";
 import { useAtajosDemo, useConexion } from "@/lib/useQuickFix";
 import ModalQR from "./ModalQR";
+import VigiaFichas from "./VigiaFichas";
+import AlarmaCritica from "./AlarmaCritica";
 
 export const ESTADO = {
   normal: { txt: "Normal", color: "text-ok", bg: "bg-ok", border: "border-ok/50", hex: "var(--color-ok)" },
@@ -143,7 +145,8 @@ export function EncabezadoPagina({ titulo, sub, derecha }) {
   );
 }
 
-export function Shell({ children, active, astronaut, astronauts = [], onAstronaut, astronautId, estadoGeneral, analisis, pie = true }) {
+export function Shell({ children, active, astronaut, astronauts = [], onAstronaut, astronautId, estadoGeneral, analisis, pie = true, onAbrirFicha }) {
+  const router = useRouter();
   const { hora } = useMissionClock();
   useAtajosDemo(astronautId);
   const q = astronautId ? `?a=${astronautId}` : "";
@@ -189,6 +192,8 @@ export function Shell({ children, active, astronaut, astronauts = [], onAstronau
         </footer>
       )}
       <ModalQR abierto={qr} onCerrar={cerrarQr} astronautId={astronautId} />
+      <AlarmaCritica astronautId={astronaut?.id ?? astronautId} quien={astronaut?.nombre || "Tripulante"} esOficial={/médic/i.test(astronaut?.rol || "") || active === "/tripulacion"} />
+      <VigiaFichas astronautId={astronaut?.id ?? astronautId} onAbrir={(k) => (onAbrirFicha ? onAbrirFicha(k) : router.push(`/?a=${astronaut?.id ?? astronautId}&ficha=${k}`))} />
     </div>
   );
 }

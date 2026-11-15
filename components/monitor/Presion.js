@@ -33,10 +33,9 @@ export default function MonitorPresion({ data, analisis, aid }) {
         raf.current = requestAnimationFrame(paso);
         return;
       }
-      const base = data.vitals.at(-1) || {};
-      const e = analisis.efecto || { sistolica: 0, diastolica: 0 };
-      const sis = Math.round((Number(base.sistolica) || 115) + (Math.random() - 0.5) * 8 + e.sistolica);
-      const dia = Math.round((Number(base.diastolica) || 72) + (Math.random() - 0.5) * 6 + e.diastolica);
+      const base = analisis.hoy || data.vitals.at(-1) || {};
+      const sis = Math.round(Number(base.sistolica) || 115);
+      const dia = Math.round(Number(base.diastolica) || 72);
       medirPresion(aid, sis, dia).finally(() => {
         setInflando(false);
         setPct(0);

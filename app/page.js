@@ -1,13 +1,16 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Shell } from "@/components/Shell";
 import Link from "next/link";
 import Cuerpo, { MAX_TARJETAS } from "@/components/Cuerpo";
 import { Metrica } from "@/components/PanelTripulante";
 import CyberButton from "@/components/CyberButton";
+import Ficha from "@/components/Ficha";
+import { CLAVES_FICHA, gravedadesConFichas } from "@/lib/fichas";
 import { BarraVida, BotonesGravedad, FILTROS, useAlertasActivas, valorCorto } from "@/components/ListaAlertas";
-import { COLOR_GRAVEDAD } from "@/lib/analysis";
+import { COLOR_GRAVEDAD, saludGeneral } from "@/lib/analysis";
+import { useFichas } from "@/lib/useFichas";
 import { useAstronautId, useQuickFix } from "@/lib/useQuickFix";
 
 const AVISO_CRITICO_MS = 3000;
@@ -76,14 +79,23 @@ export default function Inicio() {
   const ancho = useMedia("(min-width: 1100px)");
   const [debug, setDebug] = useState(false);
   const idDatos = data?.astronaut?.id;
-  const items = useAlertasActivas(analisis, idDatos);
+  const fichas = useFichas(idDatos);
+  const vista = useMemo(() => {
+    if (!analisis) return null;
+    const gravedades = gravedadesConFichas(analisis.gravedades, fichas.eventos);
+    return { ...analisis, gravedades, salud: saludGeneral({ gravedades }) };
+  }, [analisis, fichas.eventos]);
+  const items = useAlertasActivas(vista, idDatos);
   const [filtro, setFiltro] = useState(null);
+  const [ficha, setFicha] = useState(null);
   const urlLista = useRef(false);
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
     setDebug(p.get("debug") === "cuerpo");
     const f = p.get("filtro");
     if (FILTROS.includes(f)) setFiltro(f);
+    const fi = p.get("ficha");
+    if (CLAVES_FICHA.includes(fi)) setFicha(fi);
     urlLista.current = true;
   }, []);
   const hayFiltro = !filtro || items.some((a) => a.nivel === filtro);
@@ -95,24 +107,31 @@ export default function Inicio() {
     const url = new URL(window.location.href);
     if (filtro) url.searchParams.set("filtro", filtro);
     else url.searchParams.delete("filtro");
+    if (ficha) url.searchParams.set("ficha", ficha);
+    else url.searchParams.delete("ficha");
     const nueva = `${url.pathname}${url.search}`;
     if (nueva !== `${window.location.pathname}${window.location.search}`) router.replace(nueva, { scroll: false });
-  }, [filtro, router]);
+  }, [filtro, ficha, router]);
 
   if (error)
     return <div className="p-10 text-crit">No se pudieron cargar los datos: {error}. Revisa tus variables de Supabase en .env.local (o bórralas para usar datos locales).</div>;
   if (loading || !analisis) return <div className="flex min-h-screen items-center justify-center text-muted">Cargando QuickFix…</div>;
 
   const { astronaut, astronauts } = data;
-  const salud = analisis.salud;
-  const ir = (k) => router.push(`/analisis?a=${aid}&tab=alertas&var=${k}`);
+  const salud = vista.salud;
+  const ir = (k) => setFicha(k);
   const filtrados = filtro ? items.filter((a) => a.nivel === filtro) : items;
 
   return (
-    <Shell active="/" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis} pie={false}>
+    <Shell active="/" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis} pie={false} onAbrirFicha={setFicha}>
       <h1 className="sr-only">Inicio · {astronaut.nombre}</h1>
 
       <BotonesGravedad items={items} filtro={filtro} onFiltro={setFiltro} />
+      {data.sensor?.length > 0 && (
+        <div role="status" data-revisa-sensor className="mt-3 flex flex-col gap-1 rounded-2xl border border-warn/50 bg-warn/10 px-4 py-2 text-sm font-semibold text-warn">
+          {data.sensor.map((e) => <span key={e.campo}>{e.texto}</span>)}
+        </div>
+      )}
 
       <section aria-label="Cuerpo del astronauta" className="glass relative mt-[14px] flex h-[480px] flex-col overflow-hidden min-[1100px]:h-[clamp(600px,calc(100vh-288px),980px)] min-[1100px]:py-5"
         style={{ background: "radial-gradient(ellipse at 50% 40%, #3a2a2a66, transparent 70%), linear-gradient(160deg, #2b232499, #1b202a99), var(--glass)" }}>
@@ -120,7 +139,7 @@ export default function Inicio() {
           <BarraVida salud={salud} />
         </div>
         <div className="relative min-h-0 flex-1">
-          <Cuerpo analisis={analisis} lista={filtrados} todas={items} onVer={ir} debug={debug} conTarjetas={ancho} masHref={filtro ? `/analisis?a=${aid}&tab=alertas` : null}
+          <Cuerpo analisis={vista} lista={filtrados} todas={items} onVer={ir} debug={debug} conTarjetas={ancho} masHref={filtro ? `/analisis?a=${aid}&tab=alertas` : null}
             brillo={{ color: salud.color, pulsa: salud.clave === "critico" }} />
         </div>
       </section>
@@ -145,6 +164,7 @@ export default function Inicio() {
       </div>
 
       <Aviso items={items} aid={idDatos} onVer={ir} />
+      {ficha && <Ficha clave={ficha} astronautId={aid} data={data} analisis={analisis} onClose={() => setFicha(null)} onAbrir={setFicha} />}
     </Shell>
   );
 }

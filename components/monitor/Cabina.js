@@ -24,9 +24,9 @@ export default function MonitorCabina({ t, analisis, aid }) {
   const Y = (v) => 6 + (1 - (v - lo) / (hi - lo)) * (h - 22);
   const d = serie.map((v, i) => `${i ? "L" : "M"}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(" ");
   const ahora = serie.at(-1);
-  const col = ahora >= C.co2RojoPpm ? MON.rojo : ahora >= C.co2AtencionPpm ? MON.ambar : MON.grisAzul;
+  const col = media >= C.co2RojoPpm ? MON.rojo : media >= C.co2AtencionPpm ? MON.ambar : MON.grisAzul;
   return (
-    <Marco titulo="CO₂ del módulo · 6 h" color={col} valor={ahora != null ? ahora.toLocaleString("es-MX") : "—"} unidad="ppm"
+    <Marco titulo="CO₂ del módulo · 6 h" color={col} valor={media != null ? Number(media).toLocaleString("es-MX") : "—"} unidad="ppm"
       sub={t.cabinaHoy?.temp_c != null ? `${t.cabinaHoy.temp_c} °C · ${t.cabinaHoy.humedad} % humedad` : null}>
       <div ref={caja} className="absolute inset-0">
         <svg width={w} height={h} aria-hidden>

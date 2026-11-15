@@ -72,7 +72,7 @@ export default function MonitorRadiacion({ analisis }) {
   const colPct = (p) => (tormenta || p >= R.criticoPct ? MON.rojo : p >= R.atencionPct ? MON.ambar : color);
   return (
     <Marco titulo={tormenta ? `Dosímetro · tormenta ${r.activo.nivel}` : "Dosímetro personal"} color={color}
-      valor={<span key={lectura.n} className="parpadeo inline-block">{Math.round(lectura.v)}</span>} unidad="µSv/h"
+      valor={<span key={lectura.n} className="parpadeo inline-block">{Math.round(r.tasa)}</span>} unidad="µSv/h"
       sub={`Hoy ${r.hoy.toFixed(2)} mSv · base ${Math.round(r.tasaBase)} µSv/h`}>
       <div className="grid h-full grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
         <div className="relative min-h-[60px] rounded-xl border p-2" style={{ borderColor: `${color}44`, background: tormenta ? `${MON.rojo}14` : "transparent" }}>

@@ -6,6 +6,9 @@ import CyberButton from "@/components/CyberButton";
 import { TablaResumen } from "@/components/analisis/Resumen";
 import { VistaVariable } from "@/components/analisis/Variable";
 import { ChipEstado } from "@/components/analisis/comun";
+import { Registro } from "@/components/analisis/Registro";
+import Ficha from "@/components/Ficha";
+import { CLAVES_FICHA } from "@/lib/fichas";
 import { useAstronautId, useQuickFix } from "@/lib/useQuickFix";
 import { VARIABLES } from "@/lib/analysis";
 import { ESTADO_DE_NIVEL, nivelAlerta, PRIORIDAD_NIVEL } from "@/lib/cuerpo";
@@ -17,7 +20,7 @@ const CATEGORIAS = {
   espacio: { nombre: "Salud en el espacio", claves: ["radiacion", "vision", "huesos", "cabina"] },
   mente: { nombre: "Mente y bienestar", claves: ["sueno", "animo"] },
 };
-const PESTANAS = ["alertas", "vitales", "espacio", "mente", "completo"];
+const PESTANAS = ["alertas", "vitales", "espacio", "mente", "completo", "registro"];
 const ORDEN = [...CATEGORIAS.vitales.claves, ...CATEGORIAS.espacio.claves, ...CATEGORIAS.mente.claves];
 const CORTO = { fc: "FC", pa: "Presión", fr: "FR", temp: "Temperatura", spo2: "SpO₂", conciencia: "Conciencia", radiacion: "Radiación", vision: "Visión", huesos: "Huesos", cabina: "Cabina", sueno: "Sueño", animo: "Ánimo" };
 const UNIDAD = { fc: "lpm", pa: "", fr: "rpm", temp: "°C", spo2: "%", conciencia: "", radiacion: "µSv/h", vision: "", huesos: "%", cabina: "ppm", sueno: "h", animo: "/100" };
@@ -64,6 +67,7 @@ export default function Analisis() {
   const { data, analisis, loading, error } = useQuickFix(aid);
   const [tab, setTab] = useState(null);
   const [vari, setVari] = useState(null);
+  const [ficha, setFicha] = useState(null);
   const inicial = useRef(null);
   const prevAlertas = useRef(null);
   const [pulso, setPulso] = useState(0);
@@ -71,6 +75,7 @@ export default function Analisis() {
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
     inicial.current = { tab: p.get("tab"), var: p.get("var"), a: p.get("a") };
+    if (CLAVES_FICHA.includes(p.get("ficha"))) setFicha(p.get("ficha"));
   }, []);
 
   const info = analisis ? alertasDe(analisis) : null;
@@ -94,7 +99,7 @@ export default function Analisis() {
     prevAlertas.current = n;
   }, [firmaAlertas]);
 
-  const visibles = !info || !tab || tab === "completo" ? [] : tab === "alertas" ? info.lista : CATEGORIAS[tab].claves;
+  const visibles = !info || !tab || tab === "completo" || tab === "registro" ? [] : tab === "alertas" ? info.lista : CATEGORIAS[tab].claves;
   const seleccion = visibles.includes(vari) ? vari : visibles[0] || null;
 
   useEffect(() => {
@@ -104,9 +109,11 @@ export default function Analisis() {
     if (seleccion) url.searchParams.set("var", seleccion);
     else url.searchParams.delete("var");
     ["s", "al", "m"].forEach((x) => url.searchParams.delete(x));
+    if (ficha) url.searchParams.set("ficha", ficha);
+    else url.searchParams.delete("ficha");
     const nueva = `${url.pathname}?${url.searchParams.toString()}`;
     if (nueva !== `${window.location.pathname}${window.location.search}`) router.replace(nueva, { scroll: false });
-  }, [tab, seleccion, router]);
+  }, [tab, seleccion, ficha, router]);
 
   if (error) return <div className="p-10 text-crit">No se pudieron cargar los datos: {error}</div>;
   if (loading || !analisis || !tab) return <div className="flex min-h-screen items-center justify-center text-muted">Cargando análisis…</div>;
@@ -118,7 +125,10 @@ export default function Analisis() {
     setTab(t);
     setVari(null);
   };
-  const elegir = (k) => setVari(k);
+  const elegir = (k) => {
+    setVari(k);
+    if (tab === "alertas") setFicha(k);
+  };
   const abrirDesdeTabla = (k) => {
     setTab(categoriaDe(k));
     setVari(k);
@@ -127,12 +137,12 @@ export default function Analisis() {
   const nivelAlertas = peorNivel(lista, niveles);
 
   return (
-    <Shell active="/analisis" astronaut={astronaut} astronauts={astronauts} onAstronaut={(id) => { setAid(id); setVari(null); }} astronautId={aid} analisis={analisis} pie={PIE}>
+    <Shell active="/analisis" astronaut={astronaut} astronauts={astronauts} onAstronaut={(id) => { setAid(id); setVari(null); }} astronautId={aid} analisis={analisis} pie={PIE} onAbrirFicha={setFicha}>
       <EncabezadoPagina titulo="Análisis" sub={`${12 - fuera} de 12 signos en rango`} derecha={<ChipEstado estado={analisis.general}>{ESTADO_TXT[analisis.general]}</ChipEstado>} />
 
       <nav aria-label="Pestañas de análisis" className="no-scrollbar -mx-1 mb-4 flex gap-1.5 overflow-x-auto px-1 pb-1 min-[900px]:flex-wrap" role="tablist">
         {PESTANAS.map((p) => {
-          const nombre = p === "alertas" ? "⚠ Alertas" : p === "completo" ? "Completo" : CATEGORIAS[p].nombre;
+          const nombre = p === "alertas" ? "⚠ Alertas" : p === "completo" ? "Completo" : p === "registro" ? "Registro" : CATEGORIAS[p].nombre;
           const nCat = p in CATEGORIAS ? CATEGORIAS[p].claves.filter((k) => lista.includes(k)) : [];
           return (
             <CyberButton key={p} onClick={() => cambiarTab(p)} activo={tab === p} tam="sm" texto={nombre} role="tab" aria-selected={tab === p} data-tab={p} className="shrink-0">
@@ -145,7 +155,9 @@ export default function Analisis() {
         })}
       </nav>
 
-      {tab === "completo" ? (
+      {tab === "registro" ? (
+        <Registro aid={astronaut.id} nombre={astronaut.nombre} />
+      ) : tab === "completo" ? (
         <TablaResumen analisis={analisis} onVer={abrirDesdeTabla} />
       ) : tab === "alertas" && lista.length === 0 ? (
         <section className="glass flex flex-col items-center gap-4 px-6 py-10 text-center" data-todo-estable style={{ borderColor: "color-mix(in oklab, var(--color-ok) 45%, transparent)" }}>
@@ -158,9 +170,16 @@ export default function Analisis() {
           <div className="mb-5 flex flex-wrap gap-2" role="tablist" aria-label="Signos">
             {visibles.map((k) => porK[k] && <Chip key={k} t={porK[k]} nivel={niveles[k]} activo={k === seleccion} onClick={() => elegir(k)} />)}
           </div>
+          {seleccion && (
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+              <span className="text-sm text-soft">¿Por qué pasó y qué hago?</span>
+              <CyberButton onClick={() => setFicha(seleccion)} tam="sm" texto="Abrir ficha" data-abrir-ficha={seleccion}>Abrir ficha</CyberButton>
+            </div>
+          )}
           {seleccion && <VistaVariable key={`${aid}-${seleccion}`} k={seleccion} analisis={analisis} data={data} aid={aid} />}
         </>
       )}
+      {ficha && <Ficha clave={ficha} astronautId={aid} data={data} analisis={analisis} onClose={() => setFicha(null)} onAbrir={setFicha} />}
     </Shell>
   );
 }
