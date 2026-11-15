@@ -114,9 +114,9 @@ export default function Inicio() {
 
       <BotonesGravedad items={items} filtro={filtro} onFiltro={setFiltro} />
 
-      <section aria-label="Cuerpo del astronauta" className="glass relative mt-[14px] flex h-[480px] flex-col overflow-hidden min-[1100px]:h-[min(calc(100vh-250px),780px)] min-[1100px]:min-h-[480px]"
+      <section aria-label="Cuerpo del astronauta" className="glass relative mt-[14px] flex h-[480px] flex-col overflow-hidden min-[1100px]:h-[clamp(600px,calc(100vh-288px),980px)] min-[1100px]:py-5"
         style={{ background: "radial-gradient(ellipse at 50% 40%, #3a2a2a66, transparent 70%), linear-gradient(160deg, #2b232499, #1b202a99), var(--glass)" }}>
-        <div className="relative z-20 px-4 pt-4">
+        <div className="relative z-20 px-4 pt-4 min-[1100px]:pt-0">
           <BarraVida salud={salud} />
         </div>
         <div className="relative min-h-0 flex-1">
@@ -140,7 +140,7 @@ export default function Inicio() {
         </section>
       )}
 
-      <div className="mb-10 mt-5 flex justify-center">
+      <div className="mb-4 mt-5 flex justify-center">
         <CyberButton href={`/analisis?a=${aid}&tab=completo`} tam="sm" texto="Ver todos mis datos">Ver todos mis datos</CyberButton>
       </div>
 

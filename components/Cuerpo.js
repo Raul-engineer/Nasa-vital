@@ -5,8 +5,9 @@ import { estadoPersonaje } from "./Personaje";
 import { Metrica } from "./PanelTripulante";
 import { COLOR_GRAVEDAD, marcarFaltante, ORDEN_GRAVEDAD, POSES, poseFalta, PROPORCION, srcPose, ZONA_DE, ZONAS } from "@/lib/cuerpo";
 
-const ALTO_T = 154;
-const SEP = 14;
+const ALTO_T = 200;
+const MARGEN_EXT = 32;
+const ANCHO_MAX = 420;
 const ALTO_OK = 34;
 export const MAX_TARJETAS = 4;
 const POR_LADO = 2;
@@ -61,18 +62,10 @@ function usePose(estado) {
 
 function colocar(items, H, alto) {
   const orden = [...items].sort((a, b) => a.py - b.py);
-  let y = 8;
-  for (const it of orden) {
-    it.y = Math.max(it.py - alto / 2, y);
-    y = it.y + alto + SEP;
-  }
-  if (y - SEP > H - 8) {
-    let lim = H - 8;
-    for (let i = orden.length - 1; i >= 0; i--) {
-      orden[i].y = Math.max(8, Math.min(orden[i].y, lim - alto));
-      lim = orden[i].y - SEP;
-    }
-  }
+  const centros = [H * 0.27, H * 0.73];
+  const limitar = (c) => Math.max(8, Math.min(H - 8 - alto, c - alto / 2));
+  if (orden.length === 1) orden[0].y = limitar(orden[0].py < H / 2 ? centros[0] : centros[1]);
+  else orden.forEach((it, i) => { it.y = limitar(centros[Math.min(i, 1)]); });
   return orden;
 }
 
@@ -85,20 +78,20 @@ export default function Cuerpo({ analisis, lista, todas = null, onVer, debug = f
   const [saliendo, setSaliendo] = useState([]);
   const ultimas = useRef({});
 
-  const pad = 12;
-  let fh = Math.max(0, H - pad * 2);
+  let fh = Math.max(0, H * 0.94);
   let fw = fh * PROPORCION;
-  if (fw > W * 0.5) {
-    fw = W * 0.5;
+  const anchoCentro = conTarjetas ? W * 0.4 : W * 0.9;
+  if (fw > anchoCentro) {
+    fw = anchoCentro;
     fh = fw / PROPORCION;
   }
   const fx = (W - fw) / 2;
   const fy = (H - fh) / 2;
   const punto = (z) => ({ px: fx + (ZONAS[z].x / 100) * fw, py: fy + (ZONAS[z].y / 100) * fh });
-  const separacion = 56;
-  const cw = Math.round(Math.max(220, Math.min(290, fx - separacion - 8)));
-  const xIzq = Math.max(8, fx - separacion - cw);
-  const xDer = Math.min(W - 8 - cw, fx + fw + separacion);
+  const columna = W * 0.3;
+  const cw = Math.round(Math.max(200, Math.min(ANCHO_MAX, columna - MARGEN_EXT - 16)));
+  const xIzq = MARGEN_EXT;
+  const xDer = W - MARGEN_EXT - cw;
 
   const visibles = lista.slice(0, MAX_TARJETAS);
   const izq = [];
@@ -193,7 +186,7 @@ export default function Cuerpo({ analisis, lista, todas = null, onVer, debug = f
             <div key={`t-${b.k}-${b.nivel}`} className={`absolute z-10 ${b.sale ? "burbuja-sale pointer-events-none" : "burbuja-entra"}`}
               style={{ left: xDe(b), top: b.y, width: cw, height: ALTO_T, transition: "top .35s ease, left .35s ease, outline-color .2s ease", borderRadius: 23, outline: resaltado === b.k ? `3px solid ${colorDe(b.nivel)}` : "3px solid transparent", outlineOffset: 3 }}
               data-tarjeta={b.k} data-nivel={b.nivel} data-resaltado={resaltado === b.k ? "si" : undefined}>
-              <Metrica t={b.t} analisis={analisis} onClick={() => onVer(b.k)} className="h-full w-full" acento={colorDe(b.nivel)} />
+              <Metrica t={b.t} analisis={analisis} onClick={() => onVer(b.k)} className="h-full w-full" acento={colorDe(b.nivel)} grande />
             </div>
           ))}
           {masHref && conTarjetas && lista.length > MAX_TARJETAS && (

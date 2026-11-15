@@ -100,16 +100,16 @@ export function BarraVida({ salud }) {
   if (!salud) return null;
   const critico = salud.clave === "critico";
   return (
-    <div className="mx-auto flex w-[60%] min-w-[260px] max-w-[560px] items-center gap-3 rounded-full border border-white/12 bg-black/25 px-3.5 py-2 backdrop-blur-sm" title={TOOLTIP_VIDA}
+    <div className="mx-auto flex w-[50%] min-w-[280px] items-center gap-3 rounded-full border border-white/12 bg-black/25 px-4 py-2 text-[15px] backdrop-blur-sm" title={TOOLTIP_VIDA}
       role="meter" aria-label="Salud" aria-valuemin={0} aria-valuemax={100} aria-valuenow={salud.valor} aria-valuetext={salud.palabra} data-salud={salud.clave}>
-      <span className="flex shrink-0 items-center gap-1.5 text-xs font-semibold text-soft">
+      <span className="flex shrink-0 items-center gap-1.5 font-semibold text-soft">
         <span aria-hidden style={{ color: salud.color }}>♥</span> Salud
       </span>
-      <span className="relative h-3 flex-1 overflow-hidden rounded-full bg-white/10">
+      <span className="relative h-[14px] flex-1 overflow-hidden rounded-full bg-white/10">
         <span className={`vida-relleno absolute inset-y-0 left-0 rounded-full ${critico ? "vida-pulsa" : ""}`}
           style={{ width: `${salud.valor}%`, background: `linear-gradient(90deg, color-mix(in oklab, ${salud.color} 55%, #100f13), ${salud.color})`, boxShadow: `0 0 10px color-mix(in oklab, ${salud.color} 60%, transparent)` }} />
       </span>
-      <span className="w-[72px] shrink-0 text-right text-xs font-semibold" style={{ color: salud.color, transition: "color .6s ease" }}>{salud.palabra}</span>
+      <span className="w-[84px] shrink-0 text-right font-semibold" style={{ color: salud.color, transition: "color .6s ease" }}>{salud.palabra}</span>
     </div>
   );
 }
