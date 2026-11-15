@@ -1,8 +1,11 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Icon } from "./Icons";
-import CyberButton from "./CyberButton";
+import { LogoQuickFix } from "./Marca";
+import MenuCuenta from "./MenuCuenta";
+import { sesionActual } from "@/lib/cuentas";
 import { AlarmaRadiacion } from "./Radiacion";
 import { useAtajosDemo, useConexion } from "@/lib/useQuickFix";
 import ModalQR from "./ModalQR";
@@ -80,32 +83,12 @@ export function FullscreenToggle({ className = "" }) {
   const txt = activo ? "Salir de pantalla completa" : "Pantalla completa";
   return (
     <button onClick={alternar} aria-label={txt} title={txt} aria-pressed={activo}
-      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.07] text-soft transition hover:bg-white/[0.13] hover:text-fg ${className}`}>
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-soft transition hover:border-[#8f86ff80] hover:bg-white/[0.12] hover:text-fg ${className}`}>
       {activo ? <Icon name="compress" size={18} /> : <span aria-hidden className="text-lg leading-none">⛶</span>}
     </button>
   );
 }
 
-function Avatar({ astronaut, astronauts, onAstronaut, hora }) {
-  const puede = astronauts.length > 1 && onAstronaut;
-  return (
-    <div className="relative flex items-center gap-2.5" title={astronaut?.nombre}>
-      <div className="hidden text-right leading-tight xl:block">
-        <div className="text-[13px] font-semibold">{astronaut?.nombre ?? "…"}</div>
-        <div className="text-[11px] text-muted">Día {astronaut?.dia_mision ?? "…"} · {hora}</div>
-      </div>
-      <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#ffb477,#8b4734)] text-xs font-bold text-white shadow-[0_0_16px_#ff975d44]">
-        {iniciales(astronaut?.nombre)}
-      </span>
-      {puede && (
-        <select value={astronaut?.id ?? 1} onChange={(e) => onAstronaut(Number(e.target.value))} aria-label="Cambiar de astronauta"
-          className="absolute inset-0 h-full w-full cursor-pointer opacity-0">
-          {astronauts.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
-        </select>
-      )}
-    </div>
-  );
-}
 
 function useAtajosNav(q) {
   const router = useRouter();
@@ -145,9 +128,14 @@ export function EncabezadoPagina({ titulo, sub, derecha }) {
   );
 }
 
-export function Shell({ children, active, astronaut, astronauts = [], onAstronaut, astronautId, estadoGeneral, analisis, pie = true, onAbrirFicha }) {
+export function Shell({ children, active, astronaut, astronauts = [], onAstronaut, astronautId, estadoGeneral, analisis, onAbrirFicha }) {
   const router = useRouter();
   const { hora } = useMissionClock();
+  const [conSesion, setConSesion] = useState(false);
+  useEffect(() => {
+    if (sesionActual()) setConSesion(true);
+    else router.replace("/acceso");
+  }, [router]);
   useAtajosDemo(astronautId);
   const q = astronautId ? `?a=${astronautId}` : "";
   useAtajosNav(q);
@@ -156,28 +144,26 @@ export function Shell({ children, active, astronaut, astronauts = [], onAstronau
   const [qr, setQr] = useState(false);
   const cerrarQr = useCallback(() => setQr(false), []);
   const con = useConexion();
+  if (!conSesion) return <div className="flex min-h-screen items-center justify-center text-muted">Verificando sesión…</div>;
   return (
     <div className="mx-auto min-h-screen max-w-[1540px] px-3 pb-6 pt-3 sm:px-7 sm:pt-[22px]">
-      <header className="glass flex min-h-[72px] flex-wrap items-center gap-3 px-4 py-3 sm:gap-[18px] sm:px-[18px]">
-        <button type="button" onClick={() => setQr(true)} aria-label="QuickFix: controlar los datos desde el celular" title="Controla los datos desde tu celular" className="flex min-w-0 items-center gap-2.5 rounded-xl text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan sm:min-w-[180px]">
-          <span className="grid h-[37px] w-[37px] shrink-0 place-items-center overflow-hidden rounded-xl border border-[#ffc09980] bg-[linear-gradient(145deg,#ff9c64,#a64d32)] shadow-[0_0_22px_#f97b4466]">
-            <img src="/logo-quickfix-icono.png" alt="" width={30} height={30} className="h-[30px] w-[30px] object-contain" />
-          </span>
-          <span className="font-display text-[21px] font-bold">Quick<span className="text-accent">Fix</span></span>
+      <header className="barra flex min-h-[72px] flex-wrap items-center gap-3 px-2 py-3 sm:gap-[18px] sm:px-1">
+        <button type="button" onClick={() => setQr(true)} aria-label="QuickFix: controlar los datos desde el celular" title="Controla los datos desde tu celular" className="flex min-w-0 items-center gap-2.5 rounded-xl text-left drop-shadow-[0_0_14px_rgba(80,100,255,0.35)] focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan sm:min-w-[180px]">
+          <LogoQuickFix alto={52} titulo="" />
         </button>
 
-        <nav aria-label="Secciones" className="nav-cyber order-last flex w-full flex-wrap justify-start gap-[3px] min-[1100px]:order-none min-[1100px]:w-auto min-[1100px]:flex-1 min-[1100px]:justify-center">
+        <nav aria-label="Secciones" className="nav-pills order-last flex w-full flex-wrap justify-start gap-1 min-[1100px]:order-none min-[1100px]:w-auto min-[1100px]:flex-1 min-[1100px]:justify-center">
           {NAV.map((n, i) => (
-            <CyberButton key={n.href} href={n.href + q} atajo={i + 1} activo={active === n.href} texto={n.label} tam="sm">
-              <span aria-hidden>{n.glifo}</span> {n.label}
-            </CyberButton>
+            <Link key={n.href} href={n.href + q} aria-current={active === n.href ? "page" : undefined} aria-keyshortcuts={String(i + 1)} title={`${n.label} · atajo ${i + 1}`} className={`nav-pill ${active === n.href ? "activo" : ""}`}>
+              <span className="nav-pill-texto">{n.label}</span>
+            </Link>
           ))}
         </nav>
 
         <div className="ml-auto flex items-center gap-2 min-[1100px]:ml-0">
           {eg && <ChipGeneral estado={eg} className="hidden sm:inline-flex">{ESTADO_GENERAL[eg]}</ChipGeneral>}
           <FullscreenToggle />
-          <Avatar astronaut={astronaut} astronauts={astronauts} onAstronaut={onAstronaut} hora={hora} />
+          <MenuCuenta astronaut={astronaut} astronauts={astronauts} onAstronaut={onAstronaut} hora={hora} q={q} />
         </div>
       </header>
       <main className="pt-5">
@@ -185,12 +171,6 @@ export function Shell({ children, active, astronaut, astronauts = [], onAstronau
         <AlarmaRadiacion radiacion={analisis?.radiacion} astronautId={astronautId} />
         {children}
       </main>
-      {pie && (
-        <footer className="mt-8 flex flex-wrap items-center justify-center gap-2 px-1 text-center text-[11px] text-[#8f838a]">
-          <span className={`h-1.5 w-1.5 rounded-full ${con.modo === "supabase" ? "bg-ok" : "bg-warn"}`} />
-          {typeof pie === "string" ? pie : "Datos simulados · Medic no diagnostica"}
-        </footer>
-      )}
       <ModalQR abierto={qr} onCerrar={cerrarQr} astronautId={astronautId} />
       <AlarmaCritica astronautId={astronaut?.id ?? astronautId} quien={astronaut?.nombre || "Tripulante"} esOficial={/médic/i.test(astronaut?.rol || "") || active === "/tripulacion"} />
       <VigiaFichas astronautId={astronaut?.id ?? astronautId} onAbrir={(k) => (onAbrirFicha ? onAbrirFicha(k) : router.push(`/?a=${astronaut?.id ?? astronautId}&ficha=${k}`))} />

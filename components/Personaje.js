@@ -9,7 +9,7 @@ export const CATEGORIAS = [["vitales", ORDEN_VITALES], ["espacio", ORDEN_ESPACIO
 
 export const ESTADOS_PERSONAJE = {
   estable: { color: "#83e0b7", flota: "4s", pulso: "4s", visor: "#5a6077" },
-  atencion: { color: "#ffbe72", flota: "3.6s", pulso: "2.6s", visor: "#6b5a48" },
+  atencion: { color: "#f5d76e", flota: "3.6s", pulso: "2.6s", visor: "#6b5a48" },
   critico: { color: "#ff7278", flota: "3.2s", pulso: "1.6s", visor: "#6e4048" },
   esfuerzo: { color: "#7cc4ff", flota: "2.2s", pulso: "1.2s", visor: "#3f5c7c" },
   fatiga: { color: "#b69cff", flota: "7.5s", pulso: "5s", visor: "#4f4870" },

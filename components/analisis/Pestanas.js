@@ -16,7 +16,7 @@ export function Contador({ n, nivel, color = null, pulso, grande = false }) {
 export function ChipMetrica({ id, etiqueta, valor, unidad, colorPunto, colorBorde = null, activo, atenuado = false, nota = null, nivel, onClick, datos = {} }) {
   return (
     <button onClick={onClick} role="tab" aria-selected={activo} data-chip={id} data-nivel={nivel} {...datos}
-      className={`glass flex items-center gap-2 rounded-full px-3.5 py-2 text-sm transition ${activo ? "bg-white/[0.14] font-semibold" : "hover:bg-white/[0.08]"} ${atenuado ? "opacity-55" : ""}`}
+      className={`glass chip-legible flex items-center gap-2 rounded-full px-3.5 py-2 text-sm transition ${activo ? "font-semibold" : ""} ${atenuado ? "opacity-70" : ""}`}
       style={{ borderRadius: 9999, borderColor: colorBorde ? `color-mix(in oklab, ${colorBorde} ${activo ? 85 : 55}%, transparent)` : activo ? "rgba(168,255,240,0.7)" : undefined, boxShadow: activo ? `0 0 0 1px ${colorBorde || "rgba(168,255,240,0.6)"}, 0 0 18px color-mix(in oklab, ${colorBorde || "#a8fff0"} 25%, transparent)` : undefined }}>
       <span className="dot-estado" style={{ color: colorPunto }} />
       <span>{etiqueta}</span>

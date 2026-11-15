@@ -14,9 +14,9 @@ function TarjetaTripulante({ id, activo, onElegir }) {
   return (
     <button onClick={() => onElegir(id)} aria-pressed={activo} aria-label={`${a.nombre}, ${a.rol}. ${ESTADO_GENERAL[eg]}. ${alertas} alertas`}
       className={`glass glass-hover flex min-h-[150px] flex-col gap-3 p-5 text-left ${activo ? "border-accent/80" : ""}`}
-      style={activo ? { boxShadow: "inset 0 1px 0 rgba(255,255,255,0.26), 0 0 0 1px rgba(255,151,93,0.7), 0 0 28px rgba(255,151,93,0.25)" } : undefined}>
+      style={activo ? { boxShadow: "inset 0 1px 0 rgba(255,255,255,0.26), 0 0 0 1px rgba(143,134,255,0.7), 0 0 28px rgba(143,134,255,0.25)" } : undefined}>
       <span className="flex w-full items-center gap-3">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#ffb477,#8b4734)] text-sm font-bold text-white">{iniciales(a.nombre)}</span>
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#22d3ee,#8b7bff)] text-sm font-bold text-[#0b0820]">{iniciales(a.nombre)}</span>
         <span className="min-w-0 flex-1">
           <span className="block truncate font-display text-lg font-semibold">{a.nombre}</span>
           <span className="block truncate text-xs text-muted">{a.rol}</span>

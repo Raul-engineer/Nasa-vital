@@ -5,12 +5,14 @@ import { Shell } from "@/components/Shell";
 import Link from "next/link";
 import Cuerpo, { MAX_TARJETAS } from "@/components/Cuerpo";
 import { Metrica } from "@/components/PanelTripulante";
-import CyberButton from "@/components/CyberButton";
+import BotonDatos from "@/components/BotonDatos";
 import Ficha from "@/components/Ficha";
 import { CLAVES_FICHA, gravedadesConFichas } from "@/lib/fichas";
 import { BarraVida, BotonesGravedad, FILTROS, useAlertasActivas, valorCorto } from "@/components/ListaAlertas";
 import { COLOR_GRAVEDAD, saludGeneral } from "@/lib/analysis";
 import { useFichas } from "@/lib/useFichas";
+import FondoCuerpo from "@/components/FondoCuerpo";
+import CyberMedic from "@/components/CyberMedic";
 import { useAstronautId, useQuickFix } from "@/lib/useQuickFix";
 
 const AVISO_CRITICO_MS = 3000;
@@ -89,6 +91,7 @@ export default function Inicio() {
   const [filtro, setFiltro] = useState(null);
   const [ficha, setFicha] = useState(null);
   const urlLista = useRef(false);
+  const modales = useRef({});
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
     setDebug(p.get("debug") === "cuerpo");
@@ -120,10 +123,13 @@ export default function Inicio() {
   const { astronaut, astronauts } = data;
   const salud = vista.salud;
   const ir = (k) => setFicha(k);
+  const porK = Object.fromEntries(analisis.tarjetas.map((t) => [t.k, t]));
+  const medic = (k) => porK[k] && <CyberMedic ref={(r) => { modales.current[k] = r; }} t={porK[k]} it={analisis.interpretaciones?.[k]} dia={astronaut.dia_mision} onProceder={() => ir(k)} textoProceder="Abrir ficha" pregunta="¿Quieres abrir su ficha?" />;
+  const abrir = (k) => (modales.current[k] ? modales.current[k].abrir() : ir(k));
   const filtrados = filtro ? items.filter((a) => a.nivel === filtro) : items;
 
   return (
-    <Shell active="/" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis} pie={false} onAbrirFicha={setFicha}>
+    <Shell active="/" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis} onAbrirFicha={setFicha}>
       <h1 className="sr-only">Inicio · {astronaut.nombre}</h1>
 
       <BotonesGravedad items={items} filtro={filtro} onFiltro={setFiltro} />
@@ -134,12 +140,13 @@ export default function Inicio() {
       )}
 
       <section aria-label="Cuerpo del astronauta" className="glass relative mt-[14px] flex h-[480px] flex-col overflow-hidden min-[1100px]:h-[clamp(600px,calc(100vh-288px),980px)] min-[1100px]:py-5"
-        style={{ background: "radial-gradient(ellipse at 50% 40%, #3a2a2a66, transparent 70%), linear-gradient(160deg, #2b232499, #1b202a99), var(--glass)" }}>
+        style={{ background: "linear-gradient(180deg, rgba(8,10,28,.18), rgba(8,10,28,.42))", backdropFilter: "none", WebkitBackdropFilter: "none", "--tono": salud.color }}>
+        <FondoCuerpo />
         <div className="relative z-20 px-4 pt-4 min-[1100px]:pt-0">
           <BarraVida salud={salud} />
         </div>
         <div className="relative min-h-0 flex-1">
-          <Cuerpo analisis={vista} lista={filtrados} todas={items} onVer={ir} debug={debug} conTarjetas={ancho} masHref={filtro ? `/analisis?a=${aid}&tab=alertas` : null}
+          <Cuerpo analisis={vista} lista={filtrados} todas={items} onVer={ir} onTarjeta={abrir} extraDe={medic} debug={debug} conTarjetas={ancho} masHref={filtro ? `/analisis?a=${aid}&tab=alertas` : null}
             brillo={{ color: salud.color, pulsa: salud.clave === "critico" }} />
         </div>
       </section>
@@ -148,7 +155,7 @@ export default function Inicio() {
         <section aria-label="Alertas" className="mt-[14px] grid grid-cols-2 gap-[9px] min-[640px]:gap-[14px]">
           {filtrados.slice(0, MAX_TARJETAS).map((a) => (
             <div key={`${a.k}-${a.nivel}`} className="burbuja-entra" data-tarjeta-movil={a.k} data-nivel={a.nivel}>
-              <Metrica t={a.t} analisis={analisis} onClick={() => ir(a.k)} className="h-full w-full" acento={COLOR_GRAVEDAD[a.nivel]} />
+              <Metrica t={a.t} analisis={analisis} onClick={() => abrir(a.k)} extra={medic(a.k)} className="h-full w-full" acento={COLOR_GRAVEDAD[a.nivel]} cyber />
             </div>
           ))}
           {filtro && filtrados.length > MAX_TARJETAS && (
@@ -159,8 +166,8 @@ export default function Inicio() {
         </section>
       )}
 
-      <div className="mb-4 mt-5 flex justify-center">
-        <CyberButton href={`/analisis?a=${aid}&tab=completo`} tam="sm" texto="Ver todos mis datos">Ver todos mis datos</CyberButton>
+      <div className="mb-8 mt-6 flex justify-center px-2">
+        <BotonDatos href={`/analisis?a=${aid}&tab=completo`} detalle={`${analisis.tarjetas.length} signos · tabla completa`} />
       </div>
 
       <Aviso items={items} aid={idDatos} onVer={ir} />

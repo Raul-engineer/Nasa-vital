@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { EncabezadoPagina, ESTADO, Shell } from "@/components/Shell";
 import CyberButton from "@/components/CyberButton";
+import BotonPestana from "@/components/BotonPestana";
 import { TablaResumen } from "@/components/analisis/Resumen";
 import { VistaVariable } from "@/components/analisis/Variable";
 import { ChipEstado } from "@/components/analisis/comun";
@@ -14,7 +15,6 @@ import { useAstronautId, useQuickFix } from "@/lib/useQuickFix";
 import { VARIABLES } from "@/lib/analysis";
 import { ESTADO_DE_NIVEL, nivelAlerta, PRIORIDAD_NIVEL } from "@/lib/cuerpo";
 
-const PIE = "Datos simulados · Medic no diagnostica; lo grave se escala al médico de tripulación.";
 const ESTADO_TXT = { normal: "Bien", atencion: "Precaución", critico: "Actúa ahora" };
 const CATEGORIAS = {
   vitales: { nombre: "Signos vitales", claves: ["fc", "pa", "fr", "temp", "spo2", "conciencia"] },
@@ -118,7 +118,7 @@ export default function Analisis() {
   const nivelAlertas = peorNivel(lista, niveles);
 
   return (
-    <Shell active="/analisis" astronaut={astronaut} astronauts={astronauts} onAstronaut={(id) => { setAid(id); setVari(null); }} astronautId={aid} analisis={analisis} pie={PIE} onAbrirFicha={setFicha}>
+    <Shell active="/analisis" astronaut={astronaut} astronauts={astronauts} onAstronaut={(id) => { setAid(id); setVari(null); }} astronautId={aid} analisis={analisis} onAbrirFicha={setFicha}>
       <EncabezadoPagina titulo="Análisis" sub={`${12 - fuera} de 12 signos en rango`} derecha={<ChipEstado estado={analisis.general}>{ESTADO_TXT[analisis.general]}</ChipEstado>} />
 
       <nav aria-label="Pestañas de análisis" className="no-scrollbar -mx-1 mb-4 flex gap-1.5 overflow-x-auto px-1 pb-1 min-[900px]:flex-wrap" role="tablist">
@@ -126,12 +126,12 @@ export default function Analisis() {
           const nombre = p === "alertas" ? "⚠ Alertas" : p === "completo" ? "Completo" : p === "registro" ? "Registro" : CATEGORIAS[p].nombre;
           const nCat = p in CATEGORIAS ? CATEGORIAS[p].claves.filter((k) => lista.includes(k)) : [];
           return (
-            <CyberButton key={p} onClick={() => cambiarTab(p)} activo={tab === p} tam="sm" texto={nombre} role="tab" aria-selected={tab === p} data-tab={p} className="shrink-0">
+            <BotonPestana key={p} onClick={() => cambiarTab(p)} activo={tab === p} role="tab" aria-selected={tab === p} data-tab={p} className="shrink-0">
               {nombre}
               {p === "alertas" && <> · <Contador n={lista.length || "0"} nivel={nivelAlertas || "ok"} pulso={pulso} grande /></>}
               {p === "completo" && " · 12"}
               {p in CATEGORIAS && <Contador n={nCat.length} nivel={peorNivel(nCat, niveles)} />}
-            </CyberButton>
+            </BotonPestana>
           );
         })}
       </nav>

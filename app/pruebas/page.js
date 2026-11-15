@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { EncabezadoPagina, Shell, Sparkline } from "@/components/Shell";
 import CyberButton from "@/components/CyberButton";
+import BotonPestana from "@/components/BotonPestana";
 import { Icon } from "@/components/Icons";
 import { GlowingEffect } from "@/components/Effects";
 import { Fuente } from "@/components/Widgets";
@@ -15,7 +16,6 @@ import {
 } from "@/lib/pruebas";
 import { COLOR_NIVEL, ETIQUETA_NIVEL, TITULOS } from "@/lib/fichas";
 
-const PIE = "Medic no diagnostica; lo grave se escala al médico de tripulación.";
 const DIA = 864e5;
 const NOMBRE_PESTANA = { alertas: "⚠ Alertas", completo: "Completo" };
 
@@ -168,19 +168,19 @@ export default function Pruebas() {
   const pElegida = elegida ? PRUEBAS_POR_ID[elegida] : null;
 
   return (
-    <Shell active="/pruebas" astronaut={astronaut} astronauts={astronauts} onAstronaut={(id) => { setAid(id); setSel(null); }} astronautId={aid} analisis={analisis} pie={PIE}>
+    <Shell active="/pruebas" astronaut={astronaut} astronauts={astronauts} onAstronaut={(id) => { setAid(id); setSel(null); }} astronautId={aid} analisis={analisis}>
       <EncabezadoPagina titulo="Pruebas" sub={`${PRUEBAS_CATALOGO.length} pruebas · ${recomendadas.size} recomendadas por tus alertas`} />
 
       <nav aria-label="Pestañas de pruebas" className="no-scrollbar -mx-1 mb-4 flex gap-1.5 overflow-x-auto px-1 pb-1 min-[900px]:flex-wrap" role="tablist">
         {PESTANAS_PRUEBAS.map((t) => {
           const nombre = NOMBRE_PESTANA[t] || CATEGORIAS_PRUEBA[t].nombre;
           return (
-            <CyberButton key={t} onClick={() => cambiarTab(t)} activo={tab === t} tam="sm" texto={nombre} role="tab" aria-selected={tab === t} data-tab={t} className="shrink-0">
+            <BotonPestana key={t} onClick={() => cambiarTab(t)} activo={tab === t} role="tab" aria-selected={tab === t} data-tab={t} className="shrink-0">
               {nombre}
               {t === "alertas" && conteo.alertas.n > 0 && <> · <Contador n={conteo.alertas.n} color={COLOR_NIVEL[conteo.alertas.nivel] || COLOR_NIVEL.urgente} grande /></>}
               {t === "completo" && ` · ${PRUEBAS_CATALOGO.length}`}
               {ORDEN_CATEGORIAS.includes(t) && <Contador n={conteo[t].n} color={COLOR_NIVEL[conteo[t].nivel] || COLOR_NIVEL.urgente} />}
-            </CyberButton>
+            </BotonPestana>
           );
         })}
       </nav>
@@ -197,7 +197,7 @@ export default function Pruebas() {
             <div className="mb-5 space-y-3" data-chips-completo>
               {ORDEN_CATEGORIAS.map((c) => (
                 <div key={c}>
-                  <div className="etiqueta mb-2 px-0.5">{CATEGORIAS_PRUEBA[c].nombre}</div>
+                  <div className="titulo-categoria mb-2">{CATEGORIAS_PRUEBA[c].nombre}</div>
                   <div className="flex flex-wrap gap-2" role="tablist" aria-label={CATEGORIAS_PRUEBA[c].nombre}>{idsDePestana(c, recomendadas).map(chip)}</div>
                 </div>
               ))}

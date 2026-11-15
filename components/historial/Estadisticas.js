@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, Pie, PieChart, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import CyberButton from "@/components/CyberButton";
+import BotonPestana from "@/components/BotonPestana";
 import { Sparkline } from "@/components/Shell";
 import DetalleRespuestas from "@/components/DetalleRespuestas";
 import { analizarDia, fechaLocal, percentil } from "@/lib/analysis";
@@ -364,7 +365,7 @@ export default function Estadisticas({ data, porDia, aid, astronauts, onAstronau
 
       <nav className="no-scrollbar -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 min-[900px]:flex-wrap" role="tablist" aria-label="Categorías del historial">
         {PESTANAS.map(([k, t]) => (
-          <CyberButton key={k} onClick={() => { setTab(k); setPrueba(null); setTripulacion(false); }} activo={!tripulacion && tab === k} tam="sm" texto={t} role="tab" aria-selected={tab === k} data-tab-historial={k} className="shrink-0">{t}</CyberButton>
+          <BotonPestana key={k} onClick={() => { setTab(k); setPrueba(null); setTripulacion(false); }} activo={!tripulacion && tab === k} role="tab" aria-selected={tab === k} data-tab-historial={k} className="shrink-0">{t}</BotonPestana>
         ))}
       </nav>
 

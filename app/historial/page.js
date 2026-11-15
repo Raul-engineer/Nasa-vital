@@ -177,7 +177,7 @@ export default function Historial() {
   const dosisDe = (f) => Number(vitals.find((x) => x.fecha === f)?.dosis_dia_msv) || 0;
 
   return (
-    <Shell active="/historial" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis} pie="Medic no diagnostica; lo grave se escala al médico de tripulación.">
+    <Shell active="/historial" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis}>
       <EncabezadoPagina titulo="Historial" sub={`${vitals.length} días de misión · por categoría, prueba e historia clínica`} />
 
       <Estadisticas data={data} porDia={porDia} aid={aid} astronauts={astronauts} onAstronaut={setAid}>

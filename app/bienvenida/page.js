@@ -43,7 +43,7 @@ export default function Bienvenida() {
       <BackgroundBeams className="-z-10 opacity-60" />
       <div className="flex flex-col items-center text-center">
         <h1 className="sr-only">QuickFix · Another successful procedure</h1>
-        <LogoCompleto alto={110} />
+        <LogoCompleto alto={90} />
         <p className="mt-6 max-w-md text-[15px] leading-relaxed text-soft">
           Tu compañero de salud para misiones de larga duración. Revisa tu cuerpo, actúa a tiempo y cuídate.
         </p>
@@ -67,7 +67,7 @@ export default function Bienvenida() {
                   className={`card relative flex flex-col items-start gap-3 p-5 text-left transition ${activo ? "glow-accent bg-accent/5" : "hover:bg-ink/5"}`}
                 >
                   <GlowingEffect />
-                  <div className="h-11 w-11 rounded-full bg-[radial-gradient(circle_at_35%_35%,#f59e6b,#b4472b_55%,#5b1d12)]" />
+                  <div className="h-11 w-11 rounded-full bg-[radial-gradient(circle_at_35%_35%,#7dd3fc,#4f46e5_55%,#1e1b4b)]" />
                   <div>
                     <div className="font-semibold">{a.nombre}</div>
                     <div className="text-xs text-muted">{a.rol}</div>
@@ -99,6 +99,9 @@ export default function Bienvenida() {
         </button>
         <Link href={`/reloj?a=${sel}`} className="rounded-xl border border-line px-6 py-3 hover:bg-ink/5">
           Abrir reloj
+        </Link>
+        <Link href="/acceso" className="rounded-xl border border-line px-6 py-3 hover:bg-ink/5">
+          Iniciar sesión
         </Link>
       </div>
       <div className="mt-6 text-xs text-muted">El índice de preparación es orientativo, no una autorización médica.</div>

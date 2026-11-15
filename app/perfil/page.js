@@ -144,7 +144,7 @@ export default function Perfil() {
   return (
     <Shell active="/perfil" astronaut={astronaut} astronauts={astronauts} onAstronaut={setAid} astronautId={aid} analisis={analisis}>
       <EncabezadoPagina titulo="Perfil" sub={`${astronaut.nombre} · ${astronaut.rol}`}
-        derecha={<span role="note" className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3.5 py-2 text-xs text-[#f4c9ac]"><Icon name="shield" size={15} /> Confidencial · solo tú y tu médico de tripulación</span>} />
+        derecha={<span role="note" className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3.5 py-2 text-xs text-[#c9d2ff]"><Icon name="shield" size={15} /> Confidencial · solo tú y tu médico de tripulación</span>} />
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)]">
         <div className="flex flex-col gap-5">

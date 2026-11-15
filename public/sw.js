@@ -1,8 +1,9 @@
-const CACHE = "quickfix-v4";
-const PAGINAS = ["/", "/analisis", "/pruebas", "/historial", "/perfil", "/reloj", "/bienvenida", "/tripulacion", "/control"];
+const CACHE = "quickfix-v11";
+const PAGINAS = ["/", "/analisis", "/pruebas", "/historial", "/perfil", "/reloj", "/bienvenida", "/tripulacion", "/control", "/acceso", "/cuenta"];
 const ASSETS = [
   "/favicon.png",
   "/esqueleto.webp",
+  ...[1, 2, 3, 4, 5, 6, 7].flatMap((n) => [`/fondos/espacio-${n}.webp`, `/fondos/espacio-${n}-movil.webp`]),
   "/manifest.webmanifest",
   "/logo-quickfix.png",
   "/logo-quickfix-oscuro.png",
@@ -52,6 +53,7 @@ self.addEventListener("fetch", (e) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith("/api/")) return;
+  if (url.pathname.startsWith("/video/")) return;
   if (url.pathname.startsWith("/_next/static/") || ASSETS.includes(url.pathname) || url.pathname.startsWith("/icons/")) {
     e.respondWith(cachePrimero(req));
     return;
