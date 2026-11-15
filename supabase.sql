@@ -17,7 +17,8 @@ create table astronauts (
   id          int generated always as identity primary key,
   nombre      text not null,
   rol         text not null,
-  dia_mision  int  not null default 142
+  dia_mision  int  not null default 142,
+  dia_regreso int  not null default 180
 );
 
 create table vitals (
