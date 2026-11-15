@@ -72,7 +72,7 @@ export function Metrica({ t, analisis, onClick, className = "" }) {
   const E = ESTADO[t.estado] || ESTADO.normal;
   return (
     <button onClick={onClick} aria-label={`${t.nombre}: ${t.texto} ${t.unidad}. ${palabraEstado(t)}. Ver análisis`}
-      className={`glass glass-hover flex min-h-[154px] flex-col justify-between p-[18px] text-left ${t.estado === "critico" ? "glow-crit" : t.estado === "atencion" ? "glow-warn" : ""} ${className}`}>
+      className={`glass glass-hover flex min-h-[154px] flex-col justify-between p-[18px] text-left ${t.estado === "critico" ? "glow-crit" : t.estado === "atencion" ? "glow-warn" : t.estado === "info" ? "glow-info" : ""} ${className}`}>
       <span className="flex w-full items-center justify-between gap-2">
         <span className="flex min-w-0 items-center gap-2 text-xs text-[#d6c9c9]">
           <Icon name={t.icono} size={16} className="shrink-0 text-[#ffb888]" />

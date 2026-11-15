@@ -135,6 +135,7 @@ h1, h2, h3, .font-display { font-family: var(--font-display); }
 
 .glow-warn { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 1px color-mix(in oklab, var(--color-warn) 55%, transparent), 0 0 30px color-mix(in oklab, var(--color-warn) 14%, transparent); }
 .glow-crit { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 1px color-mix(in oklab, var(--color-crit) 65%, transparent), 0 0 30px color-mix(in oklab, var(--color-crit) 18%, transparent); }
+.glow-info { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 1px color-mix(in oklab, var(--color-info) 60%, transparent), 0 0 28px color-mix(in oklab, var(--color-info) 18%, transparent); }
 .glow-accent { box-shadow: 0 0 0 1px color-mix(in oklab, var(--color-accent) 50%, transparent), 0 0 24px color-mix(in oklab, var(--color-accent) 15%, transparent); }
 
 .dot-estado { width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 9px currentColor; display: inline-block; flex-shrink: 0; }
@@ -224,7 +225,7 @@ select option { background: #242026; }
 .cuerpo[data-estado="radiacion"] .cuerpo-poses { filter: drop-shadow(0 0 18px rgba(211, 139, 255, .55)); }
 @keyframes cuerpo-pulso-rojo { 0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 114, 120, .35)) } 50% { filter: drop-shadow(0 0 26px rgba(255, 114, 120, .85)) } }
 .cuerpo-aura { opacity: 0; transition: opacity .6s; background: radial-gradient(ellipse at center, rgba(211, 139, 255, .38), rgba(211, 139, 255, .12) 45%, transparent 70%); }
-.cuerpo[data-estado="radiacion"] .cuerpo-aura { opacity: 1; animation: cuerpo-aura 1.8s ease-in-out infinite; }
+.cuerpo[data-estado="radiacion"] .cuerpo-aura, .cuerpo[data-aura="radiacion"] .cuerpo-aura { opacity: 1; animation: cuerpo-aura 1.8s ease-in-out infinite; }
 @keyframes cuerpo-aura { 0%, 100% { transform: scale(.96); opacity: .65 } 50% { transform: scale(1.04); opacity: 1 } }
 .pose-entra { animation: pose-entra .4s ease both; }
 .pose-sale { animation: pose-sale .4s ease both; }

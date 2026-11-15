@@ -3,12 +3,16 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ESTADO } from "./Shell";
 import { estadoPersonaje } from "./Personaje";
-import { ESTADO_DE_NIVEL, marcarFaltante, POSES, poseFalta, PRIORIDAD_NIVEL, PROPORCION, srcPose, textoBurbuja, ZONA_DE, ZONAS } from "@/lib/cuerpo";
+import { Metrica } from "./PanelTripulante";
+import { ESTADO_DE_NIVEL, marcarFaltante, nivelAlerta, POSES, poseFalta, PRIORIDAD_NIVEL, PROPORCION, srcPose, ZONA_DE, ZONAS } from "@/lib/cuerpo";
 
 const ORDEN_K = ["fc", "pa", "fr", "spo2", "temp", "conciencia", "radiacion", "vision", "huesos", "cabina", "sueno", "animo"];
-const ALTO_B = 34;
-const SEP = 8;
+const ALTO_T = 154;
+const SEP = 14;
+const ALTO_OK = 34;
 const RECIENTE_MS = 20000;
+export const MAX_TARJETAS = 4;
+const POR_LADO = 2;
 
 const usarLayout = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
@@ -58,105 +62,110 @@ function usePose(estado) {
   return capas;
 }
 
-function useAlertas(analisis) {
+export function useAlertasCuerpo(analisis) {
   const prev = useRef({});
   const cambio = useRef({});
   const niveles = {};
-  for (const t of analisis.tarjetas) niveles[t.k] = analisis.interpretaciones?.[t.k]?.nivel || "ok";
+  const lista = analisis?.tarjetas || [];
+  for (const t of lista) niveles[t.k] = nivelAlerta(t, analisis);
   const ahora = Date.now();
   for (const k of Object.keys(niveles)) if (prev.current[k] !== niveles[k]) cambio.current[k] = prev.current[k] === undefined ? 0 : ahora;
   useEffect(() => {
     prev.current = niveles;
   });
-  const porK = Object.fromEntries(analisis.tarjetas.map((t) => [t.k, t]));
+  const porK = Object.fromEntries(lista.map((t) => [t.k, t]));
   const reciente = (k) => (cambio.current[k] && ahora - cambio.current[k] < RECIENTE_MS ? 1 : 0);
-  const lista = Object.keys(niveles)
+  return Object.keys(niveles)
     .filter((k) => niveles[k] in PRIORIDAD_NIVEL)
     .sort((a, b) => PRIORIDAD_NIVEL[niveles[a]] - PRIORIDAD_NIVEL[niveles[b]] || reciente(b) - reciente(a) || ORDEN_K.indexOf(a) - ORDEN_K.indexOf(b))
     .map((k) => ({ k, nivel: niveles[k], t: porK[k] }));
-  return { lista, niveles, porK };
 }
 
-function colocar(items, H) {
+function colocar(items, H, alto) {
   const orden = [...items].sort((a, b) => a.py - b.py);
   let y = 8;
   for (const it of orden) {
-    it.y = Math.max(it.py - ALTO_B / 2, y);
-    y = it.y + ALTO_B + SEP;
+    it.y = Math.max(it.py - alto / 2, y);
+    y = it.y + alto + SEP;
   }
-  const exceso = y - SEP - (H - 8);
-  if (exceso > 0) {
+  if (y - SEP > H - 8) {
     let lim = H - 8;
     for (let i = orden.length - 1; i >= 0; i--) {
-      orden[i].y = Math.min(orden[i].y, lim - ALTO_B);
+      orden[i].y = Math.max(8, Math.min(orden[i].y, lim - alto));
       lim = orden[i].y - SEP;
     }
   }
   return orden;
 }
 
-export default function Cuerpo({ analisis, onVer, maxBurbujas = 3, debug = false, hrefMas = "/analisis" }) {
+export default function Cuerpo({ analisis, lista, onVer, debug = false, hrefMas = "/analisis", conTarjetas = true }) {
   const caja = useRef(null);
   const { W, H } = useTam(caja);
   const estado = estadoPersonaje(analisis);
   const capas = usePose(estado);
-  const { lista } = useAlertas(analisis);
   const [saliendo, setSaliendo] = useState([]);
   const ultimas = useRef({});
 
-  const pad = 10;
+  const pad = 12;
   let fh = Math.max(0, H - pad * 2);
   let fw = fh * PROPORCION;
-  if (fw > W * 0.9) {
-    fw = W * 0.9;
+  if (fw > W * 0.5) {
+    fw = W * 0.5;
     fh = fw / PROPORCION;
   }
   const fx = (W - fw) / 2;
   const fy = (H - fh) / 2;
   const punto = (z) => ({ px: fx + (ZONAS[z].x / 100) * fw, py: fy + (ZONAS[z].y / 100) * fh });
-  const bw = Math.round(Math.max(128, Math.min(196, W * 0.36)));
+  const separacion = 56;
+  const cw = Math.round(Math.max(220, Math.min(290, fx - separacion - 8)));
+  const xIzq = Math.max(8, fx - separacion - cw);
+  const xDer = Math.min(W - 8 - cw, fx + fw + separacion);
 
-  const visibles = lista.slice(0, maxBurbujas);
+  const visibles = lista.slice(0, MAX_TARJETAS);
   const resto = lista.length - visibles.length;
   const izq = [];
   const der = [];
-  for (const v of visibles) {
-    const z = ZONA_DE[v.k];
-    const p = punto(z);
-    const x = ZONAS[z].x;
-    const lado = x < 50 ? "izq" : x > 50 ? "der" : izq.length <= der.length ? "izq" : "der";
-    (lado === "izq" ? izq : der).push({ ...v, ...p, lado, ...textoBurbuja(v.t, analisis, v.nivel) });
-  }
-  const todoBien = lista.length === 0 && poseFalta(POSES.estable);
-  if (todoBien) der.push({ k: "ok", nivel: "ok", ...punto("manoDer"), lado: "der", icono: "👍", texto: "Todo en orden" });
-  const colocadas = W ? [...colocar(izq, H), ...colocar(der, H)] : [];
-  const actuales = new Set(colocadas.map((b) => `${b.k}-${b.nivel}`));
+  if (conTarjetas)
+    for (const v of visibles) {
+      const z = ZONA_DE[v.k];
+      const p = punto(z);
+      const x = ZONAS[z].x;
+      let lado = x < 50 ? "izq" : x > 50 ? "der" : izq.length <= der.length ? "izq" : "der";
+      if (lado === "izq" && izq.length >= POR_LADO) lado = "der";
+      else if (lado === "der" && der.length >= POR_LADO) lado = "izq";
+      (lado === "izq" ? izq : der).push({ ...v, ...p, lado });
+    }
+  const tarjetas = W && conTarjetas ? [...colocar(izq, H, ALTO_T), ...colocar(der, H, ALTO_T)] : [];
+  const actuales = new Set(tarjetas.map((b) => `${b.k}-${b.nivel}`));
+  const firma = tarjetas.map((b) => `${b.k}-${b.nivel}`).join("|");
 
   useEffect(() => {
     const nuevas = {};
-    for (const b of colocadas) nuevas[`${b.k}-${b.nivel}`] = b;
+    for (const b of tarjetas) nuevas[`${b.k}-${b.nivel}`] = b;
     const fuera = Object.keys(ultimas.current).filter((id) => !(id in nuevas)).map((id) => ultimas.current[id]);
     ultimas.current = nuevas;
     if (!fuera.length) return;
     setSaliendo((s) => [...s.filter((x) => !nuevas[`${x.k}-${x.nivel}`]), ...fuera]);
-    const t = setTimeout(() => setSaliendo((s) => s.filter((x) => !fuera.includes(x))), 320);
+    const t = setTimeout(() => setSaliendo((s) => s.filter((x) => !fuera.includes(x))), 340);
     return () => clearTimeout(t);
-  }, [colocadas.map((b) => `${b.k}-${b.nivel}`).join("|")]);
+  }, [firma]);
 
   const zonasActivas = {};
   for (const v of lista) {
     const z = ZONA_DE[v.k];
     if (!zonasActivas[z] || PRIORIDAD_NIVEL[v.nivel] < PRIORIDAD_NIVEL[zonasActivas[z].nivel]) zonasActivas[z] = v;
   }
-
-  const bx = (b) => (b.lado === "izq" ? 8 : W - 8 - bw);
-  const finLinea = (b) => (b.lado === "izq" ? 8 + bw : W - 8 - bw);
+  const todoBien = lista.length === 0 && poseFalta(POSES.estable);
+  const mano = punto("manoDer");
   const colorDe = (nivel) => ESTADO[ESTADO_DE_NIVEL[nivel]]?.hex || ESTADO.normal.hex;
   const claseDe = (nivel) => ESTADO[ESTADO_DE_NIVEL[nivel]]?.color || ESTADO.normal.color;
-  const lineas = [...colocadas, ...saliendo.filter((s) => !actuales.has(`${s.k}-${s.nivel}`))];
+  const xDe = (b) => (b.lado === "izq" ? xIzq : xDer);
+  const finLinea = (b) => (b.lado === "izq" ? xIzq + cw : xDer);
+  const fantasmas = saliendo.filter((s) => !actuales.has(`${s.k}-${s.nivel}`));
+  const auraRad = lista.some((v) => v.k === "radiacion");
 
   return (
-    <div ref={caja} className="cuerpo relative h-full w-full" data-estado={estado}>
+    <div ref={caja} className="cuerpo relative h-full w-full" data-estado={estado} data-aura={auraRad ? "radiacion" : undefined}>
       {W > 0 && (
         <>
           <div className="cuerpo-aura pointer-events-none absolute rounded-full" aria-hidden
@@ -167,11 +176,15 @@ export default function Cuerpo({ analisis, onVer, maxBurbujas = 3, debug = false
               <img key={`b-${capas.actual}`} src={capas.actual} alt="Cuerpo del astronauta" className={`absolute inset-0 h-full w-full object-contain ${capas.anterior ? "pose-entra" : ""}`} draggable={false} data-pose={capas.actual} />
             </div>
           </div>
-          <svg className="pointer-events-none absolute inset-0" width={W} height={H} aria-hidden>
-            {lineas.map((b) => (
-              <line key={`l-${b.k}-${b.nivel}`} x1={b.px} y1={b.py} x2={finLinea(b)} y2={b.y + ALTO_B / 2} stroke={colorDe(b.nivel)} strokeOpacity={actuales.has(`${b.k}-${b.nivel}`) ? 0.55 : 0} strokeWidth="1" className="transition-[stroke-opacity] duration-300" />
-            ))}
-          </svg>
+          {conTarjetas && (
+            <svg className="pointer-events-none absolute inset-0" width={W} height={H} aria-hidden>
+              {[...tarjetas, ...fantasmas].map((b) => (
+                <line key={`l-${b.k}-${b.nivel}`} x1={b.px} y1={b.py} x2={finLinea(b)} y2={b.y + ALTO_T / 2} stroke={colorDe(b.nivel)}
+                  strokeOpacity={actuales.has(`${b.k}-${b.nivel}`) ? 0.6 : 0} strokeWidth="1.2" className="transition-[stroke-opacity] duration-300" data-linea={b.k} />
+              ))}
+              {todoBien && <line x1={mano.px} y1={mano.py} x2={Math.min(W - 8, mano.px + 46)} y2={mano.py - 34 + ALTO_OK / 2} stroke={colorDe("ok")} strokeOpacity="0.6" />}
+            </svg>
+          )}
           {Object.entries(zonasActivas).map(([z, v]) => {
             const p = punto(z);
             return (
@@ -182,7 +195,7 @@ export default function Cuerpo({ analisis, onVer, maxBurbujas = 3, debug = false
               </button>
             );
           })}
-          {debug && Object.entries(ZONAS).map(([z]) => {
+          {debug && Object.keys(ZONAS).map((z) => {
             const p = punto(z);
             return (
               <span key={`d-${z}`} className="pointer-events-none absolute z-20 flex items-center gap-1 text-[10px] font-semibold text-cyan" style={{ left: p.px - 4, top: p.py - 4 }} data-debug-zona={z}>
@@ -191,24 +204,21 @@ export default function Cuerpo({ analisis, onVer, maxBurbujas = 3, debug = false
               </span>
             );
           })}
-          {[...colocadas.map((b) => ({ ...b, sale: false })), ...saliendo.filter((s) => !actuales.has(`${s.k}-${s.nivel}`)).map((b) => ({ ...b, sale: true }))].map((b) => {
-            const contenido = (
-              <>
-                <span aria-hidden className="shrink-0">{b.icono}</span>
-                <span className="truncate">{b.texto}</span>
-              </>
-            );
-            const clase = `burbuja glass absolute z-10 flex items-center gap-1.5 overflow-hidden whitespace-nowrap rounded-full px-3 text-xs font-semibold ${claseDe(b.nivel)} ${b.sale ? "burbuja-sale pointer-events-none" : "burbuja-entra"}`;
-            const estilo = { left: bx(b), top: b.y, width: bw, height: ALTO_B, borderColor: `color-mix(in oklab, ${colorDe(b.nivel)} 45%, transparent)` };
-            return b.k === "ok" ? (
-              <div key={`b-ok`} className={clase} style={estilo} role="status" data-burbuja="ok">{contenido}</div>
-            ) : (
-              <button key={`b-${b.k}-${b.nivel}`} onClick={() => onVer(b.k)} className={clase} style={estilo} data-burbuja={b.k} data-nivel={b.nivel} aria-label={`${b.texto}. Ver análisis`}>{contenido}</button>
-            );
-          })}
-          {resto > 0 && (
-            <Link href={hrefMas} className="glass burbuja-entra absolute bottom-2 right-2 z-10 rounded-full px-2.5 py-1 text-xs font-semibold text-soft hover:text-fg" data-burbuja="mas">
-              +{resto}
+          {[...tarjetas.map((b) => ({ ...b, sale: false })), ...fantasmas.map((b) => ({ ...b, sale: true }))].map((b) => (
+            <div key={`t-${b.k}-${b.nivel}`} className={`absolute z-10 ${b.sale ? "burbuja-sale pointer-events-none" : "burbuja-entra"}`}
+              style={{ left: xDe(b), top: b.y, width: cw, height: ALTO_T, transition: "top .35s ease, left .35s ease" }} data-tarjeta={b.k} data-nivel={b.nivel}>
+              <Metrica t={b.t} analisis={analisis} onClick={() => onVer(b.k)} className="h-full w-full" />
+            </div>
+          ))}
+          {todoBien && (
+            <div role="status" data-burbuja="ok" className={`burbuja glass burbuja-entra absolute z-10 flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-xs font-semibold ${claseDe("ok")}`}
+              style={{ left: Math.min(W - 160, mano.px + 46), top: mano.py - 34, height: ALTO_OK, borderColor: "color-mix(in oklab, var(--color-ok) 45%, transparent)" }}>
+              <span aria-hidden>👍</span> Todo en orden
+            </div>
+          )}
+          {resto > 0 && conTarjetas && (
+            <Link href={hrefMas} className="glass burbuja-entra absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full px-3 py-1.5 text-xs font-semibold text-soft hover:text-fg" data-burbuja="mas">
+              +{resto} {resto === 1 ? "alerta" : "alertas"}
             </Link>
           )}
         </>

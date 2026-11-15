@@ -1,5 +1,5 @@
-const CACHE = "quickfix-v3";
-const PAGINAS = ["/", "/analisis", "/pruebas", "/historial", "/perfil", "/reloj", "/bienvenida", "/tripulacion"];
+const CACHE = "quickfix-v4";
+const PAGINAS = ["/", "/analisis", "/pruebas", "/historial", "/perfil", "/reloj", "/bienvenida", "/tripulacion", "/control"];
 const ASSETS = [
   "/favicon.png",
   "/esqueleto.webp",
